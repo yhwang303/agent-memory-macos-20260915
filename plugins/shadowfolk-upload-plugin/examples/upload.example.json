@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "intervalSeconds": 60,
+  "workspaces": [
+    "E:/Github/agent-memory"
+  ],
+  "retry": {
+    "maxAttempts": 5,
+    "baseDelaySeconds": 30,
+    "maxDelaySeconds": 1800
+  },
+  "statusFile": "~/.shadow/upload-status.json",
+  "logFile": "~/.shadow/upload.log"
+}

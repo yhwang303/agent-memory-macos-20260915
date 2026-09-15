@@ -1,0 +1,61 @@
+perception:
+  window_poll_interval: 1.0
+  check_interval: 5.0
+  change_threshold: 0.05
+  screenshot_quality: 80
+  downscale_for_compare:
+  - 480
+  - 270
+  monitor_indices:
+  - 1
+  - 3
+ocr:
+  engine: paddleocr
+  language: ch
+  confidence_threshold: 0.6
+  zone_grid:
+  - 3
+  - 3
+  max_queue_size: 100
+  workers: 2
+agent:
+  llm:
+    base_url: ${AI_MONITOR_BASE_URL}
+    api_key: ${AI_MONITOR_API_KEY}
+    model: gemini-3.1-pro-preview
+    model_daily: gemini-3.1-pro-preview
+    temperature: 0.3
+    max_tokens: 500
+  distill:
+    moment_window: 300
+    session_window: 1800
+    daily_trigger_time: '23:00'
+    min_captures_for_moment: 2
+storage:
+  db_path: data/ai_monitor.db
+  screenshot_dir: data/screenshots
+  max_retention_days: 30
+privacy:
+  excluded_processes:
+  - KeePass.exe
+  - 1Password.exe
+  excluded_titles:
+  - 密码
+  - password
+  - 银行
+
+# agent-mem 桥接：把 L1 时刻摘要镜像到 agent-mem 全局记忆库
+# 设计文档：D:\UGIT\agent-memory\docs\memory-core\features\desktop-monitor-plugin\design.md
+agent_mem:
+  enabled: false                          # 默认关闭，用户显式开启
+  endpoint: http://127.0.0.1:3847         # agent-mem Worker 地址
+  scope: desktop-monitor                  # observation.project 字段
+  poll_interval_seconds: 30               # 轮询新 moment 的间隔
+  batch_size: 50                          # 单轮最多镜像几条
+  retry_max_attempts: 10
+  retry_initial_delay_seconds: 1
+  retry_max_delay_seconds: 60
+  mirror:
+    moment: true                          # L1 镜像
+    session: false                        # L2 暂不镜像
+    daily: false                          # L3 暂不镜像

@@ -1,0 +1,36 @@
+CodeBuddy 支持 transcript
+结论：支持。CodeBuddy IDE 在其 Hook 机制中提供了 transcript_path 字段，用于访问对话记录文件。
+
+具体说明
+在 CodeBuddy IDE 的 Hook 功能中，所有 Hook 事件的输入数据都会包含 transcript_path 字段，该字段指向对话记录文件的路径：
+
+json
+{
+  "session_id": "abc123",
+  "transcript_path": "/path/to/transcript.txt",
+  "cwd": "/project/path",
+  "hook_event_name": "SessionStart",
+  "source": "startup"
+}
+支持 transcript_path 的 Hook 事件
+所有 7 种 Hook 事件的输入数据中都包含该字段：
+
+Hook 事件	触发时机
+SessionStart	会话启动时
+SessionEnd	会话结束时
+PreToolUse	工具执行前
+PostToolUse	工具执行后
+UserPromptSubmit	用户输入提交时
+Stop	Agent 停止响应时
+PreCompact	上下文压缩前
+使用方式
+在自定义的 Hook 脚本中，可以通过读取 stdin 的 JSON 数据，解析出 transcript_path 字段，进而读取完整的对话记录内容。这对于以下场景非常有用：
+
+保存会话状态、生成会话报告
+
+在上下文压缩前备份完整对话
+
+会话审计与日志记录
+
+补充说明
+如果您指的是其他含义的 "transcript"（如语音转文字、视频字幕等），当前知识库中未检索到相关功能支持，建议您进一步说明使用场景。

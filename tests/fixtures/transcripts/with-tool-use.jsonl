@@ -1,0 +1,2 @@
+{"type":"user","message":{"content":"List files"}}
+{"type":"assistant","message":{"content":[{"type":"text","text":"I'll list them."},{"type":"tool_use","id":"tu_1","name":"Bash","input":{"command":"ls"}}]}}

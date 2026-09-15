@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Self-Evolve 进化门禁框架</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Segoe UI', 'PingFang SC', sans-serif; background: linear-gradient(160deg, #0a0a14, #0f1a2e); color: #e0e0f0; min-height: 100vh; padding: 20px; }
+.container { max-width: 860px; margin: 0 auto; }
+
+h1 { font-size: 20px; text-align: center; margin-bottom: 6px; background: linear-gradient(90deg, #00d4aa, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.subtitle { text-align: center; font-size: 12px; color: #6a6a8a; margin-bottom: 30px; }
+
+/* Pipeline */
+.pipeline { position: relative; }
+.gate { position: relative; margin-bottom: 16px; border-radius: 12px; overflow: hidden; transition: all 0.3s; }
+.gate:hover { transform: translateY(-1px); }
+
+.gate-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+.gate-header:hover { opacity: 0.9; }
+
+.gate-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.gate-title { font-size: 14px; font-weight: 600; flex: 1; }
+.gate-type { font-size: 10px; padding: 3px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em; }
+.gate-arrow { font-size: 12px; color: #6a6a8a; transition: 0.2s; }
+.gate.expanded .gate-arrow { transform: rotate(90deg); }
+
+.gate-body { display: none; padding: 0 16px 14px 56px; font-size: 12px; line-height: 1.8; }
+.gate.expanded .gate-body { display: block; }
+
+/* Gate colors */
+.gate-session { background: linear-gradient(135deg, rgba(0,212,170,0.08), rgba(0,212,170,0.02)); border: 1px solid rgba(0,212,170,0.15); }
+.gate-session .gate-num { background: rgba(0,212,170,0.2); color: #00d4aa; }
+.gate-session .gate-type { background: rgba(0,212,170,0.1); color: #00d4aa; border: 1px solid rgba(0,212,170,0.3); }
+
+.gate-ai { background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(124,58,237,0.02)); border: 1px solid rgba(124,58,237,0.15); }
+.gate-ai .gate-num { background: rgba(124,58,237,0.2); color: #a78bfa; }
+.gate-ai .gate-type { background: rgba(124,58,237,0.1); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
+
+.gate-quality { background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02)); border: 1px solid rgba(245,158,11,0.15); }
+.gate-quality .gate-num { background: rgba(245,158,11,0.2); color: #f59e0b; }
+.gate-quality .gate-type { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+
+.gate-critic { background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02)); border: 1px solid rgba(239,68,68,0.15); }
+.gate-critic .gate-num { background: rgba(239,68,68,0.2); color: #f87171; }
+.gate-critic .gate-type { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+.gate-review { background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.02)); border: 1px solid rgba(59,130,246,0.15); }
+.gate-review .gate-num { background: rgba(59,130,246,0.2); color: #60a5fa; }
+.gate-review .gate-type { background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+
+/* Connector */
+.connector { text-align: center; margin: 4px 0; color: #3a3a55; font-size: 16px; }
+
+/* Body elements */
+.condition { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+.condition::before { content: '•'; color: #00d4aa; flex-shrink: 0; margin-top: 1px; }
+.condition.fail::before { content: '✗'; color: #f87171; }
+.condition.pass::before { content: '✓'; color: #00d4aa; }
+
+.score-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 11px; }
+.score-table th { text-align: left; padding: 5px 8px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.06); color: #8d8da8; font-weight: 500; }
+.score-table td { padding: 5px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.score-table .pts { color: #00d4aa; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+.code-block { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 8px 12px; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 11px; margin: 8px 0; overflow-x: auto; white-space: pre; color: #b0b0c8; }
+
+.outcome { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-size: 11px; margin-top: 6px; }
+.outcome-skip { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #f59e0b; }
+.outcome-pass { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3); color: #00d4aa; }
+.outcome-fail { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
+
+.section-divider { display: flex; align-items: center; gap: 10px; margin: 24px 0 16px; }
+.section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+.section-divider span { font-size: 11px; color: #6a6a8a; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
+
+.threshold-bar { height: 6px; border-radius: 3px; background: #1a1a2e; margin: 6px 0; position: relative; overflow: hidden; }
+.threshold-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+.threshold-fill.pass { background: linear-gradient(90deg, #00d4aa, #00b894); }
+.threshold-fill.fail { background: linear-gradient(90deg, #f87171, #ef4444); }
+.threshold-mark { position: absolute; top: -2px; width: 2px; height: 10px; background: white; opacity: 0.6; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Self-Evolve 进化门禁框架</h1>
+  <p class="subtitle">每条 Rule / Skill 从"会话结束"到"写入 IDE 文件"需要通过的完整判断链</p>
+
+  <div class="pipeline">
+
+    <!-- Gate 1 -->
+    <div class="gate gate-session expanded" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">1</div>
+        <div class="gate-title">插件启用检查</div>
+        <div class="gate-type">本地</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <div class="condition">config.enabled === true</div>
+        <div class="outcome outcome-skip">未启用 → 整个流程不执行</div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- Gate 2 -->
+    <div class="gate gate-session" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">2</div>
+        <div class="gate-title">重入 + 已处理检查</div>
+        <div class="gate-type">本地</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <div class="condition">当前没有正在运行的进化任务</div>
+        <div class="condition">该 session 未在 evolution_log 中出现过（completed / skipped）</div>
+        <div class="outcome outcome-skip">已处理 → 跳过（除非 force=true）</div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- Gate 3 -->
+    <div class="gate gate-session" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">3</div>
+        <div class="gate-title">Observations 非空</div>
+        <div class="gate-type">本地</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <div class="condition">observations.length > 0</div>
+        <div class="outcome outcome-skip">空会话 → 无内容可学习，跳过</div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- Gate 4 (NEW) -->
+    <div class="gate gate-session" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">4</div>
+        <div class="gate-title">增量调度器触发判断 <span style="font-size:10px;color:#00d4aa;margin-left:6px;">NEW</span></div>
+        <div class="gate-type">本地</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <div class="condition">累积 ≥ 8 条 observation → 按数量触发</div>
+        <div class="condition">用户空闲 ≥ 30 分钟且有积累 → 空闲触发</div>
+        <div class="condition">检测到主题切换（文件前缀 + 类型 + 时间间隔 ≥2 信号）→ 切割触发</div>
+        <div class="condition">两次进化间隔 ≥ 10 分钟（冷却期）</div>
+        <div class="condition">每日上限 ≤ 30 次</div>
+        <div class="code-block">触发路径: count_threshold | idle_timeout | topic_switch | session_end</div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- Gate 5 -->
+    <div class="gate gate-ai" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">5</div>
+        <div class="gate-title">AI 判断：工具链维护会话过滤</div>
+        <div class="gate-type">AI 调用</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <div class="condition">满足 ≥2 条 → 整个会话跳过：</div>
+        <div class="condition" style="padding-left:16px;">修改的文件集中在工具链代码（agent-memory/src/, .cursor/hooks/）</div>
+        <div class="condition" style="padding-left:16px;">出现工具链专有名词（Worker, EvolveEngine, hooks-cli, mcp-server）</div>
+        <div class="condition" style="padding-left:16px;">会话核心目的是改善 AI 工具链本身</div>
+        <div class="code-block">AI 返回 skip_reason 字段 → 有值则跳过</div>
+        <div class="outcome outcome-skip">工具链自身维护 → 不提炼（避免循环）</div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span>生成阶段 — AI 提炼 Rules & Skills</span></div>
+
+    <!-- Gate 6: Rule Quality -->
+    <div class="gate gate-quality" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">6</div>
+        <div class="gate-title">Rule 质量打分</div>
+        <div class="gate-type">本地打分</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <table class="score-table">
+          <tr><th>维度</th><th>条件</th><th>分数</th></tr>
+          <tr><td>内容长度</td><td>≥ 80 字符</td><td class="pts">+40</td></tr>
+          <tr><td></td><td>≥ 30 字符（且 < 80）</td><td class="pts">+20</td></tr>
+          <tr><td></td><td>< 8 字符</td><td style="color:#f87171">FAIL</td></tr>
+          <tr><td>行动词</td><td>包含 必须/应该/不要/禁止/always/never/must/should</td><td class="pts">+20</td></tr>
+          <tr><td>作用范围</td><td>有 paths_glob</td><td class="pts">+20</td></tr>
+          <tr><td>补充长度</td><td>≥ 40 字符</td><td class="pts">+20</td></tr>
+        </table>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+          <span style="font-size:11px;color:#8d8da8;">及格线: 60/100</span>
+          <div class="threshold-bar" style="flex:1;">
+            <div class="threshold-fill pass" style="width:60%;"></div>
+            <div class="threshold-mark" style="left:60%;"></div>
+          </div>
+        </div>
+        <div class="outcome outcome-fail">< 60 分 → rejectedRules++，不入库</div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- Gate 7: Skill Quality -->
+    <div class="gate gate-quality" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">7</div>
+        <div class="gate-title">Skill 质量打分（三轮补救）</div>
+        <div class="gate-type">本地 + AI</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <table class="score-table">
+          <tr><th>维度</th><th>条件</th><th>分数</th></tr>
+          <tr><td>YAML Frontmatter</td><td>每个字段 (name/description/argument-hint/user-invocable/allowed-tools)</td><td class="pts">每个 +5</td></tr>
+          <tr><td>内容长度</td><td>≥ 400 字符</td><td class="pts">+15</td></tr>
+          <tr><td></td><td>≥ 200 字符</td><td class="pts">+10</td></tr>
+          <tr><td></td><td>< 200 字符</td><td style="color:#f87171">FAIL</td></tr>
+          <tr><td>标题数量 (##)</td><td>每个标题</td><td class="pts">+5 (上限 +20)</td></tr>
+          <tr><td>协作协议</td><td>有 "Collaboration Protocol" 段</td><td class="pts">+10</td></tr>
+          <tr><td>代码块</td><td>≥ 2 个 ``` 对</td><td class="pts">+10</td></tr>
+          <tr><td>编号步骤</td><td>≥ 3 个 "## N."</td><td class="pts">+20</td></tr>
+        </table>
+        <div class="code-block">第1轮: 直接打分
+第2轮: 自动增强(补frontmatter+协作协议) → 重打分
+第3轮: AI重写(buildRefineSkillPrompt) → 重打分
+三轮全不及格 → rejectedSkills++</div>
+        <div class="outcome outcome-fail">三轮均 < 60 → 拒绝</div>
+      </div>
+    </div>
+
+    <div class="connector">↓</div>
+
+    <!-- Gate 8: Dedup + Corruption -->
+    <div class="gate gate-quality" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">8</div>
+        <div class="gate-title">去重 + 防腐败检查</div>
+        <div class="gate-type">本地</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <div class="condition">内容与已有 rule/skill 完全相同 → 跳过</div>
+        <div class="condition">文本编码异常（非可打印字符 > 30%）→ rejected</div>
+        <div class="condition">Slug 已存在（skill）→ 跳过或 upsert</div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span>后置审查 — Critic 引擎</span></div>
+
+    <!-- Gate 9: Critic -->
+    <div class="gate gate-critic" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">9</div>
+        <div class="gate-title">Critic 三项复查</div>
+        <div class="gate-type">AI 调用 × 3</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <table class="score-table">
+          <tr><th>检查</th><th>方法</th><th>判定</th></tr>
+          <tr><td>冗余检测</td><td>关键词重叠 > 0.15 → AI 判断是否完全重复</td><td>overlap ≥ 0.8 → flagged</td></tr>
+          <tr><td>冲突检测 (仅Rule)</td><td>同 paths_glob → AI 判断是否矛盾</td><td>verdict='flagged' → flagged</td></tr>
+          <tr><td>语义价值</td><td>AI 判断是否有实际价值</td><td>verdict='archive' → flagged</td></tr>
+        </table>
+        <div class="code-block">autoApplyFixes = false（默认）
+→ 只标记(flagged)不自动拒绝，等人工裁定
+→ 三项全通过时 Critic 自动 approve</div>
+      </div>
+    </div>
+
+    <div class="section-divider"><span>最终决策 — 审核模式</span></div>
+
+    <!-- Gate 10: Review Mode -->
+    <div class="gate gate-review expanded" onclick="this.classList.toggle('expanded')">
+      <div class="gate-header">
+        <div class="gate-num">10</div>
+        <div class="gate-title">审核模式决定写入</div>
+        <div class="gate-type">配置</div>
+        <div class="gate-arrow">▶</div>
+      </div>
+      <div class="gate-body">
+        <table class="score-table">
+          <tr><th>模式</th><th>行为</th><th>文件写入</th></tr>
+          <tr><td style="color:#00d4aa;font-weight:600;">auto</td><td>生成即批准</td><td>立即写入所有选中的 IDE</td></tr>
+          <tr><td style="color:#f59e0b;font-weight:600;">quality_gate</td><td>score ≥ threshold → 批准<br>score < threshold → pending</td><td>达标的写入；未达标等人审</td></tr>
+          <tr><td style="color:#60a5fa;font-weight:600;">manual（默认）</td><td>全部进入待审核队列</td><td>用户在 viewer 点击"批准"后写入</td></tr>
+        </table>
+        <div class="code-block">写入目标（支持多选）:
+├─ claudecode → CLAUDE.md + .claude/skills/
+├─ cursor     → .cursor/rules/ + .cursor/skills/
+├─ codebuddy  → .codebuddy/rules/ + .codebuddy/skills/
+└─ windsurf   → .windsurf/rules/ + .windsurf/skills/</div>
+        <div class="outcome outcome-pass">✓ 批准 + 写入选中 IDE → 完成</div>
+      </div>
+    </div>
+
+  </div><!-- /pipeline -->
+
+  <div style="margin-top:30px;padding:16px;background:rgba(0,212,170,0.04);border:1px solid rgba(0,212,170,0.1);border-radius:10px;font-size:11px;color:#8d8da8;line-height:1.8;">
+    <strong style="color:#00d4aa;">关键配置项</strong><br>
+    <code>reviewMode</code>: auto | manual | quality_gate (默认 manual)<br>
+    <code>qualityGateThreshold</code>: 0-100 (默认 70)<br>
+    <code>targetPlatforms</code>: ['claudecode'] (默认，可多选)<br>
+    <code>criticOnGenerate</code>: true (默认开启 Critic 复查)<br>
+    <code>incremental.enabled</code>: true (增量进化调度器)<br>
+    <code>incremental.observationThreshold</code>: 8 (累积触发)<br>
+    <code>incremental.idleMinutes</code>: 30 (空闲触发)<br>
+    <code>incremental.cooldownMinutes</code>: 10 (冷却)<br>
+    <code>incremental.maxDailyRuns</code>: 30 (日上限)
+  </div>
+
+</div>
+</body>
+</html>

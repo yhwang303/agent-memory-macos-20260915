@@ -1,0 +1,10 @@
+@echo off
+echo EXECUTOR_PROBE > "D:\GitHub\agent-memory\logs\executor-probe.log"
+echo ALL_ARGS: %* >> "D:\GitHub\agent-memory\logs\executor-probe.log"
+echo ARG0: %0 >> "D:\GitHub\agent-memory\logs\executor-probe.log"
+echo ARG1: %1 >> "D:\GitHub\agent-memory\logs\executor-probe.log"
+echo ARG2: %2 >> "D:\GitHub\agent-memory\logs\executor-probe.log"
+echo ARG3: %3 >> "D:\GitHub\agent-memory\logs\executor-probe.log"
+echo ARG4: %4 >> "D:\GitHub\agent-memory\logs\executor-probe.log"
+echo ARG5: %5 >> "D:\GitHub\agent-memory\logs\executor-probe.log"
+echo DATE: %DATE% %TIME% >> "D:\GitHub\agent-memory\logs\executor-probe.log"

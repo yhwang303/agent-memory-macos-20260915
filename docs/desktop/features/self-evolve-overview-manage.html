@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Self-Evolve Overview - Rules & Skills 管理</title>
+<style>
+:root {
+  --bg-primary: #060a0c;
+  --bg-card: #0d1117;
+  --bg-card-hover: #161b22;
+  --border: rgba(0,212,170,0.12);
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #484f58;
+  --accent: #00d4aa;
+  --accent-purple: #a78bfa;
+  --accent-pink: #f472b6;
+  --accent-warning: #f59e0b;
+  --accent-alert: #ef4444;
+  --font-body: 'JetBrains Mono', 'SF Mono', monospace;
+  --font-chinese: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-chinese);
+  padding: 24px;
+  min-height: 100vh;
+}
+.container { max-width: 900px; margin: 0 auto; }
+h1 { font-size: 18px; margin-bottom: 6px; color: var(--accent); }
+.subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 24px; }
+
+/* Stats bar */
+.stats-bar {
+  display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.stat-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.stat-chip .num { font-size: 20px; font-weight: 700; font-family: var(--font-body); }
+.stat-chip.rules .num { color: var(--accent); }
+.stat-chip.skills .num { color: var(--accent-pink); }
+.stat-chip.pending .num { color: var(--accent-warning); }
+.stat-chip.archived .num { color: var(--text-muted); }
+
+/* Section */
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 20px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .count {
+  background: rgba(0,212,170,0.1);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-family: var(--font-body);
+}
+
+/* Item card */
+.item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+.item-card:hover { border-color: rgba(0,212,170,0.25); }
+.item-card.disabled { opacity: 0.45; }
+.item-card.disabled .item-header { text-decoration: line-through; text-decoration-color: var(--text-muted); }
+
+.item-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  gap: 12px;
+  cursor: pointer;
+}
+.item-toggle {
+  position: relative;
+  width: 36px; height: 20px;
+  background: #2d333b;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.item-toggle.on { background: var(--accent); }
+.item-toggle::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  background: white;
+  border-radius: 50%;
+  top: 2px; left: 2px;
+  transition: transform 0.2s;
+}
+.item-toggle.on::after { transform: translateX(16px); }
+
+.item-info { flex: 1; min-width: 0; }
+.item-header {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-meta {
+  display: flex; gap: 6px; margin-top: 3px; flex-wrap: wrap;
+}
+.tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: var(--font-body);
+}
+.tag-cat { background: rgba(0,212,170,0.1); color: var(--accent); }
+.tag-kind { background: rgba(244,114,182,0.1); color: var(--accent-pink); }
+.tag-pending { background: rgba(245,158,11,0.1); color: var(--accent-warning); }
+.tag-auto { background: rgba(139,148,158,0.1); color: var(--text-secondary); }
+.tag-approved { background: rgba(0,212,170,0.1); color: var(--accent); }
+.tag-ws { background: rgba(139,148,158,0.08); color: var(--text-muted); }
+
+.item-score {
+  font-size: 12px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.score-hi { color: var(--accent); background: rgba(0,212,170,0.08); }
+.score-mid { color: var(--accent-warning); background: rgba(245,158,11,0.08); }
+.score-lo { color: var(--accent-alert); background: rgba(239,68,68,0.08); }
+
+.item-date {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  flex-shrink: 0;
+}
+
+/* Expand */
+.item-detail {
+  display: none;
+  padding: 0 14px 12px;
+  border-top: 1px solid rgba(0,212,170,0.06);
+  margin-top: 0;
+}
+.item-card.expanded .item-detail { display: block; }
+.item-card.expanded { border-color: rgba(0,212,170,0.3); }
+
+.detail-section { margin-top: 10px; }
+.detail-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-family: var(--font-body);
+}
+.detail-content {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.detail-footer {
+  margin-top: 10px;
+  display: flex;
+  gap: 16px;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+}
+
+/* Chevron */
+.chevron {
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.item-card.expanded .chevron { transform: rotate(90deg); }
+
+/* Filter */
+.filter-bar {
+  display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.filter-bar select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: var(--font-chinese);
+}
+.filter-bar select:focus { border-color: var(--accent); outline: none; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 12px;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 999;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Self-Evolve · 存量管理</h1>
+  <p class="subtitle">当前项目所有已提炼的 Rules 和 Skills，可通过开关启用或归档</p>
+
+  <div class="stats-bar">
+    <div class="stat-chip rules"><span class="num" id="stat-rules">0</span><span>Active Rules</span></div>
+    <div class="stat-chip skills"><span class="num" id="stat-skills">0</span><span>Active Skills</span></div>
+    <div class="stat-chip pending"><span class="num" id="stat-pending">0</span><span>Pending</span></div>
+    <div class="stat-chip archived"><span class="num" id="stat-archived">0</span><span>Archived</span></div>
+  </div>
+
+  <!-- Rules Section -->
+  <div class="section-title">
+    <span>📋 Rules</span>
+    <span class="count" id="rules-count">0</span>
+  </div>
+  <div class="filter-bar">
+    <select id="filter-rules-cat" onchange="renderAll()"><option value="">所有分类</option></select>
+    <select id="filter-rules-status" onchange="renderAll()">
+      <option value="">所有状态</option>
+      <option value="active">已启用</option>
+      <option value="archived">已归档</option>
+    </select>
+  </div>
+  <div id="rules-list"></div>
+
+  <!-- Skills Section -->
+  <div class="section-title" style="margin-top:32px;">
+    <span>⚡ Skills</span>
+    <span class="count" id="skills-count">0</span>
+  </div>
+  <div id="skills-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Mock data - simulating what the real API returns
+const mockRules = [
+  { id: 1, title: '函数命名必须使用 camelCase', content: '所有 TypeScript/JavaScript 中定义的函数和方法必须使用 camelCase 命名，不允许 snake_case 或 PascalCase（类名除外）。', category: '代码规范', status: 'active', audit_status: 'approved', quality_score: 85, workspace: 'agent-memory', created_at: '2026-05-24T10:00:00Z', source_session_id: 'abc12345-def' },
+  { id: 2, title: '禁止在循环体内使用 await', content: '不在 for/while 循环内直接 await 单个 Promise，应改为 Promise.all() 或批量处理模式，避免串行等待导致性能劣化。', category: '代码规范', status: 'active', audit_status: 'auto', quality_score: 92, workspace: 'agent-memory', created_at: '2026-05-23T15:30:00Z', source_session_id: 'xyz98765-ghi' },
+  { id: 3, title: '文档必须放在对应模块目录下', content: '功能文档不放在公共 docs/ 根目录，而是放到 docs/<module>/features/<name>/ 下，与功能实现就近维护。', category: '工作流规范', status: 'active', audit_status: 'approved', quality_score: 78, workspace: 'agent-memory', created_at: '2026-05-25T03:15:00Z', source_session_id: 'doc00001-jkl' },
+  { id: 4, title: '偏好使用 better-sqlite3 同步 API', content: '在 worker 进程内优先使用 better-sqlite3 的同步接口而非包装 Promise，因为 WAL 模式下同步写不会阻塞读，且同步代码更容易调试和追踪。', category: '技术栈偏好', status: 'active', audit_status: 'auto', quality_score: 71, workspace: 'agent-memory', created_at: '2026-05-22T09:00:00Z', source_session_id: 'tech0001-mno' },
+  { id: 5, title: '提交信息使用 conventional commits', content: '所有 git commit 消息必须遵循 conventional commits 格式：type(scope): description。type 取值: feat, fix, docs, refactor, test, chore。', category: '工作流规范', status: 'active', audit_status: 'approved', quality_score: 88, workspace: 'agent-memory', created_at: '2026-05-21T14:20:00Z', source_session_id: 'git00001-pqr' },
+  { id: 6, title: '界面文本优先使用中文', content: '面向用户的 UI 文本（按钮、提示、通知）优先使用中文，代码注释和日志可中英混用。', category: '用户偏好', status: 'active', audit_status: 'pending', quality_score: 65, workspace: 'agent-memory', created_at: '2026-05-25T11:00:00Z', source_session_id: 'ui000001-stu' },
+  { id: 7, title: 'electron-store 配置键名不用嵌套', content: '桌面端 electron-store 的键名保持扁平结构，不使用点分隔嵌套，避免 JSON 层级过深。', category: '技术栈偏好', status: 'archived', audit_status: 'auto', quality_score: 58, workspace: 'agent-memory', created_at: '2026-05-20T08:00:00Z', source_session_id: 'arch0001-vwx' },
+];
+
+const mockSkills = [
+  { id: 1, name: 'release-agent-memory', slug: 'release-agent-memory', skill_kind: 'automation', status: 'active', audit_status: 'approved', quality_score: 90, workspace: 'agent-memory', trigger_scene: '用户要求打包、发布、构建安装包', skill_md: '# Agent Memory Release\n\n## Required behavior\n\n1. Run preflight checks\n2. Use root release scripts\n3. Report final artifacts with sha256', created_at: '2026-05-22T10:00:00Z', source_session_id: 'rel00001-abc' },
+  { id: 2, name: 'add-feature-doc', slug: 'add-feature-doc', skill_kind: 'scaffold', status: 'active', audit_status: 'approved', quality_score: 82, workspace: 'agent-memory', trigger_scene: '用户要求新建需求文档、PRD、设计文档', skill_md: '# Add Feature Doc\n\nCreates a new feature requirement scaffold under docs/<module>/features/<name>/', created_at: '2026-05-21T16:00:00Z', source_session_id: 'doc00002-def' },
+  { id: 3, name: 'add-bug-doc', slug: 'add-bug-doc', skill_kind: 'scaffold', status: 'active', audit_status: 'auto', quality_score: 79, workspace: 'agent-memory', trigger_scene: '用户报告 bug 需要归档分析文档', skill_md: '# Add Bug Doc\n\nCreates a new bug analysis scaffold under docs/<module>/bugs/<name>/', created_at: '2026-05-20T11:00:00Z', source_session_id: 'bug00001-ghi' },
+  { id: 4, name: 'frameless-window-conversion', slug: 'frameless-window-conversion', skill_kind: 'procedure', status: 'active', audit_status: 'auto', quality_score: 74, workspace: 'agent-memory', trigger_scene: '将网页转换为无边框 Electron 窗口', skill_md: '# 无边框窗口改造\n\n将网页从系统浏览器加载模式转换为无边框 Electron 窗口，实现自定义标题栏。', created_at: '2026-05-19T09:00:00Z', source_session_id: 'win00001-jkl' },
+  { id: 5, name: 'install-agent-memory', slug: 'install-agent-memory', skill_kind: 'procedure', status: 'archived', audit_status: 'approved', quality_score: 86, workspace: 'agent-memory', trigger_scene: '安装和配置记忆系统', skill_md: '# 安装 AgentMemory\n\n## 前置条件\n- Node.js >= 18.0.0\n- 项目已克隆', created_at: '2026-05-18T14:00:00Z', source_session_id: 'ins00001-mno' },
+];
+
+function renderAll() {
+  renderStats();
+  renderRules();
+  renderSkills();
+}
+
+function renderStats() {
+  const activeRules = mockRules.filter(r => r.status === 'active').length;
+  const activeSkills = mockSkills.filter(s => s.status === 'active').length;
+  const pending = mockRules.filter(r => r.audit_status === 'pending').length + mockSkills.filter(s => s.audit_status === 'pending').length;
+  const archived = mockRules.filter(r => r.status === 'archived').length + mockSkills.filter(s => s.status === 'archived').length;
+  document.getElementById('stat-rules').textContent = activeRules;
+  document.getElementById('stat-skills').textContent = activeSkills;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-archived').textContent = archived;
+}
+
+function renderRules() {
+  const catFilter = document.getElementById('filter-rules-cat').value;
+  const statusFilter = document.getElementById('filter-rules-status').value;
+  let rules = [...mockRules];
+  if (catFilter) rules = rules.filter(r => r.category === catFilter);
+  if (statusFilter) rules = rules.filter(r => r.status === statusFilter);
+  rules.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+  document.getElementById('rules-count').textContent = rules.length;
+  const list = document.getElementById('rules-list');
+  list.innerHTML = rules.map(r => renderRuleCard(r)).join('');
+
+  // Populate category filter
+  const cats = [...new Set(mockRules.map(r => r.category).filter(Boolean))].sort();
+  const sel = document.getElementById('filter-rules-cat');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">所有分类</option>' + cats.map(c => `<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
+}
+
+function renderSkills() {
+  const skills = [...mockSkills].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  document.getElementById('skills-count').textContent = skills.length;
+  const list = document.getElementById('skills-list');
+  list.innerHTML = skills.map(s => renderSkillCard(s)).join('');
+}
+
+function renderRuleCard(r) {
+  const isActive = r.status === 'active';
+  const scoreClass = r.quality_score >= 80 ? 'score-hi' : r.quality_score >= 60 ? 'score-mid' : 'score-lo';
+  const auditTag = r.audit_status === 'pending' ? '<span class="tag tag-pending">⚑ 待审核</span>'
+    : r.audit_status === 'approved' ? '<span class="tag tag-approved">✓ 已批准</span>'
+    : '<span class="tag tag-auto">自动</span>';
+  return `<div class="item-card ${isActive ? '' : 'disabled'}" id="rule-${r.id}">
+    <div class="item-row">
+      <div class="item-toggle ${isActive ? 'on' : ''}" onclick="event.stopPropagation();toggleRule(${r.id})"></div>
+      <span class="chevron">▶</span>
+      <div class="item-info" onclick="expandCard('rule-${r.id}')">
+        <div class="item-header">${esc(r.title)}</div>
+        <div class="item-meta">
+          ${r.category ? `<span class="tag tag-cat">${esc(r.category)}</span>` : ''}
+          ${auditTag}
+        </div>
+      </div>
+      ${r.quality_score != null ? `<span class="item-score ${scoreClass}">${r.quality_score}</span>` : ''}
+      <span class="item-date">${fmtDate(r.created_at)}</span>
+    </div>
+    <div class="item-detail">
+      <div class="detail-section">
+        <div class="detail-label">规则内容</div>
+        <div class="detail-content">${esc(r.content)}</div>
+      </div>
+      <div class="detail-footer">
+        <span>来源: ${r.source_session_id ? r.source_session_id.slice(0,8) : '-'}</span>
+        <span>质量: ${r.quality_score}/100</span>
+        <span>工作区: ${r.workspace || '-'}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSkillCard(s) {
+  const isActive = s.status === 'active';
+  const scoreClass = s.quality_score >= 80 ? 'score-hi' : s.quality_score >= 60 ? 'score-mid' : 'score-lo';
+  const auditTag = s.audit_status === 'pending' ? '<span class="tag tag-pending">⚑ 待审核</span>'
+    : s.audit_status === 'approved' ? '<span class="tag tag-approved">✓ 已批准</span>'
+    : '<span class="tag tag-auto">自动</span>';
+  return `<div class="item-card ${isActive ? '' : 'disabled'}" id="skill-${s.id}">
+    <div class="item-row">
+      <div class="item-toggle ${isActive ? 'on' : ''}" onclick="event.stopPropagation();toggleSkill(${s.id})"></div>
+      <span class="chevron">▶</span>
+      <div class="item-info" onclick="expandCard('skill-${s.id}')">
+        <div class="item-header">${esc(s.name)}</div>
+        <div class="item-meta">
+          <span class="tag tag-kind">${esc(s.skill_kind || 'markdown')}</span>
+          ${auditTag}
+          ${s.trigger_scene ? `<span class="tag tag-ws" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(s.trigger_scene)}</span>` : ''}
+        </div>
+      </div>
+      ${s.quality_score != null ? `<span class="item-score ${scoreClass}">${s.quality_score}</span>` : ''}
+      <span class="item-date">${fmtDate(s.created_at)}</span>
+    </div>
+    <div class="item-detail">
+      <div class="detail-section">
+        <div class="detail-label">SKILL.md</div>
+        <div class="detail-content">${esc((s.skill_md || '').slice(0, 500))}${(s.skill_md||'').length > 500 ? '\n...' : ''}</div>
+      </div>
+      <div class="detail-footer">
+        <span>slug: ${esc(s.slug)}</span>
+        <span>质量: ${s.quality_score}/100</span>
+        <span>工作区: ${s.workspace || '-'}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function expandCard(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('expanded');
+}
+
+function toggleRule(id) {
+  const rule = mockRules.find(r => r.id === id);
+  if (!rule) return;
+  rule.status = rule.status === 'active' ? 'archived' : 'active';
+  showToast(rule.status === 'active' ? `✓ "${rule.title}" 已启用` : `✗ "${rule.title}" 已归档`);
+  renderAll();
+}
+
+function toggleSkill(id) {
+  const skill = mockSkills.find(s => s.id === id);
+  if (!skill) return;
+  skill.status = skill.status === 'active' ? 'archived' : 'active';
+  showToast(skill.status === 'active' ? `✓ "${skill.name}" 已启用` : `✗ "${skill.name}" 已归档`);
+  renderAll();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function fmtDate(s) { if (!s) return '-'; const d = new Date(s); return `${d.getMonth()+1}/${d.getDate()}`; }
+
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+{
+  "libraryVersion": "1.0.0",
+  "items": [
+    {
+      "id": "bundle.shadow-harness",
+      "category": "bundle",
+      "name": "shadow-harness",
+      "description": "官方研发 harness 全套：文档范式 + 需求注册中心 + 门禁 + 任务认领 + 配套 skills/rules。原子体系，整套注入。",
+      "version": "1.0.0",
+      "tags": ["harness", "official"],
+      "official": true,
+      "atomic": true,
+      "members": [
+        "spec.docs-readme",
+        "spec.harness-md",
+        "spec.inbox",
+        "spec.requirements-registry",
+        "skill.add-feature-doc",
+        "skill.add-bug-doc",
+        "skill.claim-requirement",
+        "skill.harness-init",
+        "rule.harness-engineering-spec",
+        "rule.harness-preferences"
+      ]
+    },
+
+    {
+      "id": "spec.docs-readme",
+      "category": "spec",
+      "name": "docs/README.md 文档范式",
+      "description": "模块自洽、docs 内聚的文档结构与命名规范",
+      "version": "1.0.0",
+      "tags": ["harness", "docs"],
+      "source": "specs/docs-readme",
+      "targetKind": "spec",
+      "conflict": "skip-if-exists",
+      "ides": ["*"],
+      "standalone": false,
+      "partOf": "bundle.shadow-harness"
+    },
+    {
+      "id": "spec.harness-md",
+      "category": "spec",
+      "name": "docs/HARNESS.md 研发总纲",
+      "description": "人 + 多 agent 研发流程权威总纲",
+      "version": "1.0.0",
+      "tags": ["harness"],
+      "source": "specs/harness-md",
+      "targetKind": "spec",
+      "conflict": "overwrite",
+      "ides": ["*"],
+      "standalone": false,
+      "partOf": "bundle.shadow-harness"
+    },
+    {
+      "id": "spec.inbox",
+      "category": "spec",
+      "name": "docs/INBOX.md 想法池",
+      "description": "需求建档前的想法收集池",
+      "version": "1.0.0",
+      "tags": ["harness"],
+      "source": "specs/inbox",
+      "targetKind": "spec",
+      "conflict": "skip-if-exists",
+      "ides": ["*"],
+      "standalone": false,
+      "partOf": "bundle.shadow-harness"
+    },
+    {
+      "id": "spec.requirements-registry",
+      "category": "spec",
+      "name": "需求注册中心（看板 + 空种子）",
+      "description": "requirements-registry.html 看板 + requirements-registry.data.js 空 SSOT 种子",
+      "version": "1.0.0",
+      "tags": ["harness"],
+      "source": "specs/requirements-registry",
+      "targetKind": "spec",
+      "conflict": "skip-if-exists",
+      "ides": ["*"],
+      "standalone": false,
+      "partOf": "bundle.shadow-harness"
+    },
+
+    {
+      "id": "skill.add-feature-doc",
+      "category": "skill",
+      "name": "add-feature-doc",
+      "description": "按 docs 范式落盘 features 需求骨架（PRD/设计）+ SSOT 注册 + 自动编号",
+      "version": "1.0.0",
+      "tags": ["harness", "docs"],
+      "source": "skills/add-feature-doc",
+      "slug": "add-feature-doc",
+      "targetKind": "skill",
+      "conflict": "overwrite",
+      "ides": ["cursor", "claude-code", "codebuddy", "codex-cli"],
+      "standalone": false,
+      "requires": ["spec.docs-readme", "spec.requirements-registry"],
+      "partOf": "bundle.shadow-harness"
+    },
+    {
+      "id": "skill.add-bug-doc",
+      "category": "skill",
+      "name": "add-bug-doc",
+      "description": "scaffold bug 分析目录 docs/<module>/bugs/<name>/",
+      "version": "1.0.0",
+      "tags": ["harness", "docs"],
+      "source": "skills/add-bug-doc",
+      "slug": "add-bug-doc",
+      "targetKind": "skill",
+      "conflict": "overwrite",
+      "ides": ["cursor", "claude-code", "codebuddy", "codex-cli"],
+      "standalone": false,
+      "requires": ["spec.docs-readme", "spec.requirements-registry"],
+      "partOf": "bundle.shadow-harness"
+    },
+    {
+      "id": "skill.claim-requirement",
+      "category": "skill",
+      "name": "claim-requirement",
+      "description": "从注册中心认领需求并写入任务状态（git 当锁）",
+      "version": "1.0.0",
+      "tags": ["harness"],
+      "source": "skills/claim-requirement",
+      "slug": "claim-requirement",
+      "targetKind": "skill",
+      "conflict": "overwrite",
+      "ides": ["cursor", "claude-code", "codebuddy", "codex-cli"],
+      "standalone": false,
+      "requires": ["spec.requirements-registry"],
+      "partOf": "bundle.shadow-harness"
+    },
+    {
+      "id": "skill.harness-init",
+      "category": "skill",
+      "name": "harness-init",
+      "description": "初始化偏好问询，写入 harness-preferences 受管块",
+      "version": "1.0.0",
+      "tags": ["harness"],
+      "source": "skills/harness-init",
+      "slug": "harness-init",
+      "targetKind": "skill",
+      "conflict": "overwrite",
+      "ides": ["cursor", "claude-code", "codebuddy", "codex-cli"],
+      "standalone": false,
+      "requires": ["rule.harness-preferences"],
+      "partOf": "bundle.shadow-harness"
+    },
+
+    {
+      "id": "rule.harness-engineering-spec",
+      "category": "rule",
+      "name": "harness-engineering-spec",
+      "description": "工程设计规范（SRP/OCP/DIP/高内聚低耦合），实现前必读",
+      "version": "1.0.0",
+      "tags": ["harness", "rule"],
+      "source": "rules/harness-engineering-spec.mdc",
+      "ruleId": "harness-engineering-spec",
+      "targetKind": "rule",
+      "conflict": "overwrite",
+      "ides": ["cursor", "claude-code", "codebuddy", "codex-cli"],
+      "managedBlock": {
+        "start": "<!-- injector:harness-engineering-spec:start -->",
+        "end": "<!-- injector:harness-engineering-spec:end -->"
+      },
+      "standalone": false,
+      "partOf": "bundle.shadow-harness"
+    },
+    {
+      "id": "rule.harness-preferences",
+      "category": "rule",
+      "name": "harness-preferences",
+      "description": "harness 偏好（默认 both/中文，可 /harness-init 重选）",
+      "version": "1.0.0",
+      "tags": ["harness", "rule"],
+      "source": "rules/harness-preferences.mdc",
+      "ruleId": "harness-preferences",
+      "targetKind": "rule",
+      "conflict": "overwrite",
+      "ides": ["cursor", "claude-code", "codebuddy", "codex-cli"],
+      "managedBlock": {
+        "start": "<!-- injector:harness-preferences:start -->",
+        "end": "<!-- injector:harness-preferences:end -->"
+      },
+      "standalone": false,
+      "partOf": "bundle.shadow-harness"
+    }
+  ]
+}

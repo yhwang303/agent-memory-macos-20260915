@@ -1,0 +1,53 @@
+# Only ship dist/ + the npm-essentials. Everything else stays out of the tarball.
+
+# Already excluded by `files: ["dist"]` in package.json — listed here as a safety net.
+
+desktop/
+desktop-old/
+web/
+release/
+release5/
+source-data/
+build-resources/
+
+# Docs / specs / handoffs — large markdown, keep them in repo only.
+docs/
+server/
+
+# Tests + fixtures
+tests/
+e2e/
+**/*.test.ts
+**/*.test.js
+**/__tests__/
+
+# Sources & build configs (we ship dist only)
+src/
+tsconfig.json
+tsconfig.*.json
+
+# CI / dev tooling
+.github/
+.cursor/
+scripts/
+.vscode/
+
+# Local artifacts
+*.log
+*.pid
+*.exe
+*.dmg
+*.zip
+*.tgz
+*.blockmap
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
+build-merge.log
+COMMIT_EDITMSG_TMP
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/

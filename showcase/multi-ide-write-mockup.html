@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Self-Evolve — 多 IDE 写入选择 Mockup</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0f0; padding: 24px; }
+.container { max-width: 700px; margin: 0 auto; }
+h2 { font-size: 14px; color: #8d8da8; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+
+/* Rule card */
+.rule-card {
+  background: linear-gradient(135deg, #1a1a2e, #16162a);
+  border: 1px solid rgba(0,212,170,0.12);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+.rule-header { display: flex; align-items: center; gap: 12px; }
+.rule-title { font-size: 14px; font-weight: 600; flex: 1; }
+.rule-meta { font-size: 11px; color: #8d8da8; margin-top: 6px; }
+.rule-content { font-size: 12px; color: #b0b0c8; margin-top: 10px; line-height: 1.6; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+
+/* Toggle */
+.toggle { width: 36px; height: 20px; background: #2a2a3e; border-radius: 10px; position: relative; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
+.toggle.on { background: #00d4aa; }
+.toggle::after { content: ''; width: 16px; height: 16px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.2s; }
+.toggle.on::after { left: 18px; }
+
+/* IDE chips */
+.ide-targets { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+.ide-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px; font-size: 11px;
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.ide-chip.active { background: rgba(0,212,170,0.15); border: 1px solid rgba(0,212,170,0.5); color: #00d4aa; }
+.ide-chip.inactive { background: rgba(100,100,130,0.1); border: 1px solid rgba(100,100,130,0.25); color: #6a6a8a; }
+.ide-chip.active::before { content: '✓ '; }
+.ide-chip:hover { opacity: 0.85; transform: scale(1.03); }
+
+.ide-label { font-size: 11px; color: #6a6a8a; margin-right: 6px; }
+
+/* Add IDE button */
+.add-ide-btn {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 4px 10px; border-radius: 999px; font-size: 11px;
+  border: 1px dashed rgba(100,100,130,0.4); color: #6a6a8a;
+  cursor: pointer; transition: 0.2s; background: transparent;
+}
+.add-ide-btn:hover { border-color: #00d4aa; color: #00d4aa; }
+
+/* IDE selector popover */
+.ide-popover {
+  display: none; position: absolute; top: 100%; left: 0; z-index: 10;
+  background: #1e1e32; border: 1px solid rgba(0,212,170,0.2);
+  border-radius: 8px; padding: 8px; min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4); margin-top: 4px;
+}
+.ide-popover.show { display: block; }
+.ide-option {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.15s;
+}
+.ide-option:hover { background: rgba(0,212,170,0.08); }
+.ide-option .check { width: 16px; height: 16px; border: 1.5px solid #4a4a6a; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+.ide-option .check.checked { background: #00d4aa; border-color: #00d4aa; }
+.ide-option .check.checked::after { content: '✓'; font-size: 10px; color: white; }
+.ide-option .ide-icon { font-size: 14px; }
+
+/* Status bar */
+.write-status { font-size: 11px; color: #00d4aa; margin-top: 8px; opacity: 0; transition: 0.3s; }
+.write-status.show { opacity: 1; }
+
+/* Section */
+.section-hint {
+  background: rgba(0,212,170,0.05); border: 1px solid rgba(0,212,170,0.12);
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;
+  font-size: 12px; color: #8d8da8; line-height: 1.6;
+}
+.section-hint strong { color: #00d4aa; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="section-hint">
+    <strong>写入目标</strong>：启用一条规则/技能时，会自动写入已勾选的 IDE 配置文件。支持同时写入多个 IDE。<br>
+    默认写入当前 Hook 来源的 IDE（如 Claude Code）；你可以点击 <code>+ 添加 IDE</code> 选择更多目标。
+  </div>
+
+  <h2>Rules · 存量管理</h2>
+
+  <!-- Rule 1: active, multiple IDE targets -->
+  <div class="rule-card">
+    <div class="rule-header">
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      <div>
+        <div class="rule-title">API 响应必须包含 request_id</div>
+        <div class="rule-meta">代码规范 · score 85 · src/services/worker/**</div>
+      </div>
+    </div>
+    <div class="ide-targets">
+      <span class="ide-label">写入：</span>
+      <span class="ide-chip active" onclick="this.classList.toggle('active');this.classList.toggle('inactive')">Claude Code</span>
+      <span class="ide-chip active" onclick="this.classList.toggle('active');this.classList.toggle('inactive')">Cursor</span>
+      <span class="ide-chip inactive" onclick="this.classList.toggle('active');this.classList.toggle('inactive')">CodeBuddy</span>
+      <span class="add-ide-btn" onclick="document.getElementById('pop1').classList.toggle('show')">+ 添加</span>
+      <div style="position:relative;">
+        <div class="ide-popover" id="pop1">
+          <div class="ide-option" onclick="this.querySelector('.check').classList.toggle('checked')">
+            <div class="check checked"></div><span class="ide-icon">⌘</span> Claude Code → CLAUDE.md
+          </div>
+          <div class="ide-option" onclick="this.querySelector('.check').classList.toggle('checked')">
+            <div class="check checked"></div><span class="ide-icon">▶</span> Cursor → .cursor/rules/
+          </div>
+          <div class="ide-option" onclick="this.querySelector('.check').classList.toggle('checked')">
+            <div class="check"></div><span class="ide-icon">◆</span> CodeBuddy → .codebuddy/rules/
+          </div>
+          <div class="ide-option" onclick="this.querySelector('.check').classList.toggle('checked')">
+            <div class="check"></div><span class="ide-icon">◇</span> Windsurf → .windsurf/rules/
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="write-status show">✓ 已写入 CLAUDE.md + .cursor/rules/self-evolved.mdc</div>
+  </div>
+
+  <!-- Rule 2: active, single IDE -->
+  <div class="rule-card">
+    <div class="rule-header">
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      <div>
+        <div class="rule-title">提交信息使用 conventional commits 格式</div>
+        <div class="rule-meta">工作流规范 · score 92</div>
+      </div>
+    </div>
+    <div class="ide-targets">
+      <span class="ide-label">写入：</span>
+      <span class="ide-chip active" onclick="this.classList.toggle('active');this.classList.toggle('inactive')">Claude Code</span>
+      <span class="ide-chip inactive" onclick="this.classList.toggle('active');this.classList.toggle('inactive')">Cursor</span>
+      <span class="add-ide-btn">+ 添加</span>
+    </div>
+    <div class="write-status show">✓ 已写入 CLAUDE.md</div>
+  </div>
+
+  <!-- Rule 3: archived (disabled) -->
+  <div class="rule-card" style="opacity:0.45; border-color: rgba(100,100,130,0.1);">
+    <div class="rule-header">
+      <div class="toggle" onclick="this.classList.toggle('on')"></div>
+      <div>
+        <div class="rule-title" style="text-decoration: line-through; color: #6a6a8a;">优先使用 optional chaining</div>
+        <div class="rule-meta">代码规范 · score 65 · 已归档</div>
+      </div>
+    </div>
+    <div class="ide-targets" style="opacity:0.5;">
+      <span class="ide-label">写入：</span>
+      <span class="ide-chip inactive">Claude Code</span>
+      <span style="font-size:11px;color:#6a6a8a;">（归档后不再写入任何 IDE）</span>
+    </div>
+  </div>
+
+  <h2 style="margin-top:30px;">Skills · 存量管理</h2>
+
+  <!-- Skill 1 -->
+  <div class="rule-card">
+    <div class="rule-header">
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      <div>
+        <div class="rule-title">调试 Worker API</div>
+        <div class="rule-meta">skill · score 82 · debug-worker-api</div>
+      </div>
+    </div>
+    <div class="ide-targets">
+      <span class="ide-label">写入：</span>
+      <span class="ide-chip active">Claude Code</span>
+      <span class="ide-chip active">Cursor</span>
+      <span class="ide-chip active">CodeBuddy</span>
+      <span class="add-ide-btn">+ 添加</span>
+    </div>
+    <div class="write-status show">✓ 已写入 .claude/skills/ + .cursor/skills/ + .codebuddy/skills/</div>
+  </div>
+
+  <!-- Skill 2 -->
+  <div class="rule-card">
+    <div class="rule-header">
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      <div>
+        <div class="rule-title">编写插件清单</div>
+        <div class="rule-meta">skill · score 75 · write-plugin-manifest</div>
+      </div>
+    </div>
+    <div class="ide-targets">
+      <span class="ide-label">写入：</span>
+      <span class="ide-chip active">Claude Code</span>
+      <span class="add-ide-btn">+ 添加</span>
+    </div>
+    <div class="write-status show">✓ 已写入 .claude/skills/write-plugin-manifest/SKILL.md</div>
+  </div>
+
+</div>
+
+<script>
+// Close popovers on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.add-ide-btn') && !e.target.closest('.ide-popover')) {
+    document.querySelectorAll('.ide-popover').forEach(p => p.classList.remove('show'));
+  }
+});
+</script>
+</body>
+</html>

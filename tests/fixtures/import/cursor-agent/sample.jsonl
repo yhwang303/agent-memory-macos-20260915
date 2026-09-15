@@ -1,0 +1,5 @@
+{"role":"user","message":{"content":[{"type":"text","text":"can you read foo.ts?"}]}}
+{"role":"assistant","message":{"content":[{"type":"text","text":"reading now"},{"type":"tool_use","name":"Read","input":{"file_path":"D:\\proj\\foo.ts"}}]}}
+{"role":"assistant","message":{"content":[{"type":"text","text":"the file exports two functions"}]}}
+{"role":"user","message":{"content":[{"type":"text","text":"refactor it please"}]}}
+{"role":"assistant","message":{"content":[{"type":"text","text":"refactor done; tests pass"}]}}

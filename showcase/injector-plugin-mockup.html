@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Injector · 规范注入器 — 插件页 Mockup</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0f0; padding: 24px; }
+.container { max-width: 1040px; margin: 0 auto; }
+
+/* Header */
+.plugin-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.plugin-icon { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg,#00d4aa,#0090ff); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.plugin-title { font-size: 18px; font-weight: 700; }
+.plugin-sub { font-size: 12px; color: #8d8da8; margin-top: 2px; }
+.ver-pill { margin-left: auto; font-size: 11px; color: #00d4aa; border: 1px solid rgba(0,212,170,0.3); border-radius: 999px; padding: 3px 10px; }
+
+/* Target bar */
+.target-bar {
+  background: linear-gradient(135deg,#1a1a2e,#16162a);
+  border: 1px solid rgba(0,212,170,0.12);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.field-label { font-size: 11px; color: #6a6a8a; margin-right: 8px; }
+.ws-select {
+  background: #12121f; border: 1px solid rgba(255,255,255,0.08); color: #e0e0f0;
+  border-radius: 8px; padding: 7px 12px; font-size: 12px; min-width: 320px; cursor: pointer;
+}
+.ide-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ide-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border-radius: 999px; font-size: 12px; cursor: pointer;
+  transition: all .2s; user-select: none;
+}
+.ide-chip.active { background: rgba(0,212,170,0.15); border: 1px solid rgba(0,212,170,0.5); color: #00d4aa; }
+.ide-chip.inactive { background: rgba(100,100,130,0.1); border: 1px solid rgba(100,100,130,0.25); color: #6a6a8a; }
+.ide-chip.active::before { content: '✓ '; }
+.ide-chip.detected::after { content: ' ·已装'; font-size: 10px; opacity: .7; }
+.ide-chip:hover { opacity: .85; }
+
+/* Main grid */
+.main { display: grid; grid-template-columns: 180px 1fr; gap: 16px; }
+.cat-tree {
+  background: linear-gradient(135deg,#1a1a2e,#16162a);
+  border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px; height: fit-content;
+}
+.cat-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; color: #b0b0c8; transition: .15s; }
+.cat-item:hover { background: rgba(255,255,255,0.04); }
+.cat-item.active { background: rgba(0,212,170,0.12); color: #00d4aa; font-weight: 600; }
+.cat-count { margin-left: auto; font-size: 11px; color: #6a6a8a; background: rgba(255,255,255,0.05); border-radius: 999px; padding: 1px 7px; }
+
+.list-pane {
+  background: linear-gradient(135deg,#1a1a2e,#16162a);
+  border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 8px;
+}
+
+/* List item */
+.inj-row { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 10px; transition: .15s; border: 1px solid transparent; }
+.inj-row:hover { background: rgba(255,255,255,0.03); }
+.inj-row + .inj-row { border-top: 1px solid rgba(255,255,255,0.04); }
+.cbox { width: 18px; height: 18px; border: 1.5px solid #4a4a6a; border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: .15s; }
+.cbox.checked { background: #00d4aa; border-color: #00d4aa; }
+.cbox.checked::after { content: '✓'; font-size: 11px; color: #0f0f1a; font-weight: 700; }
+.inj-icon { font-size: 16px; width: 24px; text-align: center; flex-shrink: 0; }
+.inj-body { flex: 1; min-width: 0; }
+.inj-name { font-size: 13px; font-weight: 600; }
+.inj-desc { font-size: 11px; color: #8d8da8; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inj-ver { font-size: 11px; color: #6a6a8a; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.badge { font-size: 10px; padding: 3px 9px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
+.badge.none { background: rgba(100,100,130,0.15); color: #8d8da8; }
+.badge.installed { background: rgba(0,212,170,0.15); color: #00d4aa; }
+.badge.update { background: rgba(255,176,32,0.15); color: #ffb020; }
+
+/* bundle row highlight */
+.inj-row.bundle { background: rgba(0,144,255,0.06); border: 1px dashed rgba(0,144,255,0.3); margin-bottom: 6px; }
+.inj-row.bundle .inj-name::before { content: '📦 '; }
+.bundle-members { font-size: 11px; color: #6a82a8; padding: 0 14px 10px 56px; }
+.bundle-tag { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 4px; vertical-align: middle; margin-left: 6px; }
+.bundle-tag.official { background: rgba(0,144,255,0.18); color: #4ea8ff; }
+.bundle-tag.custom { background: rgba(168,120,255,0.18); color: #b48cff; }
+.bundle-tag.atomic { background: rgba(255,176,32,0.18); color: #ffb020; }
+
+/* member list of an atomic bundle */
+.member-hint { font-size: 11px; color: #8d8da8; margin-bottom: 8px; }
+.member-hint b { color: #ffb020; }
+.member-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.member-chip { font-size: 11px; color: #9a9ab8; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 3px 9px; cursor: default; }
+
+/* system-component vs independent tags */
+.sys-tag { font-size: 9px; font-weight: 700; padding: 1px 7px; border-radius: 4px; margin-left: 8px; background: rgba(255,140,80,0.16); color: #ff9a5c; }
+.indep-tag { font-size: 9px; font-weight: 700; padding: 1px 7px; border-radius: 4px; margin-left: 8px; background: rgba(0,212,170,0.14); color: #00d4aa; }
+.inj-row.sys .cbox { border-color: #ff9a5c; }
+
+/* confirm modal */
+.modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; z-index: 60; }
+.modal-mask.show { display: flex; }
+.modal { background: #16161f; border: 1px solid rgba(255,154,92,0.35); border-radius: 14px; width: 440px; max-width: 92vw; padding: 22px; }
+.modal h3 { font-size: 15px; margin-bottom: 8px; }
+.modal .m-sub { font-size: 12px; color: #b0b0c8; line-height: 1.6; margin-bottom: 14px; }
+.dep-list { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px 12px; font-size: 12px; }
+.dep-list .dep-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; color: #c0c0d8; }
+.dep-list .dep-item .auto { font-size: 9px; font-weight: 700; background: rgba(0,144,255,0.18); color: #4ea8ff; padding: 1px 6px; border-radius: 4px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+/* Footer action bar */
+.action-bar { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+.btn { font-size: 13px; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; transition: .15s; }
+.btn.ghost { background: rgba(255,255,255,0.06); color: #e0e0f0; border: 1px solid rgba(255,255,255,0.1); }
+.btn.ghost:hover { background: rgba(255,255,255,0.1); }
+.btn.primary { background: linear-gradient(135deg,#00d4aa,#00b894); color: #06241d; font-weight: 700; }
+.btn.primary:hover { filter: brightness(1.08); }
+.sel-count { font-size: 12px; color: #8d8da8; }
+.ledger-link { margin-left: auto; font-size: 12px; color: #0090ff; cursor: pointer; }
+.ledger-link:hover { text-decoration: underline; }
+
+/* Section title */
+.cat-section-title { font-size: 11px; color: #6a6a8a; text-transform: uppercase; letter-spacing: .08em; padding: 12px 14px 6px; }
+
+/* Preview drawer */
+.drawer-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
+.drawer-mask.show { display: flex; }
+.drawer { background: #14141f; border: 1px solid rgba(0,212,170,0.2); border-radius: 14px 14px 0 0; width: 100%; max-width: 1040px; max-height: 78vh; overflow: auto; padding: 20px 22px; }
+.drawer h3 { font-size: 15px; margin-bottom: 4px; }
+.drawer .sub { font-size: 12px; color: #8d8da8; margin-bottom: 16px; }
+.plan-group { font-size: 11px; color: #8d8da8; text-transform: uppercase; letter-spacing: .06em; margin: 14px 0 4px; }
+.plan-group.dep { color: #4ea8ff; }
+.plan-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 12px; font-family: 'SF Mono', Consolas, monospace; }
+.plan-row.dep { border-left: 2px solid rgba(0,144,255,0.4); }
+.op { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; width: 78px; text-align: center; flex-shrink: 0; }
+.op.create { background: rgba(0,212,170,0.18); color: #00d4aa; }
+.op.overwrite { background: rgba(255,176,32,0.18); color: #ffb020; }
+.op.merge { background: rgba(0,144,255,0.18); color: #4ea8ff; }
+.op.skip { background: rgba(120,120,140,0.18); color: #9a9ab0; }
+.plan-path { color: #c0c0d8; }
+.plan-ide { color: #6a6a8a; margin-left: auto; flex-shrink: 0; }
+.drawer-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.close-x { float: right; cursor: pointer; color: #8d8da8; font-size: 18px; }
+.note { font-size: 11px; color: #6a6a8a; margin-top: 14px; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; }
+
+/* Ledger rows */
+.led-row { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; transition: .2s; }
+.led-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+.led-row.removed { opacity: .5; }
+.led-row.removed .led-name { text-decoration: line-through; }
+.led-row.removed .mini-btn { display: none; }
+.led-body { flex: 1; min-width: 0; }
+.led-name { font-size: 13px; font-weight: 600; }
+.led-path { font-size: 11px; color: #7a7a96; margin-top: 3px; font-family: 'SF Mono', Consolas, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.led-undo { font-size: 11px; color: #ffb020; margin-top: 4px; }
+.led-undo a { color: #4ea8ff; cursor: pointer; text-decoration: underline; }
+.mini-btn { font-size: 11px; padding: 5px 12px; border-radius: 7px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); color: #d0d0e0; transition: .15s; flex-shrink: 0; }
+.mini-btn:hover { background: rgba(255,255,255,0.1); }
+.mini-btn.danger { color: #ff7a7a; border-color: rgba(255,90,90,0.3); }
+.mini-btn.danger:hover { background: rgba(255,90,90,0.12); }
+.led-note { font-size: 11px; color: #8d8da8; line-height: 1.7; margin-top: 16px; background: rgba(0,144,255,0.06); border: 1px solid rgba(0,144,255,0.15); border-radius: 8px; padding: 12px 14px; }
+.led-note b { color: #4ea8ff; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="plugin-head">
+    <div class="plugin-icon">💉</div>
+    <div>
+      <div class="plugin-title">Injector · 规范注入器</div>
+      <div class="plugin-sub">把内置的 Skills / Rules / MCP / 规范文件，按目标 IDE 一键注入到任意项目</div>
+    </div>
+    <div class="ver-pill">库版本 v1.0.0</div>
+  </div>
+
+  <!-- 顶部目标条 -->
+  <div class="target-bar">
+    <div>
+      <span class="field-label">目标工作区</span>
+      <select class="ws-select">
+        <option>E:\github\my-new-project</option>
+        <option>E:\github\agent-memory</option>
+        <option>＋ 选择其它目录…</option>
+      </select>
+    </div>
+    <div>
+      <span class="field-label">注入到 IDE</span>
+      <span class="ide-chips">
+        <span class="ide-chip active detected" onclick="toggleChip(this)">Cursor</span>
+        <span class="ide-chip active detected" onclick="toggleChip(this)">Claude Code</span>
+        <span class="ide-chip inactive" onclick="toggleChip(this)">CodeBuddy</span>
+        <span class="ide-chip inactive" onclick="toggleChip(this)">Windsurf</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- 主区：分类树 + 列表 -->
+  <div class="main">
+    <div class="cat-tree">
+      <div class="cat-item active" data-cat="all" onclick="selectCat(this)">🗂 全部 <span class="cat-count">7</span></div>
+      <div class="cat-item" data-cat="bundle" onclick="selectCat(this)">📦 整套 Bundle <span class="cat-count">2</span></div>
+      <div class="cat-item" data-cat="skill" onclick="selectCat(this)">🧩 Skills <span class="cat-count">3</span></div>
+      <div class="cat-item" data-cat="rule" onclick="selectCat(this)">📐 Rules <span class="cat-count">1</span></div>
+      <div class="cat-item" data-cat="mcp" onclick="selectCat(this)">🔌 MCP <span class="cat-count">1</span></div>
+      <div class="cat-item" data-cat="spec" onclick="selectCat(this)">📄 规范文件 <span class="cat-count">0</span></div>
+    </div>
+
+    <div class="list-pane">
+      <!-- Bundle -->
+      <div class="cat-section-title" data-sec="bundle">整套 Bundle</div>
+
+      <!-- 原子 bundle：成员只读，不进扁平列表 -->
+      <div class="inj-row bundle" data-cat="bundle">
+        <div class="cbox checked" onclick="toggleBox(this)"></div>
+        <div class="inj-body">
+          <div class="inj-name">shadow-harness <span class="bundle-tag official">官方</span> <span class="bundle-tag atomic">原子 · 不可拆</span></div>
+          <div class="inj-desc">官方研发 harness 全套：文档范式 + 需求注册中心 + 门禁 + 任务认领 + 相关 skills/rules</div>
+        </div>
+        <div class="inj-ver">v1.0.0</div>
+        <div class="badge none">未注入</div>
+      </div>
+      <div class="bundle-members" data-cat="bundle">
+        <div class="member-hint">🔒 原子体系：以下 9 个成员是一个整体，<b>只能整套注入</b>，不会单独出现在 Skills / Rules 列表里。</div>
+        <div class="member-grid">
+          <span class="member-chip">📄 docs-readme</span>
+          <span class="member-chip">📄 requirements-registry</span>
+          <span class="member-chip">📄 harness-md</span>
+          <span class="member-chip">📄 inbox</span>
+          <span class="member-chip">🧩 add-feature-doc</span>
+          <span class="member-chip">🧩 add-bug-doc</span>
+          <span class="member-chip">🧩 claim-requirement</span>
+          <span class="member-chip">🧩 harness-init</span>
+          <span class="member-chip">📐 harness-gate</span>
+        </div>
+      </div>
+
+      <!-- 非原子 bundle：成员可单独出现，但标体系组件 -->
+      <div class="inj-row bundle" data-cat="bundle">
+        <div class="cbox" onclick="toggleBox(this)"></div>
+        <div class="inj-body">
+          <div class="inj-name">shadow-harness-lite <span class="bundle-tag official">官方</span></div>
+          <div class="inj-desc">轻量版：文档范式 + 需求注册中心；成员可单独取用（但取用 doc-scaffold 会带依赖）</div>
+        </div>
+        <div class="inj-ver">v1.0.0</div>
+        <div class="badge installed">已注入 v1.0</div>
+      </div>
+      <div class="bundle-members" data-cat="bundle">含 4 项：spec×3 · skill×1（非原子，成员见下方各分类，带「体系组件」标记）。</div>
+
+      <div class="cat-section-title" data-sec="skill">Skills</div>
+
+      <!-- 体系组件：standalone:false → 勾选弹依赖确认 -->
+      <div class="inj-row sys" data-cat="skill">
+        <div class="cbox" onclick="confirmSysSelect(this)"></div>
+        <div class="inj-icon">🧩</div>
+        <div class="inj-body">
+          <div class="inj-name">doc-scaffold <span class="sys-tag">体系组件 · 属于 shadow-harness-lite</span></div>
+          <div class="inj-desc">按 docs 范式落盘需求骨架 —— 依赖 docs-readme + requirements-registry 才能用</div>
+        </div>
+        <div class="inj-ver">v1.2.0</div>
+        <div class="badge none">未注入</div>
+      </div>
+
+      <!-- 真·独立件：standalone:true → 自由勾选 -->
+      <div class="inj-row" data-cat="skill">
+        <div class="cbox checked" onclick="toggleBox(this)"></div>
+        <div class="inj-icon">🧩</div>
+        <div class="inj-body">
+          <div class="inj-name">pdf-extract <span class="indep-tag">独立</span></div>
+          <div class="inj-desc">通用 PDF 文本/表格抽取技能，无外部依赖，可单独注入</div>
+        </div>
+        <div class="inj-ver">v1.0.0</div>
+        <div class="badge none">未注入</div>
+      </div>
+      <div class="inj-row" data-cat="skill">
+        <div class="cbox" onclick="toggleBox(this)"></div>
+        <div class="inj-icon">🧩</div>
+        <div class="inj-body">
+          <div class="inj-name">commit-helper <span class="indep-tag">独立</span></div>
+          <div class="inj-desc">生成规范化 git commit message，无外部依赖</div>
+        </div>
+        <div class="inj-ver">v1.1.0</div>
+        <div class="badge installed">已注入 v1.1</div>
+      </div>
+
+      <div class="cat-section-title" data-sec="rule">Rules</div>
+      <div class="inj-row" data-cat="rule">
+        <div class="cbox" onclick="toggleBox(this)"></div>
+        <div class="inj-icon">📐</div>
+        <div class="inj-body">
+          <div class="inj-name">commit-style <span class="indep-tag">独立</span></div>
+          <div class="inj-desc">提交信息规范（受管块写入 CLAUDE.md / .cursor/rules），可单独注入</div>
+        </div>
+        <div class="inj-ver">v1.0.0</div>
+        <div class="badge none">未注入</div>
+      </div>
+
+      <div class="cat-section-title" data-sec="mcp">MCP</div>
+      <div class="inj-row" data-cat="mcp">
+        <div class="cbox" onclick="toggleBox(this)"></div>
+        <div class="inj-icon">🔌</div>
+        <div class="inj-body">
+          <div class="inj-name">agent-memory <span class="indep-tag">独立</span></div>
+          <div class="inj-desc">记忆系统 MCP 配置（json-merge / Codex 走 toml-merge）</div>
+        </div>
+        <div class="inj-ver">v2.0.0</div>
+        <div class="badge none">未注入</div>
+      </div>
+
+      <div class="cat-section-title" data-sec="spec">规范文件</div>
+      <div class="bundle-members" data-cat="spec" style="padding-top:8px">规范文件（docs-readme / requirements-registry 等）多为体系依赖项，通常随 bundle 或被 doc-scaffold 依赖带入，一般不单独勾选。</div>
+    </div>
+  </div>
+
+  <!-- 底部动作条 -->
+  <div class="action-bar">
+    <button class="btn ghost" onclick="openDrawer()">预览所选</button>
+    <button class="btn primary" onclick="openDrawer()">注入所选</button>
+    <span class="sel-count">已选 2 项（+3 依赖）→ 写入 2 个 IDE</span>
+    <span class="ledger-link" onclick="openLedger()">已注入清单 ▸</span>
+  </div>
+
+  <div class="note">
+    状态徽章：<span style="color:#8d8da8">未注入</span> ·
+    <span style="color:#00d4aa">已注入(v)</span> ·
+    <span style="color:#ffb020">可更新(v→v)</span>。
+    本页为基于设计稿《spec-injector-plugin》第 6 节布局的可视化 mockup，交互为占位演示。
+  </div>
+</div>
+
+<!-- 预览抽屉 -->
+<div class="drawer-mask" id="drawer" onclick="if(event.target===this)closeDrawer()">
+  <div class="drawer">
+    <span class="close-x" onclick="closeDrawer()">✕</span>
+    <h3>注入预览（dry-run）</h3>
+    <div class="sub">已选 doc-scaffold（体系组件）+ pdf-extract → 解析依赖闭包后共 6 个写入计划</div>
+
+    <div class="plan-group">直接勾选</div>
+    <div class="plan-row"><span class="op create">CREATE</span><span class="plan-path">.cursor/skills/doc-scaffold/SKILL.md</span><span class="plan-ide">Cursor</span></div>
+    <div class="plan-row"><span class="op create">CREATE</span><span class="plan-path">.cursor/skills/pdf-extract/SKILL.md</span><span class="plan-ide">Cursor</span></div>
+
+    <div class="plan-group dep">因依赖自动加入（doc-scaffold 需要）</div>
+    <div class="plan-row dep"><span class="op create">CREATE</span><span class="plan-path">docs/README.md（docs 范式）</span><span class="plan-ide">项目根</span></div>
+    <div class="plan-row dep"><span class="op skip">SKIP</span><span class="plan-path">docs/requirements-registry.html（已存在）</span><span class="plan-ide">项目根</span></div>
+    <div class="plan-row dep"><span class="op merge">MERGE</span><span class="plan-path">.cursor/rules/harness-gate.mdc（受管块）</span><span class="plan-ide">Cursor</span></div>
+    <div class="plan-row dep"><span class="op merge">MERGE</span><span class="plan-path">CLAUDE.md（injector 受管块）</span><span class="plan-ide">Claude Code</span></div>
+
+    <div class="drawer-actions">
+      <button class="btn ghost" onclick="closeDrawer()">取消</button>
+      <button class="btn primary" onclick="closeDrawer()">确认注入</button>
+    </div>
+  </div>
+</div>
+
+<!-- 已注入清单（账本）抽屉 -->
+<div class="drawer-mask" id="ledger" onclick="if(event.target===this)closeLedger()">
+  <div class="drawer">
+    <span class="close-x" onclick="closeLedger()">✕</span>
+    <h3>已注入清单（账本）</h3>
+    <div class="sub">工作区 E:\github\my-new-project · 每项可单独 更新 / 卸载，卸载按账本备份还原</div>
+
+    <div class="led-row">
+      <span class="op create">CREATE</span>
+      <div class="led-body"><div class="led-name">claim-requirement <span style="color:#6a6a8a">· skill</span></div>
+        <div class="led-path">.cursor/skills/claim-requirement/SKILL.md · Cursor · v1.0 · 2026-05-28</div></div>
+      <button class="mini-btn" onclick="alert('更新到最新版本（按当前策略重注）')">更新</button>
+      <button class="mini-btn danger" onclick="uninstallRow(this)">卸载</button>
+    </div>
+
+    <div class="led-row">
+      <span class="op merge">MERGE</span>
+      <div class="led-body"><div class="led-name">agent-memory <span style="color:#6a6a8a">· mcp</span></div>
+        <div class="led-path">.cursor/mcp.json → mcpServers.agent-memory · Cursor · v2.0 · 2026-05-28</div></div>
+      <button class="mini-btn" onclick="alert('更新到最新版本（按当前策略重注）')">更新</button>
+      <button class="mini-btn danger" onclick="uninstallRow(this)">卸载</button>
+    </div>
+
+    <div class="led-row">
+      <span class="op merge">MERGE</span>
+      <div class="led-body"><div class="led-name">harness-gate <span style="color:#6a6a8a">· rule（受管块）</span></div>
+        <div class="led-path">CLAUDE.md ⟨injector:harness-gate:start…end⟩ · Claude Code · v1.0 · 2026-05-28</div></div>
+      <button class="mini-btn" onclick="alert('更新到最新版本（按当前策略重注）')">更新</button>
+      <button class="mini-btn danger" onclick="uninstallRow(this)">卸载</button>
+    </div>
+
+    <div class="led-note">
+      <b>卸载行为按注入策略区分：</b>受管块 → 只删块内（块外不动）；JSON 合并 → 只删对应键；
+      覆盖/新增 → 用账本备份还原或删除新增文件。注入后若你手动改过该文件，将以账本的注入前状态为准还原以避免误删。
+    </div>
+    <div class="drawer-actions">
+      <button class="btn ghost" onclick="closeLedger()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 体系组件依赖确认弹窗 -->
+<div class="modal-mask" id="sysConfirm" onclick="if(event.target===this)cancelSys()">
+  <div class="modal">
+    <h3>⚠️ doc-scaffold 是体系组件</h3>
+    <div class="m-sub">它单独存在无法工作，需要配套的规范文件与门禁规则。勾选它将<b>一并注入以下依赖</b>，确保功能完整：</div>
+    <div class="dep-list">
+      <div class="dep-item"><span class="auto">自动加入</span>📄 spec.docs-readme</div>
+      <div class="dep-item"><span class="auto">自动加入</span>📄 spec.requirements-registry</div>
+      <div class="dep-item"><span class="auto">自动加入</span>📐 rule.harness-gate</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="cancelSys()">取消</button>
+      <button class="btn primary" onclick="acceptSys()">连同依赖一起选中</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _pendingSysBox = null;
+function toggleChip(el){ el.classList.toggle('active'); el.classList.toggle('inactive'); }
+function toggleBox(el){ el.classList.toggle('checked'); }
+function selectCat(el){
+  document.querySelectorAll('.cat-item').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const cat = el.dataset.cat;
+  // 过滤列表项
+  document.querySelectorAll('.list-pane [data-cat]').forEach(r=>{
+    r.style.display = (cat === 'all' || r.dataset.cat === cat) ? '' : 'none';
+  });
+  // 分类标题：全部视图时全显示，单分类时只显示对应标题（且其实可隐藏）
+  document.querySelectorAll('.list-pane [data-sec]').forEach(s=>{
+    s.style.display = (cat === 'all') ? '' : (s.dataset.sec === cat ? 'none' : 'none');
+  });
+}
+function openDrawer(){ document.getElementById('drawer').classList.add('show'); }
+function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); }
+function openLedger(){ document.getElementById('ledger').classList.add('show'); }
+function closeLedger(){ document.getElementById('ledger').classList.remove('show'); }
+function confirmSysSelect(box){
+  if(box.classList.contains('checked')){ box.classList.remove('checked'); return; }
+  _pendingSysBox = box;
+  document.getElementById('sysConfirm').classList.add('show');
+}
+function cancelSys(){ document.getElementById('sysConfirm').classList.remove('show'); _pendingSysBox = null; }
+function acceptSys(){
+  if(_pendingSysBox) _pendingSysBox.classList.add('checked');
+  document.getElementById('sysConfirm').classList.remove('show');
+  _pendingSysBox = null;
+}
+function uninstallRow(btn){
+  const row = btn.closest('.led-row');
+  if(row.classList.contains('removed')) return;
+  row.classList.add('removed');
+  const body = row.querySelector('.led-body');
+  body.insertAdjacentHTML('beforeend','<div class="led-undo">已卸载，文件按备份还原 · <a onclick="undoRow(this)">撤销</a></div>');
+}
+function undoRow(a){
+  const row = a.closest('.led-row');
+  row.classList.remove('removed');
+  a.closest('.led-undo').remove();
+}
+</script>
+</body>
+</html>

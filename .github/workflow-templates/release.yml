@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install
+      - run: npm run release:pack:npm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-npm
+          path: release-artifacts/**
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install
+      - run: npm --prefix desktop install
+      - run: node scripts/release/build-all.mjs --targets=win
+        env:
+          RELEASE_SKIP_TESTS: '1'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: release-artifacts/**
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install
+      - run: npm --prefix desktop install
+      - run: node scripts/release/build-all.mjs --targets=mac
+        env:
+          RELEASE_SKIP_TESTS: '1'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          path: release-artifacts/**
+
+  release:
+    needs: [npm, windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: collected
+
+      - name: Create combined manifest
+        run: |
+          node <<'NODE'
+          const crypto = require('crypto');
+          const fs = require('fs');
+          const path = require('path');
+          const root = 'collected';
+          const files = [];
+          function walk(dir) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const file = path.join(dir, entry.name);
+              if (entry.isDirectory()) walk(file);
+              else if (!entry.name.endsWith('manifest.json') && !entry.name.endsWith('checksums.txt')) {
+                const data = fs.readFileSync(file);
+                files.push({
+                  path: file.replaceAll(path.sep, '/'),
+                  size: data.length,
+                  sha256: crypto.createHash('sha256').update(data).digest('hex'),
+                });
+              }
+            }
+          }
+          walk(root);
+          files.sort((a, b) => a.path.localeCompare(b.path));
+          fs.writeFileSync('manifest.json', JSON.stringify({
+            name: 'agent-memory',
+            tag: process.env.GITHUB_REF_NAME,
+            builtAt: new Date().toISOString(),
+            files,
+          }, null, 2) + '\n');
+          fs.writeFileSync('checksums.txt', files.map(f => `${f.sha256}  ${f.path}`).join('\n') + '\n');
+          NODE
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            collected/**/*.tgz
+            collected/**/*.exe
+            collected/**/*.dmg
+            collected/**/*.blockmap
+            manifest.json
+            checksums.txt
+          generate_release_notes: true

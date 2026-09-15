@@ -1,0 +1,2784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>设置 - AgentMemory</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f7f8fa;
+      color: #1a1a2e;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      user-select: none;
+    }
+
+    .settings-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      padding: 4px;
+      border: 1px solid #e2e4ea;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .settings-tab {
+      flex: 1;
+      padding: 8px 10px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: #6b6b8d;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    }
+
+    .settings-tab:hover {
+      color: #1a1a2e;
+      background: #f5f7fb;
+    }
+
+    .settings-tab.active {
+      color: #0a1014;
+      background: linear-gradient(135deg, rgba(0,212,170,0.18), rgba(0,255,136,0.22));
+      box-shadow: inset 0 0 0 1px rgba(0,212,170,0.28);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #4a4a6a;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e4ea;
+      letter-spacing: 0.3px;
+    }
+
+    .section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6b6b8d;
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    input[type="time"],
+    select {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #1a1a2e;
+      background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #00d4aa;
+      box-shadow: 0 0 0 2px rgba(0,212,170,0.15);
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .api-key-wrapper {
+      position: relative;
+      display: flex;
+      gap: 6px;
+    }
+
+    .api-key-wrapper input {
+      flex: 1;
+      padding-right: 36px;
+    }
+
+    .toggle-key-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #9b9bb5;
+      font-size: 15px;
+      padding: 2px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .toggle-key-btn:hover {
+      color: #00d4aa;
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .checkbox-field input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #00d4aa;
+      cursor: pointer;
+    }
+
+    .checkbox-field label {
+      margin-bottom: 0;
+      font-size: 13px;
+      color: #1a1a2e;
+      cursor: pointer;
+    }
+
+    .readonly-field {
+      padding: 7px 10px;
+      border: 1px solid #ecedf1;
+      border-radius: 6px;
+      background: #f5f5f8;
+      color: #8e8ea9;
+      font-size: 13px;
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    }
+
+    .button-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      padding: 8px 22px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00d4aa, #00ff88);
+      color: #0a1014;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,212,170,0.25);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 4px 12px rgba(0,212,170,0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #6b6b8d;
+      border: 1px solid #dcdfe6;
+    }
+
+    .btn-secondary:hover {
+      border-color: #b0b0c8;
+      color: #4a4a6a;
+    }
+
+    .inline-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .inline-row .field {
+      flex: 1;
+    }
+
+    .ide-settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e4ea;
+    }
+
+    .ide-settings-row:last-child {
+      border-bottom: none;
+    }
+
+    .ide-settings-meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ide-settings-name {
+      font-weight: 500;
+      color: #1a1a2e;
+      font-size: 13px;
+    }
+
+    .ide-settings-path {
+      font-size: 11px;
+      color: #8e8ea9;
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      word-break: break-all;
+      margin-top: 2px;
+    }
+
+    .ide-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .ide-badge.on {
+      background: rgba(0, 212, 170, 0.12);
+      color: #00d4aa;
+    }
+
+    .ide-badge.off {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: #8e8ea9;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #c4c4d6;
+    }
+    .status-dot.ok    { background: #2e7d32; }
+    .status-dot.warn  { background: #ed8936; }
+    .status-dot.err   { background: #c62828; }
+
+    .progress-card {
+      background: linear-gradient(135deg, #f3f1ff, #fdf6ff);
+      border: 1px solid #e0d6ff;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .progress-card h3 {
+      font-size: 12px;
+      font-weight: 600;
+      color: #4a3aa6;
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      height: 6px;
+      background: #e9e4ff;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .progress-bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #6c5ce7, #a78bfa);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #6b6b8d;
+      margin-top: 4px;
+    }
+
+    .invite-banner {
+      background: #fff7e0;
+      border: 1px solid #ffd87a;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #6b5510;
+    }
+    .invite-banner strong { color: #4a3a00; }
+
+    /* Quick connect (top of server section) */
+    .quick-connect {
+      background: linear-gradient(135deg, #f3f1ff, #fdf6ff);
+      border: 1px solid #e0d6ff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .quick-connect label {
+      font-size: 13px;
+      color: #4a3aa6;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .quick-connect .api-key-wrapper { gap: 8px; }
+    .quick-connect input[type="text"] {
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 12px;
+    }
+    .quick-connect .field-hint { color: #6b6b8d; }
+    .invite-status {
+      display: none;
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .invite-status.ok { color: #2e7d32; }
+    .invite-status.warn { color: #b26a00; }
+    .invite-status.err { color: #c62828; }
+
+    /* Connected card (shows current server/user) */
+    .connected-card {
+      border: 1px solid #d0e8d8;
+      background: #f3faf5;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+    }
+    .connected-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+      font-size: 12px;
+    }
+    .connected-label {
+      color: #6b6b8d;
+      width: 64px;
+      flex-shrink: 0;
+    }
+    .connected-value {
+      color: #1a1a2e;
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      word-break: break-all;
+    }
+    .connected-pill {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #e6f4ea;
+      color: #2e7d32;
+      margin-left: 4px;
+    }
+    .connected-pill.off {
+      background: #fff4e6;
+      color: #b45309;
+    }
+
+    .not-connected-hint {
+      font-size: 12px;
+      color: #9b9bb5;
+      padding: 4px 0 8px;
+    }
+
+    /* Advanced collapsible */
+    details.advanced-details {
+      margin-top: 10px;
+      border-top: 1px dashed #e2e4ea;
+      padding-top: 10px;
+    }
+    details.advanced-details > summary {
+      cursor: pointer;
+      font-size: 12px;
+      color: #6b6b8d;
+      list-style: none;
+      padding: 4px 0;
+      user-select: none;
+    }
+    details.advanced-details > summary::-webkit-details-marker { display: none; }
+    details.advanced-details > summary::before {
+      content: '▸ ';
+      color: #9b9bb5;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+    details.advanced-details[open] > summary::before {
+      content: '▾ ';
+    }
+    details.advanced-details > summary:hover { color: #6c5ce7; }
+    details.advanced-details > .adv-body {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: #fafbfd;
+      border-radius: 6px;
+    }
+
+    .plugin-card {
+      border: 1px solid #d0f0e7;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #f3fffb, #ffffff);
+      padding: 14px;
+    }
+
+    .plugin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .plugin-header > label.switch {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .plugin-expand-btn {
+      display: flex;
+      justify-content: center;
+      padding: 6px 0 2px;
+      cursor: pointer;
+      user-select: none;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    .plugin-expand-btn:hover {
+      opacity: 1;
+    }
+
+    .plugin-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #183d37;
+    }
+
+    .plugin-subtitle {
+      margin-top: 3px;
+      font-size: 12px;
+      color: #6b6b8d;
+      line-height: 1.5;
+    }
+
+    .plugin-pill {
+      flex-shrink: 0;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(0, 212, 170, 0.14);
+      color: #00876f;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .plugin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .plugin-fact {
+      padding: 8px 10px;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid #e0f3ee;
+    }
+
+    .plugin-fact strong {
+      display: block;
+      font-size: 11px;
+      color: #00876f;
+      margin-bottom: 2px;
+    }
+
+    .plugin-fact span {
+      font-size: 12px;
+      color: #4a4a6a;
+    }
+
+    .plugin-code {
+      margin-top: 8px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      background: #0f1720;
+      color: #b9f5e6;
+      font-size: 11px;
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      line-height: 1.55;
+      word-break: break-all;
+      user-select: text;
+    }
+
+    .shadowfolk-workspace-card {
+      padding: 8px;
+      border: 1px solid #e0f3ee;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.72);
+    }
+
+    .shadowfolk-workspace-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .shadowfolk-workspace-path {
+      flex: 1;
+      min-width: 0;
+      word-break: break-all;
+    }
+
+    .shadowfolk-replay-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .shadowfolk-replay-row select {
+      font-size: 12px;
+      padding: 5px 8px;
+    }
+
+    .shadowfolk-replay-status {
+      grid-column: 1 / -1;
+      margin-top: 0;
+    }
+
+    .shadowfolk-alias-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed #d7eee8;
+    }
+
+    .shadowfolk-alias-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .shadowfolk-alias-path {
+      flex: 1;
+      min-width: 0;
+      word-break: break-all;
+      color: #4a4a6a;
+    }
+
+    .shadowfolk-alias-add-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .shadowfolk-workspace-details {
+      margin-top: 8px;
+    }
+
+    .shadowfolk-workspace-details summary {
+      cursor: pointer;
+      color: #4a4a6a;
+      font-size: 12px;
+      user-select: none;
+    }
+
+    .shadowfolk-workspace-details summary:hover {
+      color: #00876f;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="settings-tabs" role="tablist" aria-label="设置页签">
+    <button type="button" class="settings-tab active" data-panel="settingsPanel" role="tab" aria-selected="true">设置</button>
+    <button type="button" class="settings-tab" data-panel="pluginsPanel" role="tab" aria-selected="false">Plugins</button>
+  </div>
+
+  <div class="tab-panel active" id="settingsPanel" role="tabpanel">
+  <div class="section">
+    <h2>AI 配置</h2>
+
+    <div class="inline-row">
+      <div class="field">
+        <label for="provider">服务提供商</label>
+        <select id="provider">
+          <option value="timiai">TIMIAI</option>
+          <option value="deepseek">DeepSeek</option>
+          <option value="aliyun-bailian">阿里云百炼</option>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="model">模型（高级 · 精写蒸馏）</label>
+        <select id="model">
+          <option value="gpt-5.4">gpt-5.4</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" id="apiKeyHighField"></div>
+
+    <div class="inline-row">
+      <div class="field">
+        <label for="providerLight">服务提供商（中级）</label>
+        <select id="providerLight">
+          <option value="timiai">TIMIAI</option>
+          <option value="deepseek">DeepSeek</option>
+          <option value="aliyun-bailian">阿里云百炼</option>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="modelLight">中级模型（便宜 · Tier 2 普通蒸馏）</label>
+        <select id="modelLight">
+          <option value="gpt-4o-mini">gpt-4o-mini</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" id="apiKeyLightField"></div>
+
+  </div>
+
+  <div class="section">
+    <h2>通用设置</h2>
+
+    <div class="checkbox-field">
+      <input type="checkbox" id="autoStart">
+      <label for="autoStart">开机自动启动</label>
+    </div>
+
+    <div class="inline-row">
+      <div class="field">
+        <label for="port">端口号</label>
+        <input type="number" id="port" min="1024" max="65535" value="3847">
+      </div>
+      <div class="field">
+        <label>全局快捷键</label>
+        <div class="readonly-field" id="shortcutDisplay">CmdOrCtrl+Shift+M</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>IDE 关联</h2>
+    <div id="ideSection">
+      <div style="color:#9b9bb5;font-size:12px;">检测中...</div>
+    </div>
+    <div style="margin-top:10px;">
+      <button type="button" class="btn btn-secondary" id="refreshIDEBtn" style="font-size:12px;padding:4px 12px;">刷新检测</button>
+    </div>
+  </div>
+  </div>
+
+  <div class="tab-panel" id="pluginsPanel" role="tabpanel">
+    <div class="section" id="serverSection">
+      <div class="plugin-card">
+        <div class="plugin-header" style="cursor:pointer;user-select:none;" id="serverCardHeader">
+          <div style="flex:1;min-width:0;">
+            <div class="plugin-title">Server Sync</div>
+            <div class="plugin-subtitle">让多台电脑共享一份记忆，实时把本机记忆上传到共享服务器。</div>
+          </div>
+          <label class="switch" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#3a3a55;" onclick="event.stopPropagation()">
+            <input type="checkbox" id="serverEnabled">
+            <span>启用</span>
+          </label>
+        </div>
+        <div class="plugin-expand-btn" id="serverExpandBtn">
+          <svg id="serverCollapseArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;transform:rotate(0deg);color:#7b7ba3;">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+
+        <div id="serverConfigBody" style="display:none;">
+          <div id="inviteBanner" class="invite-banner" style="display:none;"></div>
+
+          <div class="quick-connect">
+            <label for="inviteInput">粘贴邀请链接，一键连接服务器</label>
+            <form id="inviteForm" style="margin:0;">
+              <div class="api-key-wrapper">
+                <input type="text" id="inviteInput" placeholder="cmem://connect?... 或 https://.../admin/invite?...">
+                <button type="submit" class="btn btn-primary" id="applyInviteBtn" style="flex-shrink:0;" onclick="return onApplyInvite();">一键连接</button>
+              </div>
+            </form>
+            <div id="inviteStatus" class="invite-status"></div>
+            <div class="field-hint">没有链接？让管理员把「邀请链接」发给你，或在浏览器扫管理员的二维码。</div>
+          </div>
+
+          <div class="connected-card" id="connectedCard" style="display:none;">
+            <div class="connected-row">
+              <span class="connected-label">服务器</span>
+              <span class="connected-value" id="connectedServer">—</span>
+            </div>
+            <div class="connected-row">
+              <span class="connected-label">账号</span>
+              <span class="connected-value" id="connectedUser">—</span>
+              <span class="connected-pill" id="connectedPill" style="display:none;">已连接</span>
+            </div>
+          </div>
+
+          <div class="not-connected-hint" id="notConnectedHint">
+            还没连接服务器。粘贴上方邀请链接即可，或展开下方「手动填写」。
+          </div>
+
+          <div class="field">
+            <label for="deviceName">这台电脑叫什么（管理员看得到）</label>
+            <input type="text" id="deviceName" placeholder="例如 公司笔记本 / 家里台式机">
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary" id="testServerBtn">测试连接</button>
+            <button type="button" class="btn btn-secondary" id="rescanBtn" title="把本地还没传上去的旧记忆排队上传">补传旧记忆</button>
+            <button type="button" class="btn btn-secondary" id="disconnectBtn" style="display:none;">断开连接</button>
+            <div id="serverStatus" class="status-line"><span class="status-dot"></span><span>检查中…</span></div>
+          </div>
+
+          <details class="advanced-details" id="advancedDetails">
+            <summary>高级 · 手动填写服务器、账号、钥匙</summary>
+            <div class="adv-body">
+              <div class="field">
+                <label for="serverUrl">服务器地址</label>
+                <input type="text" id="serverUrl" placeholder="例如 https://mem.example.com">
+                <div class="field-hint">必须以 http:// 或 https:// 开头。如果你想填的是邀请链接（cmem:// 开头），请粘到上方那一栏。</div>
+              </div>
+              <div class="field">
+                <label for="serverUserName">账号名</label>
+                <input type="text" id="serverUserName" placeholder="例如 alice">
+              </div>
+              <div class="field">
+                <label for="serverToken">钥匙（Token）</label>
+                <div class="api-key-wrapper">
+                  <input type="password" id="serverToken" placeholder="粘贴邀请里的那串字符">
+                  <button type="button" class="toggle-key-btn" id="toggleServerToken" title="显示/隐藏">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="field-hint">钥匙加密保存在本地，不会出现在日志里。</div>
+              </div>
+            </div>
+          </details>
+
+          <div class="progress-card" id="syncProgress" style="display:none;">
+            <h3 id="syncProgressTitle">同步状态</h3>
+            <div id="syncProgressInfo" style="font-size:12px;color:#4a4a6a;"></div>
+            <div class="progress-bar"><span id="syncProgressBar"></span></div>
+            <div class="progress-meta">
+              <span id="syncProgressLeft"></span>
+              <span id="syncProgressRight"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="plugin-card">
+        <div class="plugin-header" style="cursor:pointer;user-select:none;" id="shadowfolkCardHeader">
+          <div style="flex:1;min-width:0;">
+            <div class="plugin-title">ShadowFolk Upload Plugin</div>
+            <div class="plugin-subtitle">把本地记忆按定时间隔推送到 ShadowFolk。不影响主同步链路。</div>
+          </div>
+          <svg id="shadowfolkCollapseArrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;transition:transform .2s;transform:rotate(0deg);color:#7b7ba3;margin-right:4px;">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          <label class="switch" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#3a3a55;flex-shrink:0;white-space:nowrap;" onclick="event.stopPropagation()">
+            <input type="checkbox" id="shadowfolkEnabled" />
+            <span>启用</span>
+          </label>
+        </div>
+
+        <div id="shadowfolkConfigBody" style="display:none;">
+          <div class="form-group">
+            <label for="shadowfolkEndpoint">上传地址</label>
+            <input type="text" id="shadowfolkEndpoint" placeholder="读取 ~/.shadow/config.json 的 server 字段" />
+          </div>
+
+          <div class="form-group">
+            <label for="shadowfolkToken">API Token</label>
+            <div style="display:flex;gap:6px;">
+              <input type="password" id="shadowfolkToken" placeholder="sf_xxx" style="flex:1;" />
+              <button type="button" class="btn btn-secondary" id="shadowfolkTokenToggle" style="font-size:12px;padding:4px 10px;">显示</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="shadowfolkDailyTime">每日自动上传时间（北京时间）</label>
+            <input type="time" id="shadowfolkDailyTime" value="23:30" />
+          </div>
+
+          <div class="form-group">
+            <label>上传工作区</label>
+            <div id="shadowfolkWorkspaceList" style="display:flex;flex-direction:column;gap:6px;"></div>
+            <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+              <select id="shadowfolkMemoryProjectSelect" style="flex:1;min-width:0;">
+                <option value="">正在读取记忆项目...</option>
+              </select>
+              <button type="button" class="btn btn-secondary" id="shadowfolkAddMemoryProjectBtn" style="font-size:12px;padding:6px 12px;">添加所选项目</button>
+            </div>
+            <div class="field-hint">只要 AgentMemory 中已有记忆即可上传，不要求原路径仍存在或必须是 Git 仓库。需要把旧记忆并入当前 Git 项目时，可在对应项目的高级设置中绑定旧路径。</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+            <button type="button" class="btn btn-secondary" id="shadowfolkPushNowBtn" style="font-size:12px;padding:6px 12px;">立即上传一次</button>
+            <button type="button" class="btn btn-secondary" id="shadowfolkRefreshBtn" style="font-size:12px;padding:6px 12px;">刷新状态</button>
+          </div>
+          <div style="margin-top:10px;">
+            <div style="height:8px;background:#e6f5f1;border-radius:999px;overflow:hidden;border:1px solid #cfede5;">
+              <div id="shadowfolkProgressBar" style="height:100%;width:0%;background:#00d4aa;transition:width .2s ease, background-color .2s ease;"></div>
+            </div>
+            <div id="shadowfolkProgressText" class="field-hint" style="margin-top:6px;">上传状态：空闲</div>
+            <div id="shadowfolkLastSync" class="field-hint" style="margin-top:4px;">上次同步：从未</div>
+          </div>
+          <div id="shadowfolkStatus" class="field-hint" style="margin-top:8px;">正在读取状态…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="plugin-card" style="border-color:rgba(255,170,51,0.25);">
+        <div class="plugin-header">
+          <div style="flex:1;min-width:0;">
+            <div class="plugin-title" style="color:#a86a00;">ShadwMonitor Bridge</div>
+            <div class="plugin-subtitle">把屏幕活动 L1 摘要镜像到 agent-mem 全局记忆，让 IDE 搜索能命中昨天看到过的报错截图。原图不复制，由插件本地存储。</div>
+          </div>
+          <label class="switch" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#3a3a55;">
+            <input type="checkbox" id="shadwEnabled" />
+            <span>启用</span>
+          </label>
+        </div>
+
+        <div id="shadwConfigBody" style="display:none;">
+          <div class="form-group">
+            <label for="shadwPath">ShadwMonitor 路径</label>
+            <input type="text" id="shadwPath" placeholder="plugins/shadwmonitor (相对 agent-mem 仓库根)" />
+            <div class="field-hint">默认从 <code>plugins/shadwmonitor/</code> 加载；可手动指向其他位置。</div>
+          </div>
+
+          <div class="form-group">
+            <label for="shadwEndpoint">agent-mem Endpoint</label>
+            <input type="text" id="shadwEndpoint" placeholder="http://127.0.0.1:3847" value="http://127.0.0.1:3847" />
+          </div>
+
+          <div class="form-group">
+            <label for="shadwScope">Project 标签 (observation.project)</label>
+            <input type="text" id="shadwScope" placeholder="desktop-monitor" value="desktop-monitor" />
+          </div>
+
+          <div class="form-group">
+            <label>镜像粒度</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border:1px solid rgba(255,170,51,0.32);background:rgba(255,170,51,0.08);border-radius:999px;color:#a86a00;cursor:pointer;">
+                <input type="checkbox" id="shadwMirrorL1" checked /> L1 时刻摘要 · 5min
+              </label>
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border:1px solid #dde0e6;background:#f3f5f9;border-radius:999px;color:#8d8da8;cursor:not-allowed;">
+                <input type="checkbox" id="shadwMirrorL2" disabled /> L2 时段摘要 <span style="font-size:10px;opacity:0.6;">· 预留</span>
+              </label>
+              <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border:1px solid #dde0e6;background:#f3f5f9;border-radius:999px;color:#8d8da8;cursor:not-allowed;">
+                <input type="checkbox" id="shadwMirrorL3" disabled /> L3 日摘要 <span style="font-size:10px;opacity:0.6;">· 预留</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>MCP Server</label>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(255,170,51,0.08);border:1px solid rgba(255,170,51,0.32);color:#a86a00;border-radius:999px;font-size:11px;font-family:'JetBrains Mono',monospace;">
+                stdio · screen_*
+              </span>
+              <span style="font-size:11px;color:#8d8da8;">5 个工具已注册 (screen_query_daily / session / by_time / moments / get_capture)</span>
+            </div>
+          </div>
+
+          <!-- 4 格健康指标 -->
+          <div style="margin-top:18px;padding-top:16px;border-top:1px dashed #d8dce5;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+            <div style="background:linear-gradient(180deg,#fafbfc,#f1f3f7);border:1px solid #e2e4ea;border-radius:10px;padding:12px 14px;">
+              <div style="font-size:11px;color:#8d8da8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">桥接进程</div>
+              <div id="shadwHealthBridge" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#8d8da8;">检测中…</div>
+            </div>
+            <div style="background:linear-gradient(180deg,#fafbfc,#f1f3f7);border:1px solid #e2e4ea;border-radius:10px;padding:12px 14px;">
+              <div style="font-size:11px;color:#8d8da8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">今日镜像 L1</div>
+              <div id="shadwHealthMirrored" style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:#1a1a2e;">-<span style="font-size:12px;color:#8d8da8;font-weight:400;margin-left:4px;">条</span></div>
+            </div>
+            <div style="background:linear-gradient(180deg,#fafbfc,#f1f3f7);border:1px solid #e2e4ea;border-radius:10px;padding:12px 14px;">
+              <div style="font-size:11px;color:#8d8da8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">重试队列</div>
+              <div id="shadwHealthRetry" style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:#a86a00;">-<span style="font-size:12px;color:#8d8da8;font-weight:400;margin-left:4px;">待发</span></div>
+            </div>
+            <div style="background:linear-gradient(180deg,#fafbfc,#f1f3f7);border:1px solid #e2e4ea;border-radius:10px;padding:12px 14px;">
+              <div style="font-size:11px;color:#8d8da8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">上次同步</div>
+              <div id="shadwHealthLastSync" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#1a1a2e;line-height:1.7;">-</div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-top:14px;">
+            <button type="button" class="btn btn-secondary" id="shadwRefreshBtn" style="font-size:12px;padding:6px 12px;">刷新状态</button>
+            <button type="button" class="btn btn-secondary" id="shadwOpenWebBtn" style="font-size:12px;padding:6px 12px;">打开 ShadwMonitor Web</button>
+            <button type="button" class="btn btn-secondary" id="shadwOpenViewerBtn" style="font-size:12px;padding:6px 12px;">查看记忆 Tab</button>
+          </div>
+
+          <div id="shadwStatus" class="field-hint" style="margin-top:8px;">正在读取状态…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Self-Evolve Plugin (hidden until loadSelfEvolveConfig confirms plugin is installed) ── -->
+    <div class="section" id="seSectionWrapper" style="display:none;">
+      <div class="plugin-card" style="border-color:rgba(167,139,250,0.25);">
+        <div class="plugin-header" style="cursor:pointer;user-select:none;" id="seCardHeader">
+          <div style="flex:1;min-width:0;">
+            <div class="plugin-title" style="color:#7c3aed;">Self-Evolve</div>
+            <div class="plugin-subtitle">读取每次会话记忆，自动提炼 Rules / Skills，写入 CLAUDE.md，让 AI 越用越懂你的习惯。</div>
+          </div>
+          <label class="switch" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#3a3a55;" onclick="event.stopPropagation()">
+            <input type="checkbox" id="seEnabled">
+            <span>启用</span>
+          </label>
+        </div>
+        <div class="plugin-expand-btn" id="seExpandBtn">
+          <svg id="seCollapseArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;transform:rotate(0deg);color:#7b7ba3;">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+
+        <div id="seConfigBody" style="display:none;">
+          <div class="form-group">
+            <label for="seReviewMode">审核模式</label>
+            <select id="seReviewMode">
+              <option value="manual">手动审核 — 新内容先进「待审」，由你批准后才写入</option>
+              <option value="auto">全自动 — 提炼后直接写入，无需人工确认</option>
+              <option value="quality_gate">质量门 — 得分超阈值自动批准，否则进待审</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="seGateGroup" style="display:none;">
+            <label for="seGateThreshold">质量门分数阈值（0–100）</label>
+            <input type="number" id="seGateThreshold" min="0" max="100" value="70" style="width:100px;" />
+          </div>
+
+          <div class="form-group">
+            <label for="seMaxRules">注入上下文最多规则条数</label>
+            <input type="number" id="seMaxRules" min="1" max="100" value="20" style="width:100px;" />
+          </div>
+
+          <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+            <input type="checkbox" id="seCritic" style="width:auto;margin:0;" />
+            <label for="seCritic" style="cursor:pointer;margin:0;font-weight:400;">启用 Critic（冗余 + 冲突检测，推荐开启）</label>
+          </div>
+
+          <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary" id="seSaveBtn">保存并重启服务</button>
+            <span id="seStatus" style="font-size:12px;color:#8d8da8;"></span>
+          </div>
+
+          <div style="margin-top:10px;">
+            <a href="#" id="seOpenViewerLink" style="font-size:12px;color:#7c3aed;text-decoration:none;" onclick="event.preventDefault();openSeViewer();">在记忆浏览器中查看 Rules / Skills →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Injector Plugin (hidden until loadInjectorConfig confirms plugin is installed) ── -->
+    <div class="section" id="injSectionWrapper" style="display:none;">
+      <div class="plugin-card" style="border-color:rgba(0,184,148,0.25);">
+        <div class="plugin-header" style="cursor:pointer;user-select:none;" id="injCardHeader">
+          <div style="flex:1;min-width:0;">
+            <div class="plugin-title" style="color:#00b894;">Injector · 规范注入器</div>
+            <div class="plugin-subtitle">把内置 Skills / Rules / MCP / 规范文件按目标 IDE 一键注入到任意项目（含 shadow-harness 全套）。</div>
+          </div>
+          <label class="switch" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#3a3a55;" onclick="event.stopPropagation()">
+            <input type="checkbox" id="injEnabled">
+            <span>启用</span>
+          </label>
+        </div>
+
+        <div id="injConfigBody" style="display:none;">
+          <div style="margin-top:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary" id="injSaveBtn">保存并重启服务</button>
+            <span id="injStatus" style="font-size:12px;color:#8d8da8;"></span>
+          </div>
+          <div style="margin-top:10px;">
+            <a href="#" id="injOpenViewerLink" style="font-size:12px;color:#00b894;text-decoration:none;" onclick="event.preventDefault();openInjectorViewer();">打开 Injector 注入页 →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-bar">
+    <button type="button" class="btn btn-secondary" id="cancelBtn">取消</button>
+    <button type="button" class="btn btn-primary" id="saveBtn">保存</button>
+  </div>
+
+  <script>
+    const providerModels = {
+      timiai: ['gpt-5.5', 'gpt-5.4', 'gpt-5', 'gpt-4o', 'gpt-4o-mini', 'claude-sonnet-4.6', 'claude-opus-4.6'],
+      deepseek: ['deepseek-v4-pro', 'deepseek-v4-flash'],
+      'aliyun-bailian': [
+        'qwen3.7-flash',
+        'qwen3.8-max', 'qwen3.8-max-0902', 'qwen3.8-flash', 'qwen3.8-2.4t-a95b', 'qwen3.8-27b',
+        'qwen3.7-plus', 'qwen3.7-plus-2026-05-26', 'qwen3.7-flash-2026-07-15',
+        'qwen3.7-max', 'qwen3.7-max-preview', 'qwen3.7-max-2026-06-08', 'qwen3.7-max-2026-05-20', 'qwen3.7-max-2026-05-17',
+        'qwen3.6-max-preview', 'qwen3.6-plus', 'qwen3.6-plus-2026-04-02',
+        'qwen3.6-flash', 'qwen3.6-flash-2026-04-16', 'qwen3.6-27b', 'qwen3.6-35b-a3b'
+      ],
+      openai: ['gpt-5.5', 'gpt-5.4', 'gpt-5', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
+      anthropic: ['claude-opus-4.6', 'claude-sonnet-4.6', 'claude-3-5-sonnet'],
+    };
+
+    const PROVIDER_LABEL = {
+      timiai: 'TIMIAI',
+      deepseek: 'DeepSeek',
+      'aliyun-bailian': '阿里云百炼',
+      openai: 'OpenAI',
+      anthropic: 'Anthropic',
+    };
+
+    // Masked per-provider key map loaded from config ('********' = key exists, '' = none).
+    // Used as the initial value when rendering each key input.
+    let loadedApiKeys = {};
+
+    const IDE_LABEL = {
+      codebuddy: 'CodeBuddy 插件版',
+      cursor: 'Cursor',
+      'codebuddy-ide': 'CodeBuddy IDE',
+      'claude-code': 'Claude Code',
+      'claude-internal': 'Claude Internal',
+      codex: 'Codex App / CLI',
+      openclaw: 'OpenClaw Gateway',
+    };
+    let latestSyncRemoteState = { known: false, configured: false, url: null };
+    let shadowfolkWorkspaces = [];
+    let shadowfolkWorkspaceAliases = [];
+    let shadowfolkMemoryProjects = [];
+    let settingsConfigLoaded = false;
+    let shadowfolkConfigLoaded = false;
+    const shadowfolkReplayControls = new Map();
+
+    function withTimeout(promise, ms, message) {
+      let timer;
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), ms);
+      });
+      return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+    }
+
+    function requireSettingsAPI(name) {
+      const fn = window.settingsAPI && window.settingsAPI[name];
+      if (typeof fn !== 'function') {
+        throw new Error('当前设置页缺少 ' + name + ' 接口，请重启或重新安装应用');
+      }
+      return fn.bind(window.settingsAPI);
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      bindSettingsEventHandlers();
+
+      let config = {};
+      let shadowfolkConfig = {};
+      try {
+        config = await window.settingsAPI.getConfig();
+        settingsConfigLoaded = true;
+      } catch (e) {
+        setServerStatus('设置读取失败：' + (e && e.message || e), 'err', false);
+      }
+      try {
+        shadowfolkConfig = await window.settingsAPI.getShadowfolkConfig();
+        shadowfolkConfigLoaded = true;
+      } catch (e) {
+        setShadowfolkStatus('ShadowFolk 配置读取失败：' + (e && e.message || e), 'err');
+      }
+      
+      // Continue initialization with defaults even if a preload/IPC call failed.
+      // Button handlers are already bound, so the window never becomes inert.
+      
+      const provider = config.apiProvider || 'timiai';
+      const providerLight = config.apiProviderLight || provider;
+      document.getElementById('provider').value = provider;
+      document.getElementById('providerLight').value = providerLight;
+      loadedApiKeys = (config.apiKeys && typeof config.apiKeys === 'object') ? config.apiKeys : {};
+      updateModelOptions();
+      document.getElementById('model').value = config.apiModel || '';
+      document.getElementById('modelLight').value = config.apiModelLight || 'gpt-4o-mini';
+      renderApiKeyInputs();
+      document.getElementById('autoStart').checked = config.openAtLogin !== false;
+      document.getElementById('port').value = config.port || 3847;
+      document.getElementById('shortcutDisplay').textContent = config.globalShortcut || 'CmdOrCtrl+Shift+M';
+
+      // Server fields
+      document.getElementById('serverEnabled').checked = !!config.serverEnabled;
+      document.getElementById('serverUrl').value = config.serverUrl || '';
+      document.getElementById('serverUserName').value = config.serverUserName || '';
+      document.getElementById('serverToken').value = config.serverToken || '';
+      document.getElementById('deviceName').value = config.deviceName || '';
+      if (config.serverTokenNeedsReconnect) {
+        document.getElementById('serverToken').value = '';
+        setServerStatus('服务器钥匙无法解密，请重新粘贴邀请链接一键连接', 'warn');
+      }
+
+      // ShadowFolk plugin fields
+      document.getElementById('shadowfolkEnabled').checked = !!config.shadowfolkEnabled;
+      document.getElementById('shadowfolkEndpoint').value = shadowfolkConfig.server || '';
+      document.getElementById('shadowfolkToken').value = shadowfolkConfig.apiToken || '';
+      document.getElementById('shadowfolkDailyTime').value = config.shadowfolkDailyTime || '23:30';
+      shadowfolkWorkspaces = Array.isArray(config.shadowfolkWorkspaces) ? [...config.shadowfolkWorkspaces] : [];
+      shadowfolkWorkspaceAliases = normalizeShadowfolkWorkspaceAliases(config.shadowfolkWorkspaceAliases);
+      renderShadowfolkWorkspaces();
+      loadShadowfolkMemoryProjects();
+      toggleShadowfolkConfigBody();
+
+      // Auto-fix legacy mistakes: if user pasted a cmem:// link into serverUrl
+      const urlField = document.getElementById('serverUrl');
+      if (urlField.value && /^(cmem:\/\/|https?:\/\/.+\/admin\/invite\?)/i.test(urlField.value)) {
+        const recovered = await window.settingsAPI.parseInvite(urlField.value);
+        if (recovered) {
+          urlField.value = recovered.serverUrl;
+          if (recovered.userName) document.getElementById('serverUserName').value = recovered.userName;
+          if (recovered.token) document.getElementById('serverToken').value = recovered.token;
+        } else {
+          urlField.value = '';
+        }
+      }
+      updateConnectedView();
+
+      // If main.ts handed us a pending invite (cmem:// click), prefill
+      const pending = await window.settingsAPI.consumePendingInvite();
+      if (pending) prefillInvite(pending);
+
+      syncProviderUI();
+      loadIDEStatus();
+      refreshShadowfolkStatus();
+      loadSelfEvolveConfig();
+      loadInjectorConfig();
+
+      // Kick off periodic sync status refresh
+      refreshSyncStatus();
+      setInterval(refreshSyncStatus, 5000);
+    });
+
+    function bindSettingsEventHandlers() {
+      document.querySelectorAll('.settings-tab').forEach((tab) => {
+        tab.addEventListener('click', () => switchSettingsTab(tab.dataset.panel));
+      });
+
+      document.getElementById('provider').addEventListener('change', () => {
+        updateModelOptions();
+        renderApiKeyInputs();
+      });
+      document.getElementById('providerLight').addEventListener('change', () => {
+        updateModelOptions();
+        renderApiKeyInputs();
+      });
+      document.getElementById('saveBtn').addEventListener('click', saveSettings);
+      document.getElementById('cancelBtn').addEventListener('click', () => window.close());
+      document.getElementById('toggleServerToken').addEventListener('click', toggleServerTokenVisibility);
+      document.getElementById('shadowfolkEnabled').addEventListener('change', toggleShadowfolkConfigBody);
+      document.getElementById('shadowfolkCardHeader').addEventListener('click', toggleShadowfolkCard);
+      document.getElementById('seCardHeader').addEventListener('click', toggleSeCard);
+      document.getElementById('seExpandBtn').addEventListener('click', toggleSeCard);
+      document.getElementById('seEnabled').addEventListener('change', toggleSeConfigBody);
+      document.getElementById('seReviewMode').addEventListener('change', updateSeGateGroup);
+      document.getElementById('seSaveBtn').addEventListener('click', saveSelfEvolveConfig);
+      document.getElementById('injEnabled').addEventListener('change', toggleInjConfigBody);
+      document.getElementById('injSaveBtn').addEventListener('click', saveInjectorConfig);
+
+      // ShadwMonitor bindings: enabled 开关 → 触发首次启用向导 / 停进程
+      document.getElementById('shadwEnabled').addEventListener('change', () => {
+        onShadwEnabledChange().catch(err => setShadwStatus('启用切换异常: ' + err.message, 'err'));
+      });
+      // 其他字段编辑 → 实时写回 yaml
+      ['shadwEndpoint', 'shadwScope', 'shadwMirrorL1'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => saveShadwFields().catch(() => {}));
+      });
+      document.getElementById('shadwRefreshBtn').addEventListener('click', () => {
+        refreshShadwHealth().catch(() => {});
+      });
+      document.getElementById('shadwOpenWebBtn').addEventListener('click', () => {
+        window.open(SHADW_BASE, '_blank');
+      });
+      document.getElementById('shadwOpenViewerBtn').addEventListener('click', () => {
+        window.open('http://localhost:3847/viewer.html?tab=shadwmonitor', '_blank');
+      });
+      loadShadwInitial().catch(err => setShadwStatus('初始化异常: ' + err.message, 'err'));
+      document.getElementById('shadowfolkAddMemoryProjectBtn').addEventListener('click', async () => {
+        const select = document.getElementById('shadowfolkMemoryProjectSelect');
+        const project = select ? select.value : '';
+        if (!project) {
+          setShadowfolkStatus('请先从下拉框选择一个已记录的项目目录', 'err');
+          return;
+        }
+        await addShadowfolkWorkspace(project);
+      });
+      document.getElementById('shadowfolkTokenToggle').addEventListener('click', async () => {
+        const input = document.getElementById('shadowfolkToken');
+        const btn = document.getElementById('shadowfolkTokenToggle');
+        try {
+          if (input.type === 'password') {
+            if (input.value === '********') {
+              if (!window.settingsAPI || typeof window.settingsAPI.revealShadowfolkToken !== 'function') {
+                throw new Error('当前设置页缺少 token 显示接口，请重新安装应用');
+              }
+              const result = await window.settingsAPI.revealShadowfolkToken();
+              if (result && result.success) input.value = result.apiToken || '';
+            }
+            input.type = 'text';
+            btn.textContent = '隐藏';
+          } else {
+            input.type = 'password';
+            btn.textContent = '显示';
+          }
+        } catch (e) {
+          setShadowfolkStatus('Token 显示失败：' + (e && e.message || e), 'err');
+        }
+      });
+      document.getElementById('shadowfolkRefreshBtn').addEventListener('click', refreshShadowfolkStatusFromButton);
+      document.getElementById('shadowfolkPushNowBtn').addEventListener('click', pushShadowfolkNow);
+
+      document.getElementById('applyInviteBtn').addEventListener('click', onApplyInvite);
+      document.getElementById('inviteForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        onApplyInvite();
+      });
+      document.getElementById('testServerBtn').addEventListener('click', onTestServer);
+      document.getElementById('rescanBtn').addEventListener('click', onRescan);
+      document.getElementById('disconnectBtn').addEventListener('click', onDisconnect);
+
+      // Allow Enter inside invite input to trigger one-click connect
+      document.getElementById('inviteInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); onApplyInvite(); }
+      });
+
+      // Re-render connected card whenever the underlying fields change (advanced edits)
+      ['serverUrl', 'serverUserName', 'serverToken'].forEach((id) => {
+        document.getElementById(id).addEventListener('input', updateConnectedView);
+      });
+      document.getElementById('serverEnabled').addEventListener('change', updateConnectedView);
+      document.getElementById('serverCardHeader').addEventListener('click', () => toggleServerCard());
+      document.getElementById('serverExpandBtn').addEventListener('click', () => toggleServerCard());
+      document.getElementById('advancedDetails').addEventListener('toggle', (e) => {
+        e.currentTarget.dataset.userToggled = '1';
+      });
+
+      if (window.settingsAPI && typeof window.settingsAPI.onInviteArrived === 'function') {
+        window.settingsAPI.onInviteArrived((parsed) => {
+          if (parsed) prefillInvite(parsed);
+        });
+      }
+
+      document.getElementById('refreshIDEBtn').addEventListener('click', loadIDEStatus);
+    }
+
+    function switchSettingsTab(panelId) {
+      document.querySelectorAll('.settings-tab').forEach((tab) => {
+        const active = tab.dataset.panel === panelId;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      document.querySelectorAll('.tab-panel').forEach((panel) => {
+        panel.classList.toggle('active', panel.id === panelId);
+      });
+    }
+
+    function toggleServerCard(forceOpen) {
+      const body = document.getElementById('serverConfigBody');
+      const arrow = document.getElementById('serverCollapseArrow');
+      const expanded = forceOpen !== undefined ? !forceOpen : body.style.display !== 'none';
+      body.style.display = expanded ? 'none' : 'block';
+      arrow.style.transform = expanded ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    function toggleShadowfolkCard() {
+      const body = document.getElementById('shadowfolkConfigBody');
+      const arrow = document.getElementById('shadowfolkCollapseArrow');
+      const isOpen = body.style.display === 'block';
+      body.style.display = isOpen ? 'none' : 'block';
+      arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    function toggleShadowfolkConfigBody() {
+      const enabled = document.getElementById('shadowfolkEnabled').checked;
+      const body = document.getElementById('shadowfolkConfigBody');
+      const arrow = document.getElementById('shadowfolkCollapseArrow');
+      body.style.display = enabled ? 'block' : 'none';
+      arrow.style.transform = enabled ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    // ──────────── ShadwMonitor Bridge ────────────
+    const SHADW_BASE = 'http://localhost:8080';
+    let shadwInitialLoaded = false;
+
+    function toggleShadwConfigBody() {
+      const enabled = document.getElementById('shadwEnabled').checked;
+      document.getElementById('shadwConfigBody').style.display = enabled ? 'block' : 'none';
+      if (enabled) {
+        refreshShadwHealth().catch(() => {});
+      }
+    }
+
+    function setShadwStatus(msg, kind = 'info') {
+      const el = document.getElementById('shadwStatus');
+      if (!el) return;
+      el.textContent = msg;
+      el.style.color = kind === 'err' ? '#b42318' : (kind === 'ok' ? '#00876f' : '#6b6b8d');
+    }
+
+    /**
+     * 启用开关切换：
+     *   - 关 → 开：跑首次启用向导（检测 Python / 装依赖 / 写 yaml / 启进程）
+     *   - 开 → 关：写 yaml + 停进程
+     */
+    async function onShadwEnabledChange() {
+      const enabledCheckbox = document.getElementById('shadwEnabled');
+      const wantEnabled = enabledCheckbox.checked;
+      toggleShadwConfigBody();
+
+      if (wantEnabled) {
+        setShadwStatus('正在准备启用 ShadwMonitor...', 'info');
+        // 1. 检测 Python
+        const py = await window.settingsAPI.shadwDetectPython();
+        if (!py.ok) {
+          enabledCheckbox.checked = false;
+          toggleShadwConfigBody();
+          setShadwStatus(
+            'Python 未检测到。请先安装 Python 3.10+ 并加入 PATH。' + (py.error ? ` (${py.error})` : ''),
+            'err',
+          );
+          return;
+        }
+        setShadwStatus(`Python 检测通过 (${py.version})`, 'ok');
+
+        // 2. 缺依赖时装依赖
+        if ((py.missingDeps || []).length > 0) {
+          setShadwStatus(`正在安装依赖: ${py.missingDeps.join(', ')}...`, 'info');
+          const inst = await window.settingsAPI.shadwInstallDeps();
+          if (!inst.ok) {
+            enabledCheckbox.checked = false;
+            toggleShadwConfigBody();
+            setShadwStatus(`依赖安装失败 (exit ${inst.exitCode})。详见日志。`, 'err');
+            console.error('shadw install output:', inst.output);
+            return;
+          }
+        }
+
+        // 3. 持久化配置 (agent_mem.enabled=true)
+        const saveRes = await window.settingsAPI.shadwSaveConfig({
+          agentMem: {
+            enabled: true,
+            endpoint: document.getElementById('shadwEndpoint').value || 'http://127.0.0.1:3847',
+            scope: document.getElementById('shadwScope').value || 'desktop-monitor',
+            mirror: { moment: document.getElementById('shadwMirrorL1').checked },
+          },
+        });
+        if (!saveRes.success) {
+          setShadwStatus(`配置写回失败: ${saveRes.error || '未知错误'}`, 'err');
+          return;
+        }
+
+        // 4. 启动子进程
+        setShadwStatus('正在启动 ShadwMonitor 子进程...', 'info');
+        const startRes = await window.settingsAPI.shadwStart();
+        if (!startRes.ok) {
+          enabledCheckbox.checked = false;
+          toggleShadwConfigBody();
+          setShadwStatus(`启动失败: ${startRes.error}`, 'err');
+          return;
+        }
+        setShadwStatus('ShadwMonitor 已启动 (capture + web 子进程)', 'ok');
+        setTimeout(() => refreshShadwHealth().catch(() => {}), 2000);
+      } else {
+        // 关闭 → 写 yaml + 停进程
+        setShadwStatus('正在停止 ShadwMonitor...', 'info');
+        try {
+          await window.settingsAPI.shadwSaveConfig({ agentMem: { enabled: false } });
+        } catch (e) {}
+        await window.settingsAPI.shadwStop();
+        setShadwStatus('ShadwMonitor 已停止', 'ok');
+      }
+    }
+
+    /** 保存除 enabled 之外的其他字段（endpoint/scope/mirror）。 */
+    async function saveShadwFields() {
+      if (!shadwInitialLoaded) return;
+      try {
+        const res = await window.settingsAPI.shadwSaveConfig({
+          agentMem: {
+            endpoint: document.getElementById('shadwEndpoint').value || 'http://127.0.0.1:3847',
+            scope: document.getElementById('shadwScope').value || 'desktop-monitor',
+            mirror: { moment: document.getElementById('shadwMirrorL1').checked },
+          },
+        });
+        if (!res.success) setShadwStatus(`保存失败: ${res.error}`, 'err');
+        else setShadwStatus('配置已保存', 'ok');
+      } catch (e) {
+        setShadwStatus(`保存异常: ${e.message}`, 'err');
+      }
+    }
+
+    async function loadShadwInitial() {
+      try {
+        const res = await window.settingsAPI.shadwGetConfig();
+        if (!res.success) {
+          setShadwStatus(`插件未就绪: ${res.error || '未知'}`, 'err');
+          document.getElementById('shadwPath').value = 'plugins/shadwmonitor (未找到)';
+          return;
+        }
+        const cfg = res.agentMem;
+        document.getElementById('shadwEnabled').checked = !!cfg.enabled;
+        document.getElementById('shadwPath').value = res.pluginRoot;
+        document.getElementById('shadwEndpoint').value = cfg.endpoint || 'http://127.0.0.1:3847';
+        document.getElementById('shadwScope').value = cfg.scope || 'desktop-monitor';
+        document.getElementById('shadwMirrorL1').checked = !!(cfg.mirror && cfg.mirror.moment);
+        toggleShadwConfigBody();
+        shadwInitialLoaded = true;
+        setShadwStatus(cfg.enabled ? '已启用' : '未启用', cfg.enabled ? 'ok' : 'info');
+        if (cfg.enabled) {
+          refreshShadwHealth().catch(() => {});
+        }
+      } catch (e) {
+        setShadwStatus(`读取配置异常: ${e.message}`, 'err');
+      }
+    }
+
+    async function refreshShadwHealth() {
+      const bridgeEl = document.getElementById('shadwHealthBridge');
+      const mirroredEl = document.getElementById('shadwHealthMirrored');
+      const retryEl = document.getElementById('shadwHealthRetry');
+      const lastSyncEl = document.getElementById('shadwHealthLastSync');
+
+      // 主进程的进程状态
+      const procStatus = await window.settingsAPI.shadwStatus().catch(() => null);
+
+      try {
+        const res = await fetch(`${SHADW_BASE}/api/shadw/health`, { mode: 'cors' });
+        if (!res.ok) throw new Error('http ' + res.status);
+        const data = await res.json();
+        const procOk = procStatus && procStatus.capture === 'running' && procStatus.web === 'running';
+        bridgeEl.innerHTML = procOk ? '● Online' : '● HTTP OK / 进程异常';
+        bridgeEl.style.color = procOk ? '#00876f' : '#a86a00';
+        mirroredEl.innerHTML = `${data.mirrored_today || 0}<span style="font-size:12px;color:#8d8da8;font-weight:400;margin-left:4px;">条</span>`;
+        const retry = data.retry_queue_size || 0;
+        retryEl.innerHTML = `${retry}<span style="font-size:12px;color:#8d8da8;font-weight:400;margin-left:4px;">待发</span>`;
+        retryEl.style.color = retry > 0 ? '#b42318' : '#00876f';
+        const lastId = data.last_mirrored_id || 0;
+        lastSyncEl.textContent = lastId ? `id #${lastId}` : '尚未镜像';
+        setShadwStatus('健康指标已刷新', 'ok');
+      } catch (e) {
+        if (procStatus && procStatus.capture === 'running') {
+          bridgeEl.innerHTML = '● 启动中';
+          bridgeEl.style.color = '#a86a00';
+          setShadwStatus('子进程已启动，Web 端正在就绪 (8080)...', 'info');
+        } else {
+          bridgeEl.innerHTML = '● Offline';
+          bridgeEl.style.color = '#b42318';
+          setShadwStatus('ShadwMonitor 未运行。打开"启用"开关以启动。', 'err');
+        }
+        mirroredEl.textContent = '-';
+        retryEl.textContent = '-';
+        lastSyncEl.textContent = procStatus?.capture || '插件未运行';
+      }
+    }
+
+    function setShadowfolkStatus(message, kind = 'info') {
+      const el = document.getElementById('shadowfolkStatus');
+      el.textContent = message;
+      el.style.color = kind === 'err' ? '#b42318' : (kind === 'ok' ? '#00876f' : '#6b6b8d');
+    }
+
+    function formatShadowfolkTime(value) {
+      if (!value) return '从未';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleString();
+    }
+
+    function setShadowfolkProgress(percent, message, kind = 'info') {
+      const bar = document.getElementById('shadowfolkProgressBar');
+      const text = document.getElementById('shadowfolkProgressText');
+      const next = Math.max(0, Math.min(100, Number(percent) || 0));
+      if (bar) {
+        bar.style.width = next + '%';
+        bar.style.background = kind === 'err' ? '#f04438' : (kind === 'ok' ? '#00d4aa' : '#4f9cff');
+      }
+      if (text) {
+        text.textContent = '上传状态：' + message;
+        text.style.color = kind === 'err' ? '#b42318' : (kind === 'ok' ? '#00876f' : '#6b6b8d');
+      }
+    }
+
+    function setShadowfolkLastSync(value) {
+      const el = document.getElementById('shadowfolkLastSync');
+      if (el) el.textContent = '上次同步：' + formatShadowfolkTime(value);
+    }
+
+    async function loadShadowfolkMemoryProjects() {
+      const select = document.getElementById('shadowfolkMemoryProjectSelect');
+      const addBtn = document.getElementById('shadowfolkAddMemoryProjectBtn');
+      if (!select) return;
+      select.innerHTML = '<option value="">正在读取记忆项目...</option>';
+      if (addBtn) addBtn.disabled = true;
+      try {
+        const result = await window.settingsAPI.listShadowfolkMemoryProjects();
+        if (!result || !result.success) {
+          select.innerHTML = '<option value="">记忆项目读取失败</option>';
+          setShadowfolkStatus((result && result.error) || '记忆项目读取失败', 'err');
+          return;
+        }
+        shadowfolkMemoryProjects = Array.isArray(result.data) ? result.data : [];
+        select.innerHTML = '';
+        if (!shadowfolkMemoryProjects.length) {
+          select.appendChild(new Option('还没有记录过项目', ''));
+          return;
+        }
+        select.appendChild(new Option('请选择已记录的项目目录', ''));
+        shadowfolkMemoryProjects.forEach((project) => {
+          const option = new Option(project, project);
+          option.title = project;
+          select.appendChild(option);
+        });
+        if (addBtn) addBtn.disabled = false;
+        if (shadowfolkWorkspaces.length) renderShadowfolkWorkspaces();
+      } catch (e) {
+        select.innerHTML = '<option value="">记忆项目读取出错</option>';
+        setShadowfolkStatus('记忆项目读取出错：' + (e && e.message || e), 'err');
+      }
+    }
+
+    function normalizeShadowfolkPath(value) {
+      const normalized = String(value || '')
+        .trim()
+        .replace(/\\/g, '/')
+        .replace(/^\/([a-z]:\/)/i, '$1')
+        .replace(/\/+$/, '');
+      const nav = typeof navigator !== 'undefined' ? navigator : {};
+      const isWindows = /win/i.test((nav.platform || nav.userAgent) || '');
+      return isWindows ? normalized.toLowerCase() : normalized;
+    }
+
+    function normalizeShadowfolkWorkspaceAliases(value) {
+      if (!Array.isArray(value)) return [];
+      const aliases = new Map();
+      value.forEach((entry) => {
+        if (!entry || typeof entry !== 'object') return;
+        const workspace = normalizeShadowfolkPath(entry.workspace);
+        const memoryRoots = Array.isArray(entry.memoryRoots)
+          ? [...new Set(entry.memoryRoots.map(normalizeShadowfolkPath).filter(Boolean))]
+          : [];
+        if (!workspace || !memoryRoots.length) return;
+        const existing = aliases.get(workspace);
+        if (existing) {
+          existing.memoryRoots = [...new Set([...existing.memoryRoots, ...memoryRoots])];
+        } else {
+          aliases.set(workspace, { workspace, memoryRoots });
+        }
+      });
+      return [...aliases.values()];
+    }
+
+    function getShadowfolkAliasesForWorkspace(workspace) {
+      const key = normalizeShadowfolkPath(workspace);
+      const entry = shadowfolkWorkspaceAliases.find(alias => normalizeShadowfolkPath(alias.workspace) === key);
+      return entry ? [...entry.memoryRoots] : [];
+    }
+
+    function setShadowfolkAliasesForWorkspace(workspace, memoryRoots) {
+      const key = normalizeShadowfolkPath(workspace);
+      const roots = [...new Set((memoryRoots || []).map(normalizeShadowfolkPath).filter(Boolean))];
+      shadowfolkWorkspaceAliases = shadowfolkWorkspaceAliases.filter(
+        alias => normalizeShadowfolkPath(alias.workspace) !== key
+      );
+      if (key && roots.length) {
+        shadowfolkWorkspaceAliases.push({ workspace: key, memoryRoots: roots });
+      }
+      shadowfolkWorkspaceAliases = normalizeShadowfolkWorkspaceAliases(shadowfolkWorkspaceAliases);
+    }
+
+    function removeShadowfolkWorkspaceAlias(workspace, memoryRoot) {
+      const target = normalizeShadowfolkPath(memoryRoot);
+      const nextRoots = getShadowfolkAliasesForWorkspace(workspace)
+        .filter(root => normalizeShadowfolkPath(root) !== target);
+      setShadowfolkAliasesForWorkspace(workspace, nextRoots);
+      renderShadowfolkWorkspaces();
+      setShadowfolkStatus('已移除旧记忆路径', 'ok');
+    }
+
+    function addShadowfolkWorkspaceAlias(workspace, memoryRoot) {
+      const workspaceKey = normalizeShadowfolkPath(workspace);
+      const rootKey = normalizeShadowfolkPath(memoryRoot);
+      if (!rootKey) {
+        setShadowfolkStatus('请先选择旧记忆路径', 'err');
+        return;
+      }
+      if (rootKey === workspaceKey) {
+        setShadowfolkStatus('旧记忆路径不能等于当前上传工作区', 'err');
+        return;
+      }
+      const existingWorkspace = shadowfolkWorkspaceAliases.find(alias =>
+        (alias.memoryRoots || []).some(root => normalizeShadowfolkPath(root) === rootKey)
+      );
+      if (existingWorkspace) {
+        if (normalizeShadowfolkPath(existingWorkspace.workspace) === workspaceKey) {
+          setShadowfolkStatus('该旧记忆路径已绑定到当前工作区', 'err');
+        } else {
+          setShadowfolkStatus('该旧记忆路径已绑定到其他工作区', 'err');
+        }
+        return;
+      }
+      setShadowfolkAliasesForWorkspace(workspace, [...getShadowfolkAliasesForWorkspace(workspace), rootKey]);
+      renderShadowfolkWorkspaces();
+      setShadowfolkStatus('已添加旧记忆路径：' + rootKey, 'ok');
+    }
+
+    function populateShadowfolkAliasProjectSelect(select, workspace) {
+      select.innerHTML = '';
+      const workspaceKey = normalizeShadowfolkPath(workspace);
+      const existingRoots = new Set(getShadowfolkAliasesForWorkspace(workspace).map(normalizeShadowfolkPath));
+      const candidates = shadowfolkMemoryProjects
+        .map(normalizeShadowfolkPath)
+        .filter(Boolean)
+        .filter(project => project !== workspaceKey)
+        .filter(project => !existingRoots.has(project));
+
+      select.appendChild(new Option(candidates.length ? '请选择旧记忆路径' : '暂无可添加的旧记忆路径', ''));
+      candidates.forEach((project) => {
+        const option = new Option(project, project);
+        option.title = project;
+        select.appendChild(option);
+      });
+      select.disabled = candidates.length === 0;
+    }
+
+    function renderShadowfolkWorkspaces() {
+      const list = document.getElementById('shadowfolkWorkspaceList');
+      if (!list) return;
+      list.innerHTML = '';
+      shadowfolkReplayControls.clear();
+      if (!shadowfolkWorkspaces.length) {
+        const empty = document.createElement('div');
+        empty.className = 'field-hint';
+        empty.textContent = '还没有上传工作区，请先添加。';
+        list.appendChild(empty);
+        return;
+      }
+
+      shadowfolkWorkspaces.forEach((workspace, index) => {
+        const card = document.createElement('div');
+        card.className = 'shadowfolk-workspace-card';
+
+        const main = document.createElement('div');
+        main.className = 'shadowfolk-workspace-main';
+
+        const code = document.createElement('code');
+        code.className = 'shadowfolk-workspace-path';
+        code.textContent = workspace;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-secondary';
+        removeBtn.textContent = '移除';
+        removeBtn.style.fontSize = '12px';
+        removeBtn.style.padding = '4px 10px';
+        removeBtn.style.flexShrink = '0';
+        removeBtn.addEventListener('click', () => {
+          const removedWorkspace = shadowfolkWorkspaces[index];
+          shadowfolkWorkspaces.splice(index, 1);
+          shadowfolkWorkspaceAliases = shadowfolkWorkspaceAliases.filter(
+            alias => normalizeShadowfolkPath(alias.workspace) !== normalizeShadowfolkPath(removedWorkspace)
+          );
+          renderShadowfolkWorkspaces();
+        });
+
+        const details = document.createElement('details');
+        details.className = 'shadowfolk-workspace-details';
+
+        const summary = document.createElement('summary');
+        const aliasCount = getShadowfolkAliasesForWorkspace(workspace).length;
+        summary.textContent = `高级设置${aliasCount ? `（${aliasCount} 条旧路径）` : ''}`;
+        details.appendChild(summary);
+
+        const aliasSection = document.createElement('div');
+        aliasSection.className = 'shadowfolk-alias-section';
+
+        const aliasHint = document.createElement('div');
+        aliasHint.className = 'field-hint';
+        aliasHint.textContent = '旧记忆路径：非 Git 记忆项目可作为当前工作区的旧记忆路径，上传时会归并到该工作区。';
+        aliasSection.appendChild(aliasHint);
+
+        const aliasRoots = getShadowfolkAliasesForWorkspace(workspace);
+        const aliasList = document.createElement('div');
+        if (!aliasRoots.length) {
+          const emptyAlias = document.createElement('div');
+          emptyAlias.className = 'field-hint';
+          emptyAlias.textContent = '暂无旧记忆路径。';
+          aliasList.appendChild(emptyAlias);
+        } else {
+          aliasRoots.forEach((memoryRoot) => {
+            const aliasRow = document.createElement('div');
+            aliasRow.className = 'shadowfolk-alias-row';
+
+            const aliasCode = document.createElement('code');
+            aliasCode.className = 'shadowfolk-alias-path';
+            aliasCode.textContent = memoryRoot;
+
+            const removeAliasBtn = document.createElement('button');
+            removeAliasBtn.type = 'button';
+            removeAliasBtn.className = 'btn btn-secondary';
+            removeAliasBtn.textContent = '移除旧路径';
+            removeAliasBtn.style.fontSize = '12px';
+            removeAliasBtn.style.padding = '4px 10px';
+            removeAliasBtn.style.flexShrink = '0';
+            removeAliasBtn.addEventListener('click', () => {
+              removeShadowfolkWorkspaceAlias(workspace, memoryRoot);
+            });
+
+            aliasRow.appendChild(aliasCode);
+            aliasRow.appendChild(removeAliasBtn);
+            aliasList.appendChild(aliasRow);
+          });
+        }
+        aliasSection.appendChild(aliasList);
+
+        const aliasAddRow = document.createElement('div');
+        aliasAddRow.className = 'shadowfolk-alias-add-row';
+
+        const aliasSelect = document.createElement('select');
+        populateShadowfolkAliasProjectSelect(aliasSelect, workspace);
+
+        const aliasAddBtn = document.createElement('button');
+        aliasAddBtn.type = 'button';
+        aliasAddBtn.className = 'btn btn-secondary';
+        aliasAddBtn.textContent = '添加旧记忆路径';
+        aliasAddBtn.style.fontSize = '12px';
+        aliasAddBtn.style.padding = '5px 10px';
+        aliasAddBtn.disabled = aliasSelect.disabled;
+        aliasAddBtn.addEventListener('click', () => {
+          addShadowfolkWorkspaceAlias(workspace, aliasSelect.value);
+        });
+
+        aliasAddRow.appendChild(aliasSelect);
+        aliasAddRow.appendChild(aliasAddBtn);
+        aliasSection.appendChild(aliasAddRow);
+
+        const replayRow = document.createElement('div');
+        replayRow.className = 'shadowfolk-replay-row';
+
+        const replaySelect = document.createElement('select');
+        replaySelect.disabled = true;
+        replaySelect.appendChild(new Option('正在读取重推选项...', ''));
+
+        const replayBtn = document.createElement('button');
+        replayBtn.type = 'button';
+        replayBtn.className = 'btn btn-secondary';
+        replayBtn.textContent = '重推';
+        replayBtn.disabled = true;
+        replayBtn.style.fontSize = '12px';
+        replayBtn.style.padding = '5px 10px';
+        replayBtn.addEventListener('click', () => {
+          replayShadowfolkWorkspace(workspace, replaySelect.value, replayBtn, replayStatus, replaySelect);
+        });
+
+        const replayStatus = document.createElement('div');
+        replayStatus.className = 'field-hint shadowfolk-replay-status';
+
+        main.appendChild(code);
+        main.appendChild(removeBtn);
+        replayRow.appendChild(replaySelect);
+        replayRow.appendChild(replayBtn);
+        replayRow.appendChild(replayStatus);
+        details.appendChild(aliasSection);
+        details.appendChild(replayRow);
+        card.appendChild(main);
+        card.appendChild(details);
+        list.appendChild(card);
+
+        shadowfolkReplayControls.set(workspace, { select: replaySelect, button: replayBtn, statusEl: replayStatus });
+        loadShadowfolkReplayOptions(workspace, replaySelect, replayBtn, replayStatus);
+      });
+    }
+
+    async function refreshShadowfolkReplayControls() {
+      await Promise.all(Array.from(shadowfolkReplayControls.entries()).map(([workspace, controls]) => (
+        loadShadowfolkReplayOptions(workspace, controls.select, controls.button, controls.statusEl)
+      )));
+    }
+
+    async function loadShadowfolkReplayOptions(workspace, select, button, statusEl) {
+      select.disabled = true;
+      button.disabled = true;
+      try {
+        const result = await window.settingsAPI.shadowfolkHistory(workspace);
+        select.innerHTML = '';
+        if (!result || !result.success) {
+          select.appendChild(new Option('重推选项读取失败', ''));
+          statusEl.textContent = (result && result.error) || '重推选项读取失败';
+          statusEl.style.color = '#b42318';
+          return;
+        }
+
+        const options = Array.isArray(result.options) ? result.options : [];
+        options.forEach((option) => {
+          const value = option.kind === 'history' ? `history:${option.historyId}` : 'full';
+          const label = option.label || (option.kind === 'full' ? '全量重推' : option.historyId);
+          select.appendChild(new Option(label, value));
+        });
+        if (!options.length) {
+          select.appendChild(new Option('暂无可用重推选项', ''));
+          return;
+        }
+        select.disabled = false;
+        button.disabled = false;
+        statusEl.textContent = '';
+      } catch (e) {
+        select.innerHTML = '';
+        select.appendChild(new Option('重推选项读取出错', ''));
+        statusEl.textContent = '重推选项读取出错：' + (e && e.message || e);
+        statusEl.style.color = '#b42318';
+      }
+    }
+
+    async function replayShadowfolkWorkspace(workspace, selected, button, statusEl, select) {
+      if (!selected) return;
+      const oldText = button.textContent;
+      button.disabled = true;
+      button.textContent = '重推中…';
+      statusEl.style.color = '#6b6b8d';
+      statusEl.textContent = '正在保存配置并重推...';
+      try {
+        await saveShadowfolkPluginSettings();
+        const request = selected === 'full'
+          ? { workspace, kind: 'full' }
+          : { workspace, kind: 'history', historyId: selected.replace(/^history:/, '') };
+        const result = await window.settingsAPI.shadowfolkReplay(request);
+        if (!result || !result.success) {
+          statusEl.style.color = '#b42318';
+          statusEl.textContent = (result && result.error) || '重推失败';
+          return;
+        }
+        const r = result.result || {};
+        await refreshShadowfolkStatus({ updateProgress: false, refreshReplay: false });
+        await loadShadowfolkReplayOptions(workspace, select, button, statusEl);
+        statusEl.style.color = '#00876f';
+        statusEl.textContent = `重推完成：${r.observations || 0} 条 observation，${r.summaries || 0} 条 summary，${r.commits || 0} 个 commit`;
+      } catch (e) {
+        statusEl.style.color = '#b42318';
+        statusEl.textContent = '重推出错：' + (e && e.message || e);
+      } finally {
+        button.disabled = select.disabled || !select.value;
+        button.textContent = oldText;
+      }
+    }
+
+    async function addShadowfolkWorkspace(rawPath) {
+      const value = (rawPath || '').trim();
+      if (!value) return;
+      try {
+        const result = await window.settingsAPI.validateShadowfolkWorkspace(value);
+        if (!result || !result.success) {
+          const error = (result && result.error) || '工作区路径无效';
+          setShadowfolkStatus(error, 'err');
+          return;
+        }
+        const gitRoot = result.gitRoot;
+        if (!gitRoot) {
+          setShadowfolkStatus('未检测到 Git root', 'err');
+          return;
+        }
+        const exists = shadowfolkWorkspaces.some((workspace) => workspace.toLowerCase() === gitRoot.toLowerCase());
+        if (exists) {
+          setShadowfolkStatus('该项目已在上传列表中');
+          return;
+        }
+        shadowfolkWorkspaces.push(gitRoot);
+        renderShadowfolkWorkspaces();
+        const memoryOnly = result.mode === 'memory';
+        let successMessage = memoryOnly
+          ? '已添加仅记忆项目：' + gitRoot + '。上传不依赖本机目录。'
+          : '已添加上传工作区：' + gitRoot;
+        if (memoryOnly) {
+          setShadowfolkStatus(successMessage, 'ok');
+          return;
+        }
+        try {
+          const suggestAliases = requireSettingsAPI('suggestShadowfolkWorkspaceAliases');
+          const suggestionResult = await suggestAliases(gitRoot);
+          const suggestions = suggestionResult && suggestionResult.success && Array.isArray(suggestionResult.suggestions)
+            ? suggestionResult.suggestions
+            : [];
+          if (suggestions.length) {
+            successMessage += '。发现可能的旧记忆路径：' + suggestions.join('、') + '，可在工作区卡片下绑定。';
+          }
+        } catch {
+          // Suggestions are only a convenience hint; adding the workspace already succeeded.
+        }
+        setShadowfolkStatus(successMessage, 'ok');
+      } catch (e) {
+        setShadowfolkStatus('工作区校验出错：' + (e && e.message || e), 'err');
+      }
+    }
+
+    async function refreshShadowfolkStatusFromButton() {
+      const btn = document.getElementById('shadowfolkRefreshBtn');
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '刷新中…';
+      setShadowfolkStatus('正在刷新 ShadowFolk 状态…');
+      try {
+        await refreshShadowfolkStatus({ refreshReplay: true });
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    async function refreshShadowfolkStatus(options = {}) {
+      const updateProgress = options.updateProgress !== false;
+      const refreshReplay = options.refreshReplay !== false;
+      try {
+        const status = await window.settingsAPI.shadowfolkStatus();
+        if (!status || status.success === false) {
+          setShadowfolkStatus((status && status.error) || '状态读取失败', 'err');
+          if (updateProgress) setShadowfolkProgress(0, '状态读取失败', 'err');
+          return;
+        }
+        setShadowfolkLastSync(status.lastSuccessAt);
+        const running = status.running ? '上传中' : '空闲';
+        const workspaceCount = Array.isArray(status.workspaceList) ? status.workspaceList.length : (status.workspaces || 0);
+        const parts = [];
+        if (status.enabled) {
+          const dailyTime = status.dailyTime || '23:30';
+          const nextRun = status.nextRunAt
+            ? `下次自动上传 ${new Date(status.nextRunAt).toLocaleString()}`
+            : `每日 ${dailyTime}（北京时间）自动上传`;
+          parts.push(nextRun);
+        } else {
+          parts.push('定时自动上传未开启');
+        }
+        parts.push(`${running}，${workspaceCount} 个工作区`);
+        if (status.lastResult) {
+          const results = Array.isArray(status.lastResult.results) ? status.lastResult.results : [];
+          const changedWorkspaces = results.filter(result => result && result.pushed).length;
+          const skippedWorkspaces = Math.max(0, results.length - changedWorkspaces);
+          const workspaceSummary = results.length
+            ? `最近 ${changedWorkspaces}/${results.length} 个工作区有新内容${skippedWorkspaces ? `，${skippedWorkspaces} 个无增量` : ''}`
+            : '最近上传';
+          parts.push(`${workspaceSummary}，${status.lastResult.observations || 0} 条 observation / ${status.lastResult.summaries || 0} 条 summary`);
+        }
+        setShadowfolkStatus(parts.join('，'), status.lastError ? 'err' : 'ok');
+        if (updateProgress) {
+          if (status.running) {
+            setShadowfolkProgress(60, '上传中，请稍候...');
+          } else if (status.lastError) {
+            setShadowfolkProgress(0, '上次上传失败：' + status.lastError, 'err');
+          } else if (status.lastSuccessAt) {
+            setShadowfolkProgress(100, '最近一次上传成功', 'ok');
+          } else {
+            setShadowfolkProgress(0, '空闲');
+          }
+        }
+        if (refreshReplay) {
+          await refreshShadowfolkReplayControls();
+        }
+      } catch (e) {
+        setShadowfolkStatus('状态读取出错：' + (e && e.message || e), 'err');
+        if (updateProgress) setShadowfolkProgress(0, '状态读取出错', 'err');
+      }
+    }
+
+    async function saveShadowfolkConfigFile() {
+      if (!shadowfolkConfigLoaded) {
+        throw new Error('ShadowFolk 配置尚未读取成功，已阻止写入以避免清空现有 token');
+      }
+      const saveShadowfolkConfig = requireSettingsAPI('saveShadowfolkConfig');
+      await saveShadowfolkConfig({
+        server: document.getElementById('shadowfolkEndpoint').value,
+        apiToken: document.getElementById('shadowfolkToken').value,
+      });
+    }
+
+    async function saveShadowfolkPluginSettings() {
+      if (!settingsConfigLoaded) {
+        throw new Error('基础设置尚未加载完成，请稍后再试');
+      }
+      await saveShadowfolkConfigFile();
+      shadowfolkWorkspaceAliases = normalizeShadowfolkWorkspaceAliases(shadowfolkWorkspaceAliases);
+      await window.settingsAPI.saveConfig({
+        shadowfolkEnabled: document.getElementById('shadowfolkEnabled').checked,
+        shadowfolkDailyTime: document.getElementById('shadowfolkDailyTime').value || '23:30',
+        shadowfolkWorkspaces: [...shadowfolkWorkspaces],
+        shadowfolkWorkspaceAliases: [...shadowfolkWorkspaceAliases],
+      });
+    }
+
+    async function pushShadowfolkNow() {
+      const btn = document.getElementById('shadowfolkPushNowBtn');
+      const old = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '上传中…';
+      setShadowfolkProgress(10, '正在保存当前插件配置...');
+      setShadowfolkStatus('正在保存当前插件配置…');
+      try {
+        await saveShadowfolkPluginSettings();
+        setShadowfolkProgress(35, '配置已保存，正在触发上传...');
+        setShadowfolkProgress(60, '正在上传到 ShadowFolk...');
+        const result = await window.settingsAPI.shadowfolkPushNow();
+        if (!result || !result.success) {
+          setShadowfolkStatus((result && result.error) || '上传失败', 'err');
+          setShadowfolkProgress(0, (result && result.error) || '上传失败', 'err');
+          return;
+        }
+        const r = result.result || {};
+        const now = new Date().toISOString();
+        setShadowfolkLastSync(now);
+        setShadowfolkProgress(100, '上传完成', 'ok');
+        const results = Array.isArray(r.results) ? r.results : [];
+        const changedWorkspaces = results.filter(item => item && item.pushed).length;
+        const workspaceSummary = results.length
+          ? `${changedWorkspaces}/${results.length} 个工作区有新内容`
+          : `${r.workspaces || 0} 个工作区`;
+        setShadowfolkStatus(`上传完成：${workspaceSummary}，${r.observations || 0} 条 observation，${r.summaries || 0} 条 summary，${r.commits || 0} 个 commit`, 'ok');
+        await refreshShadowfolkStatus({ updateProgress: false });
+      } catch (e) {
+        setShadowfolkStatus('上传出错：' + (e && e.message || e), 'err');
+        setShadowfolkProgress(0, '上传出错：' + (e && e.message || e), 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = old;
+      }
+    }
+
+    function prefillInvite(parsed) {
+      const banner = document.getElementById('inviteBanner');
+      banner.innerHTML = '收到邀请：服务器 <strong>' + escapeHtml(parsed.serverUrl) + '</strong>，账号 <strong>' + escapeHtml(parsed.userName || '(未指定)') + '</strong>。';
+      banner.style.display = 'block';
+      document.getElementById('serverUrl').value = parsed.serverUrl;
+      document.getElementById('serverUserName').value = parsed.userName || '';
+      document.getElementById('serverToken').value = parsed.token;
+      document.getElementById('serverEnabled').checked = true;
+      toggleServerCard(true);
+      updateConnectedView();
+      switchSettingsTab('pluginsPanel');
+      document.getElementById('serverSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function getServerFormState() {
+      const url   = (document.getElementById('serverUrl').value || '').trim();
+      const user  = (document.getElementById('serverUserName').value || '').trim();
+      const token = (document.getElementById('serverToken').value || '').trim();
+      const enabled = document.getElementById('serverEnabled').checked;
+      const ready = url && token && /^https?:\/\//i.test(url);
+      return { url, user, token, enabled, ready };
+    }
+
+    function updateConnectedView() {
+      const { url, user, enabled, ready } = getServerFormState();
+      const workerStateKnown = latestSyncRemoteState.known;
+      const syncActive = workerStateKnown ? latestSyncRemoteState.configured : (enabled && ready);
+
+      const card  = document.getElementById('connectedCard');
+      const hint  = document.getElementById('notConnectedHint');
+      const adv   = document.getElementById('advancedDetails');
+      const disc  = document.getElementById('disconnectBtn');
+      const pill  = document.getElementById('connectedPill');
+
+      if (ready) {
+        card.style.display = 'block';
+        hint.style.display = 'none';
+        document.getElementById('connectedServer').textContent = url;
+        document.getElementById('connectedUser').textContent = user || '(未指定)';
+        pill.style.display = enabled ? 'inline-block' : 'none';
+        pill.className = syncActive ? 'connected-pill' : 'connected-pill off';
+        pill.textContent = syncActive ? '同步已启用' : '待生效';
+        disc.style.display = 'inline-block';
+        // Auto-collapse advanced once configured
+        if (!adv.dataset.userToggled) adv.open = false;
+      } else {
+        card.style.display = 'none';
+        hint.style.display = 'block';
+        disc.style.display = 'none';
+        // Auto-expand advanced when nothing is set yet, so user sees what's missing
+        if (!adv.dataset.userToggled && (url || user || token)) adv.open = true;
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    // Populate a single model <select> from its provider, preserving the
+    // current value when still valid.
+    function fillModelSelect(selectId, provider) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      const models = providerModels[provider] || [];
+      const current = sel.value;
+      sel.disabled = false;
+      sel.innerHTML = '';
+      models.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        sel.appendChild(opt);
+      });
+      if (models.includes(current)) {
+        sel.value = current;
+      }
+    }
+
+    function updateModelOptions() {
+      // High model follows #provider; mid-tier model follows #providerLight.
+      fillModelSelect('model', document.getElementById('provider').value);
+      fillModelSelect('modelLight', document.getElementById('providerLight').value);
+    }
+
+    function providerKeyHint(provider) {
+      if (provider === 'timiai') return '&#x1f512; 已内置官方测试 Key，留空即使用默认配置（仅供测试体验）。';
+      if (provider === 'deepseek') return '&#x1f512; DeepSeek 使用官方端点 api.deepseek.com，需填写你自己的 API Key。';
+      if (provider === 'aliyun-bailian') return '&#x1f512; 阿里云百炼使用北京地域兼容端点 dashscope.aliyuncs.com，需填写百炼 API Key。';
+      return '';
+    }
+
+    function providerKeyPlaceholder(provider) {
+      if (provider === 'timiai') return '留空使用官方默认 Key（仅供测试）';
+      if (provider === 'deepseek') return '输入 DeepSeek API Key（sk-…）';
+      if (provider === 'aliyun-bailian') return '输入阿里云百炼 API Key（sk-…）';
+      return '输入 API Key…';
+    }
+
+    // Render one tier's API key inline under its provider selector. Pre-fills
+    // '********' when a key already exists for that provider (save logic treats
+    // '********' as "unchanged"). In-progress edits for the same provider are
+    // preserved across re-renders.
+    function buildKeyField(container, provider) {
+      const prev = container.querySelector('input[data-provider]');
+      const value = (prev && prev.dataset.provider === provider)
+        ? prev.value
+        : (loadedApiKeys[provider] === '********' ? '********' : '');
+
+      container.innerHTML = '';
+      container.style.display = '';
+
+      const label = document.createElement('label');
+      label.setAttribute('for', 'apiKey_' + provider);
+      label.textContent = 'API Key · ' + (PROVIDER_LABEL[provider] || provider);
+      container.appendChild(label);
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'api-key-wrapper';
+
+      const input = document.createElement('input');
+      input.type = 'password';
+      input.id = 'apiKey_' + provider;
+      input.dataset.provider = provider;
+      input.placeholder = providerKeyPlaceholder(provider);
+      input.value = value;
+      wrapper.appendChild(input);
+
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'toggle-key-btn';
+      toggle.title = '显示/隐藏';
+      toggle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+      toggle.addEventListener('click', () => {
+        input.type = input.type === 'password' ? 'text' : 'password';
+      });
+      wrapper.appendChild(toggle);
+      container.appendChild(wrapper);
+
+      const hint = providerKeyHint(provider);
+      if (hint) {
+        const hintEl = document.createElement('div');
+        hintEl.style.cssText = 'margin-top:6px;font-size:12px;color:#7b7ba3;';
+        hintEl.innerHTML = hint;
+        container.appendChild(hintEl);
+      }
+    }
+
+    // Each tier shows its own provider's API key. The mid-tier key is hidden
+    // when it shares the high-tier provider (one shared key, at most two total).
+    function renderApiKeyInputs() {
+      const high = document.getElementById('provider').value;
+      const light = document.getElementById('providerLight').value;
+
+      const highField = document.getElementById('apiKeyHighField');
+      if (highField) buildKeyField(highField, high);
+
+      const lightField = document.getElementById('apiKeyLightField');
+      if (lightField) {
+        if (light === high) {
+          lightField.innerHTML = '';
+          lightField.style.display = 'none';
+        } else {
+          buildKeyField(lightField, light);
+        }
+      }
+    }
+
+    // Kept for the post-load initialization call below.
+    function syncProviderUI() {
+      renderApiKeyInputs();
+    }
+
+    async function loadIDEStatus() {
+      const el = document.getElementById('ideSection');
+      el.innerHTML = '<div style="color:#9b9bb5;font-size:12px;">检测中...</div>';
+      try {
+        if (!window.settingsAPI || !window.settingsAPI.detectIDEs) {
+          throw new Error('设置页 preload 未加载，无法访问 IDE 检测接口');
+        }
+        const list = await withTimeout(
+          window.settingsAPI.detectIDEs(),
+          5000,
+          'IDE 检测超时，请重启应用后重试',
+        );
+        if (!list.length) {
+          el.innerHTML = '<div style="color:#9b9bb5;font-size:12px;">未检测到已安装的 IDE / OpenClaw（CodeBuddy 插件版 / Cursor / CodeBuddy IDE / OpenClaw）</div>';
+          return;
+        }
+        el.innerHTML = '';
+        list.forEach((ide) => {
+          const row = document.createElement('div');
+          row.className = 'ide-settings-row';
+          const isPlugin = ide.mechanism === 'plugin';
+          const badge = ide.isRegistered
+            ? '<span class="ide-badge on">' + (isPlugin ? '已安装' : '已关联') + '</span>'
+            : '<span class="ide-badge off">' + (isPlugin ? '未安装' : '未关联') + '</span>';
+          const btnLabel = ide.isRegistered ? (isPlugin ? '移除' : '断开') : (isPlugin ? '安装' : '关联');
+          row.innerHTML =
+            '<div class="ide-settings-meta">' +
+              '<div class="ide-settings-name">' + (IDE_LABEL[ide.type] || ide.type) + '</div>' +
+              '<div class="ide-settings-path">' + escapeHtml(ide.hooksJsonPath || ide.ideDataDir) + '</div>' +
+              badge +
+            '</div>' +
+            '<button type="button" class="btn btn-secondary" style="font-size:12px;padding:4px 12px;flex-shrink:0;">' + btnLabel + '</button>';
+          const btn = row.querySelector('button');
+          btn.addEventListener('click', () => toggleIDE(ide.type, ide.isRegistered));
+          el.appendChild(row);
+        });
+      } catch (e) {
+        const msg = (e && e.message) || '检测失败，请重试。';
+        el.innerHTML = '<div style="color:#c62828;font-size:12px;">' + escapeHtml(msg) + '</div>';
+      }
+    }
+
+    async function toggleIDE(ideType, isRegistered) {
+      try {
+        const result = isRegistered
+          ? await window.settingsAPI.unregisterIDE(ideType)
+          : await window.settingsAPI.registerIDE(ideType);
+        if (result && result.success === false) {
+          alert(result.message || '操作失败');
+        }
+      } catch (e) {
+        alert('操作失败：' + (e && e.message || e));
+      } finally {
+        await loadIDEStatus();
+      }
+    }
+
+    function toggleServerTokenVisibility() {
+      const input = document.getElementById('serverToken');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    async function saveSettings() {
+      const btn = document.getElementById('saveBtn');
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '保存中…';
+      try {
+        if (!settingsConfigLoaded) {
+          throw new Error('基础设置尚未读取成功，已阻止保存以避免覆盖现有配置');
+        }
+        shadowfolkWorkspaceAliases = normalizeShadowfolkWorkspaceAliases(shadowfolkWorkspaceAliases);
+        const apiKeys = {};
+        document.querySelectorAll('#apiKeyHighField input[data-provider], #apiKeyLightField input[data-provider]').forEach((inp) => {
+          apiKeys[inp.dataset.provider] = inp.value;
+        });
+        const data = {
+          apiProvider: document.getElementById('provider').value,
+          apiProviderLight: document.getElementById('providerLight').value,
+          apiKeys,
+          apiModel: document.getElementById('model').value,
+          apiModelLight: document.getElementById('modelLight').value,
+          openAtLogin: document.getElementById('autoStart').checked,
+          port: parseInt(document.getElementById('port').value, 10),
+          serverEnabled: document.getElementById('serverEnabled').checked,
+          serverUrl: document.getElementById('serverUrl').value,
+          serverUserName: document.getElementById('serverUserName').value,
+          serverToken: document.getElementById('serverToken').value,
+          deviceName: document.getElementById('deviceName').value,
+          shadowfolkEnabled: document.getElementById('shadowfolkEnabled').checked,
+          shadowfolkDailyTime: document.getElementById('shadowfolkDailyTime').value || '23:30',
+          shadowfolkWorkspaces: [...shadowfolkWorkspaces],
+          shadowfolkWorkspaceAliases: [...shadowfolkWorkspaceAliases],
+        };
+        const saveConfig = requireSettingsAPI('saveConfig');
+        let shadowfolkError = null;
+        try {
+          await saveShadowfolkConfigFile();
+        } catch (e) {
+          shadowfolkError = e;
+        }
+        await saveConfig(data);
+        if (shadowfolkError) {
+          throw shadowfolkError;
+        }
+        window.close();
+      } catch (e) {
+        const msg = '保存失败：' + (e && e.message || e);
+        setShadowfolkStatus(msg, 'err');
+        setServerStatus(msg, 'err');
+        alert(msg);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    async function onApplyInvite() {
+      const btn = document.getElementById('applyInviteBtn');
+      const raw = document.getElementById('inviteInput').value.trim();
+      if (!raw) {
+        setInviteStatus('请先粘贴邀请链接', 'warn');
+        setServerStatus('请先粘贴邀请链接', 'warn');
+        return false;
+      }
+      if (btn.disabled) return false;
+      btn.disabled = true;
+      const oldText = btn.textContent;
+      btn.textContent = '连接中…';
+      setInviteStatus('正在解析邀请链接…', 'warn');
+      setServerStatus('正在解析并连接…', 'warn');
+      try {
+        const parsed = await window.settingsAPI.parseInvite(raw);
+        if (!parsed || parsed.error) {
+          const msg = (parsed && parsed.error) || '链接看不懂，请确认是 cmem:// 开头或服务器邀请链接';
+          setInviteStatus(msg, 'err');
+          setServerStatus(msg, 'err');
+          return false;
+        }
+        setInviteStatus('邀请已解析，正在保存配置…', 'warn');
+        prefillInvite(parsed);
+        document.getElementById('inviteInput').value = '';
+
+        const applyResult = await window.settingsAPI.applyInvite(raw);
+        if (!applyResult || !applyResult.success) {
+          const msg = (applyResult && applyResult.error) || '保存邀请失败';
+          setInviteStatus(msg, 'err');
+          setServerStatus(msg, 'err');
+          return false;
+        }
+
+        // Wait for worker to restart with new env, then test
+        setInviteStatus('配置已保存，正在测试服务器连接…', 'warn');
+        await new Promise(r => setTimeout(r, 1500));
+        const result = await window.settingsAPI.testServer();
+        if (result && result.success) {
+          const u = (result.data && result.data.user) || parsed.userName || '';
+          const msg = u ? '连上了，账号 ' + u : '连上了';
+          setInviteStatus(msg, 'ok');
+          setServerStatus(msg, 'ok');
+        } else {
+          const msg = (result && result.error) || '已填入参数，但测试连接失败';
+          setInviteStatus(msg, 'err');
+          setServerStatus(msg, 'err');
+          setTimeout(() => { lastUserActionAt = 0; refreshSyncStatus(); }, 3000);
+        }
+      } catch (e) {
+        const msg = '一键连接出错：' + (e && e.message || e);
+        setInviteStatus(msg, 'err');
+        setServerStatus(msg, 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+        refreshSyncStatus();
+      }
+      return false;
+    }
+
+    async function onDisconnect() {
+      if (!confirm('确认断开服务器连接？\n\n本地记忆不会丢，只是不再上传到服务器。\n你之前传上去的也不会动。')) return;
+      document.getElementById('serverEnabled').checked = false;
+      document.getElementById('serverUrl').value = '';
+      document.getElementById('serverUserName').value = '';
+      document.getElementById('serverToken').value = '';
+      document.getElementById('inviteBanner').style.display = 'none';
+      await window.settingsAPI.saveConfig({
+        serverEnabled: false,
+        serverUrl: '',
+        serverUserName: '',
+        serverToken: '',
+        deviceName: document.getElementById('deviceName').value,
+      });
+      updateConnectedView();
+      setServerStatus('已断开，本地继续记，不再上传', 'ok');
+      refreshSyncStatus();
+    }
+
+    async function onTestServer() {
+      const btn = document.getElementById('testServerBtn');
+      btn.disabled = true;
+      setServerStatus('正在测试...', 'warn');
+      try {
+        // First save what's on screen so the worker uses the latest values
+        await window.settingsAPI.saveConfig({
+          serverEnabled: document.getElementById('serverEnabled').checked,
+          serverUrl: document.getElementById('serverUrl').value,
+          serverUserName: document.getElementById('serverUserName').value,
+          serverToken: document.getElementById('serverToken').value,
+          deviceName: document.getElementById('deviceName').value,
+        });
+        // Give worker a moment to restart with new env
+        await new Promise(r => setTimeout(r, 1500));
+        const result = await window.settingsAPI.testServer();
+        if (result && result.success) {
+          const u = (result.data && result.data.user) || '';
+          setServerStatus(u ? '连上了，账号 ' + u : '连上了', 'ok');
+        } else {
+          setServerStatus(result && result.error || '连不上', 'err');
+          setTimeout(() => { lastUserActionAt = 0; refreshSyncStatus(); }, 3000);
+        }
+      } catch (e) {
+        setServerStatus('测试出错：' + (e && e.message || e), 'err');
+        setTimeout(() => { lastUserActionAt = 0; refreshSyncStatus(); }, 3000);
+      } finally {
+        btn.disabled = false;
+        refreshSyncStatus();
+      }
+    }
+
+    async function onRescan() {
+      const btn = document.getElementById('rescanBtn');
+      btn.disabled = true;
+      setServerStatus('正在排队本地旧记忆...', 'warn');
+      try {
+        const result = await window.settingsAPI.syncRescan();
+        if (result && result.success) {
+          const n = (result.data && result.data.enqueued) || 0;
+          setServerStatus('已排队 ' + n + ' 条等待上传', 'ok');
+        } else {
+          setServerStatus(result && result.error || '操作失败', 'err');
+        }
+      } catch (e) {
+        setServerStatus('操作出错：' + (e && e.message || e), 'err');
+      } finally {
+        btn.disabled = false;
+        refreshSyncStatus();
+      }
+    }
+
+    let lastUserActionAt = 0;
+    function setInviteStatus(text, kind) {
+      const el = document.getElementById('inviteStatus');
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'invite-status ' + (kind || '');
+      el.style.display = 'block';
+    }
+
+    function setServerStatus(text, kind, fromUser) {
+      const el = document.getElementById('serverStatus');
+      el.innerHTML = '<span class="status-dot ' + (kind || '') + '"></span><span>' + escapeHtml(text) + '</span>';
+      if (fromUser !== false) lastUserActionAt = Date.now();
+    }
+
+    function fmtEta(ms) {
+      if (!ms || ms <= 0) return '';
+      const s = Math.round(ms / 1000);
+      if (s < 60) return s + ' 秒';
+      const m = Math.round(s / 60);
+      if (m < 60) return m + ' 分钟';
+      const h = Math.round(m / 60);
+      return h + ' 小时';
+    }
+
+    async function refreshSyncStatus() {
+      let workerOk = false;
+      let data = null;
+      try {
+        const r = await window.settingsAPI.syncStatus();
+        workerOk = !!(r && r.success);
+        data = r && r.data;
+      } catch (e) {
+        workerOk = false;
+      }
+
+      const card = document.getElementById('syncProgress');
+      const recentlyUserActed = (Date.now() - lastUserActionAt) < 5000;
+
+      // Maintain the status line based on real worker state, unless the user
+      // just clicked something (give them 5s to read their action's result).
+      if (!recentlyUserActed) {
+        if (!workerOk) {
+          latestSyncRemoteState = { known: false, configured: false, url: null };
+          updateConnectedView();
+          setServerStatus('本地服务未运行，正在重试…', 'err', false);
+        } else {
+          const remote = data && data.remote;
+          const queue  = data && data.queue;
+          const back   = data && data.backfill;
+          latestSyncRemoteState = {
+            known: !!(workerOk && remote),
+            configured: !!(remote && remote.configured),
+            url: remote && remote.url || null,
+          };
+          updateConnectedView();
+          if (!remote || !remote.configured) {
+            const formState = getServerFormState();
+            if (formState.enabled && formState.ready) {
+              setServerStatus('服务器已保存，但本地服务还未启用同步；请重新一键连接或重启应用', 'warn', false);
+            } else {
+              setServerStatus('未启用同步（只存本地）', '', false);
+            }
+          } else if (back && (back.running || (back.remaining || 0) > 0)) {
+            setServerStatus('正在补传旧记忆…', 'warn', false);
+          } else if (queue && queue.failed > 0) {
+            setServerStatus('有 ' + queue.failed + ' 条上传失败，请检查网络/钥匙', 'warn', false);
+          } else {
+            setServerStatus('运行中，已与服务器保持同步', 'ok', false);
+          }
+        }
+      }
+
+      if (!workerOk || !data || !data.remote || !data.remote.configured) {
+        card.style.display = 'none';
+        return;
+      }
+      card.style.display = 'block';
+
+      const queue    = data.queue || {};
+      const backfill = data.backfill || {};
+      const pending  = queue.pending || 0;
+      const sent     = queue.sent || 0;
+      const failed   = queue.failed || 0;
+      const remaining = backfill.remaining || 0;
+      const isBackfilling = !!(backfill.running || remaining > 0);
+
+      document.getElementById('syncProgressTitle').textContent = isBackfilling ? '正在补传旧记忆…' : '同步状态';
+
+      const total = backfill.total || 0;
+      const done  = total > 0 ? Math.max(0, total - remaining) : sent;
+      const denom = total > 0 ? total : Math.max(1, sent + pending);
+      const pct   = Math.min(100, Math.round((done / denom) * 100));
+      document.getElementById('syncProgressBar').style.width = pct + '%';
+
+      const eta = backfill.eta_ms ? fmtEta(backfill.eta_ms) : '';
+      document.getElementById('syncProgressInfo').textContent =
+        isBackfilling
+          ? '本机有 ' + total + ' 条历史记忆，剩 ' + remaining + ' 条等待上传' + (eta ? '，预计 ' + eta : '')
+          : '已上传 ' + sent + ' 条 · 待发 ' + pending + ' 条' + (failed ? ' · 失败 ' + failed : '');
+      document.getElementById('syncProgressLeft').textContent = pct + '%';
+      document.getElementById('syncProgressRight').textContent = '失败 ' + failed;
+    }
+
+    // ──────────── Self-Evolve Plugin ────────────
+
+    function toggleSeCard() {
+      const body = document.getElementById('seConfigBody');
+      const arrow = document.getElementById('seCollapseArrow');
+      const expanded = body.style.display !== 'none';
+      body.style.display = expanded ? 'none' : 'block';
+      arrow.style.transform = expanded ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    function toggleSeConfigBody() {
+      const enabled = document.getElementById('seEnabled').checked;
+      const body = document.getElementById('seConfigBody');
+      const arrow = document.getElementById('seCollapseArrow');
+      if (enabled && body.style.display === 'none') {
+        body.style.display = 'block';
+        arrow.style.transform = 'rotate(180deg)';
+      }
+    }
+
+    function updateSeGateGroup() {
+      const mode = document.getElementById('seReviewMode').value;
+      document.getElementById('seGateGroup').style.display = mode === 'quality_gate' ? 'block' : 'none';
+    }
+
+    async function loadSelfEvolveConfig() {
+      if (!window.settingsAPI || typeof window.settingsAPI.selfEvolveGetConfig !== 'function') return;
+      try {
+        const cfg = await window.settingsAPI.selfEvolveGetConfig();
+        if (!cfg || !cfg.success) return;
+        // Plugin is installed — show its settings card
+        const wrapper = document.getElementById('seSectionWrapper');
+        if (wrapper) wrapper.style.display = '';
+        document.getElementById('seEnabled').checked = !!cfg.enabled;
+        document.getElementById('seReviewMode').value = cfg.reviewMode || 'manual';
+        document.getElementById('seGateThreshold').value = cfg.qualityGateThreshold ?? 70;
+        document.getElementById('seMaxRules').value = cfg.maxContextRules ?? 20;
+        document.getElementById('seCritic').checked = cfg.criticOnGenerate !== false;
+        updateSeGateGroup();
+        if (cfg.enabled) {
+          document.getElementById('seConfigBody').style.display = 'block';
+          document.getElementById('seCollapseArrow').style.transform = 'rotate(180deg)';
+        }
+      } catch (e) {
+        console.error('[SE] load config failed', e);
+      }
+    }
+
+    async function saveSelfEvolveConfig() {
+      const btn = document.getElementById('seSaveBtn');
+      const status = document.getElementById('seStatus');
+      btn.disabled = true;
+      status.textContent = '保存中…';
+      status.style.color = '#8d8da8';
+      try {
+        const data = {
+          enabled: document.getElementById('seEnabled').checked,
+          reviewMode: document.getElementById('seReviewMode').value,
+          qualityGateThreshold: Number(document.getElementById('seGateThreshold').value) || 70,
+          maxContextRules: Number(document.getElementById('seMaxRules').value) || 20,
+          criticOnGenerate: document.getElementById('seCritic').checked,
+        };
+        const result = await window.settingsAPI.selfEvolveSaveConfig(data);
+        if (result && result.success) {
+          status.textContent = '✓ 已保存，服务正在重启…';
+          status.style.color = '#00875a';
+        } else {
+          status.textContent = '保存失败';
+          status.style.color = '#d32f2f';
+        }
+      } catch (e) {
+        status.textContent = '保存失败：' + (e && e.message || e);
+        status.style.color = '#d32f2f';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function openSeViewer() {
+      if (window.settingsAPI && typeof window.settingsAPI.openViewer === 'function') {
+        window.settingsAPI.openViewer({ tab: 'self-evolve' });
+      } else {
+        const port = document.getElementById('port') ? document.getElementById('port').value : '3847';
+        window.open('http://localhost:' + port + '/viewer.html?tab=self-evolve', '_blank');
+      }
+    }
+
+    // ──────────── Injector Plugin ────────────
+
+    function toggleInjConfigBody() {
+      const enabled = document.getElementById('injEnabled').checked;
+      const body = document.getElementById('injConfigBody');
+      if (enabled && body.style.display === 'none') body.style.display = 'block';
+    }
+
+    async function loadInjectorConfig() {
+      if (!window.settingsAPI || typeof window.settingsAPI.injectorGetConfig !== 'function') return;
+      try {
+        const cfg = await window.settingsAPI.injectorGetConfig();
+        if (!cfg || !cfg.success) return;
+        const wrapper = document.getElementById('injSectionWrapper');
+        if (wrapper) wrapper.style.display = '';
+        document.getElementById('injEnabled').checked = !!cfg.enabled;
+        if (cfg.enabled) document.getElementById('injConfigBody').style.display = 'block';
+      } catch (e) {
+        console.error('[INJ] load config failed', e);
+      }
+    }
+
+    async function saveInjectorConfig() {
+      const btn = document.getElementById('injSaveBtn');
+      const status = document.getElementById('injStatus');
+      btn.disabled = true;
+      status.textContent = '保存中…';
+      status.style.color = '#8d8da8';
+      try {
+        const result = await window.settingsAPI.injectorSaveConfig({
+          enabled: document.getElementById('injEnabled').checked,
+        });
+        if (result && result.success) {
+          status.textContent = '✓ 已保存，服务正在重启…';
+          status.style.color = '#00875a';
+        } else {
+          status.textContent = '保存失败';
+          status.style.color = '#d32f2f';
+        }
+      } catch (e) {
+        status.textContent = '保存失败：' + (e && e.message || e);
+        status.style.color = '#d32f2f';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function openInjectorViewer() {
+      if (window.settingsAPI && typeof window.settingsAPI.openViewer === 'function') {
+        window.settingsAPI.openViewer({ tab: 'injector' });
+      } else {
+        const port = document.getElementById('port') ? document.getElementById('port').value : '3847';
+        window.open('http://localhost:' + port + '/viewer.html?tab=injector', '_blank');
+      }
+    }
+  </script>
+
+</body>
+</html>

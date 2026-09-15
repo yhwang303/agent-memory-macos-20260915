@@ -1,0 +1,120 @@
+{
+  "name": "agent-memory",
+  "version": "2.0.34",
+  "description": "Headless memory client for CodeBuddy / OpenClaw — record, store locally, sync to your AgentMem backend",
+  "keywords": [
+    "codebuddy",
+    "memory",
+    "agent",
+    "hooks",
+    "mcp",
+    "openclaw",
+    "headless",
+    "linux",
+    "sync",
+    "typescript",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": {
+    "agent-memory": "./dist/cli.js",
+    "agent-memory-worker": "./dist/bin/worker.js",
+    "agent-memory-mcp": "./dist/servers/mcp-server.js",
+    "agent-memory-hooks": "./dist/hooks-cli.js"
+  },
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "pkg": {
+    "targets": [
+      "node22-win-x64",
+      "node22-macos-x64",
+      "node22-linux-x64"
+    ],
+    "assets": [
+      "dist/**/*",
+      "node_modules/better-sqlite3/build/Release/*.node",
+      "node_modules/better-sqlite3/lib/**/*",
+      "node_modules/bindings/**/*",
+      "node_modules/file-uri-to-path/**/*"
+    ],
+    "outputPath": "release"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "import": "./dist/hooks/index.js"
+    },
+    "./sdk": {
+      "types": "./dist/sdk/index.d.ts",
+      "import": "./dist/sdk/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "worker:start": "node dist/bin/worker.js start",
+    "worker:stop": "node dist/bin/worker.js stop",
+    "worker:restart": "node dist/bin/worker.js restart",
+    "worker:status": "node dist/bin/worker.js status",
+    "mcp:start": "node dist/servers/mcp-server.js",
+    "restart": "node dist/bin/worker.js restart && node dist/servers/mcp-server.js",
+    "start:all": "node dist/bin/worker.js start && node dist/servers/mcp-server.js",
+    "setup": "node scripts/setup.js",
+    "test": "node --import tsx --test tests/*.test.ts tests/**/*.test.ts",
+    "test:viewer": "node --import tsx --test tests/viewer-api.test.ts",
+    "typecheck": "tsc --noEmit",
+    "migrate:meta-intent": "tsx scripts/migrate-meta-intent.ts",
+    "wipe-chroma": "node scripts/wipe-chroma.cjs",
+    "install:ide": "npx tsx src/cli/install.ts install",
+    "install:status": "npx tsx src/cli/install.ts status",
+    "check:bun": "node scripts/check-no-bun.js",
+    "license:headers": "node scripts/add-license-header.js",
+    "cli": "npx tsx src/cli.ts",
+    "build:exe": "node scripts/build-exe.js",
+    "release:preflight": "node scripts/release/preflight.mjs",
+    "release:pack:npm": "node scripts/release/build-all.mjs --targets=npm",
+    "release:build:win": "node scripts/release/build-all.mjs --targets=npm,win",
+    "release:build:mac": "node scripts/release/build-all.mjs --targets=npm,mac",
+    "release:build:all": "node scripts/release/build-all.mjs",
+    "release:clean": "node scripts/release/clean.mjs",
+    "prepublishOnly": "npm run build && npm run check:bun",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.1",
+    "@xenova/transformers": "^2.17.2",
+    "better-sqlite3": "^12.6.2",
+    "express": "^4.18.2",
+    "iconv-lite": "^0.7.2",
+    "sqlite-vec": "^0.1.6"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "esbuild": "^0.28.0",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Self-Evolve Overview - 最终效果演示</title>
+<style>
+:root {
+  --bg-primary: #060a0c;
+  --bg-secondary: #0a0e12;
+  --hud-bg: rgba(13,17,23,0.85);
+  --border: rgba(0,212,170,0.12);
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #484f58;
+  --accent-primary: #00d4aa;
+  --accent-purple: #a78bfa;
+  --accent-pink: #f472b6;
+  --accent-warning: #f59e0b;
+  --accent-alert: #ef4444;
+  --accent-active: #00ff88;
+  --font-heading: 'JetBrains Mono', 'SF Mono', monospace;
+  --font-body: 'JetBrains Mono', 'SF Mono', monospace;
+  --font-chinese: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-chinese);
+  padding: 20px;
+  min-height: 100vh;
+}
+.panel { max-width: 920px; margin: 0 auto; }
+
+/* Sub tabs */
+.sub-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.sub-tab {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.sub-tab.active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+/* Stat grid */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.stat-card { background: var(--hud-bg); border: 1px solid rgba(0,212,170,0.1); border-radius: 8px; padding: 14px 16px; position: relative; overflow: hidden; }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.stat-card.sc-rules::before   { background: var(--accent-primary); }
+.stat-card.sc-skills::before  { background: var(--accent-pink); }
+.stat-card.sc-pending::before { background: var(--accent-warning); }
+.stat-card.sc-archived::before { background: var(--text-muted); }
+.stat-value { font-family: var(--font-heading); font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+.stat-card.sc-rules   .stat-value { color: var(--accent-primary); text-shadow: 0 0 20px rgba(0,212,170,0.4); }
+.stat-card.sc-skills  .stat-value { color: var(--accent-pink); text-shadow: 0 0 20px rgba(244,114,182,0.4); }
+.stat-card.sc-pending .stat-value { color: var(--accent-warning); }
+.stat-card.sc-archived .stat-value { color: var(--text-muted); }
+.stat-label { font-size: 10px; font-family: var(--font-heading); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.stat-delta { margin-top: 8px; font-size: 11px; font-family: var(--font-body); color: var(--text-muted); }
+.stat-delta .warn { color: var(--accent-warning); }
+
+/* Section block titles */
+.section-block-title { font-family: var(--font-heading); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+.section-block-title::before { content: '//'; color: var(--accent-purple); opacity: 0.5; }
+
+/* Overview bottom grid */
+.overview-bottom { display: grid; grid-template-columns: 260px 1fr; gap: 10px; margin-bottom: 20px; }
+.section-block { background: var(--hud-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+
+/* Cat rows */
+.cat-rows { display: flex; flex-direction: column; gap: 9px; }
+.cat-row { display: flex; align-items: center; gap: 10px; }
+.cat-name { font-size: 11px; color: var(--text-secondary); min-width: 70px; font-family: var(--font-chinese); }
+.cat-bar-wrap { flex: 1; height: 6px; background: rgba(0,212,170,0.06); border-radius: 3px; overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.cat-count { font-size: 11px; font-family: var(--font-body); color: var(--text-muted); min-width: 20px; text-align: right; }
+
+/* Divider */
+.section-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+/* ===== Inventory list (new) ===== */
+.inv-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.inv-header .section-block-title { margin-bottom: 0; }
+.inv-count {
+  font-size: 11px; font-family: var(--font-body); color: var(--text-muted);
+  background: rgba(0,212,170,0.06); padding: 2px 8px; border-radius: 10px;
+}
+
+.inv-item {
+  background: var(--hud-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  transition: all 0.2s;
+}
+.inv-item:hover { border-color: rgba(0,212,170,0.25); }
+.inv-item.archived { opacity: 0.4; }
+.inv-item.archived .inv-title { text-decoration: line-through; text-decoration-color: var(--text-muted); }
+
+.inv-row {
+  display: flex; align-items: center; padding: 10px 14px; gap: 10px;
+}
+
+/* Toggle switch */
+.inv-toggle {
+  position: relative; width: 32px; height: 18px;
+  background: #2d333b; border-radius: 9px;
+  cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+}
+.inv-toggle.on { background: var(--accent-primary); }
+.inv-toggle::after {
+  content: ''; position: absolute; width: 14px; height: 14px;
+  background: white; border-radius: 50%; top: 2px; left: 2px;
+  transition: transform 0.2s;
+}
+.inv-toggle.on::after { transform: translateX(14px); }
+
+.inv-chevron { font-size: 9px; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
+.inv-item.expanded .inv-chevron { transform: rotate(90deg); }
+
+.inv-info { flex: 1; min-width: 0; }
+.inv-title { font-size: 12px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inv-meta { display: flex; gap: 5px; margin-top: 3px; flex-wrap: wrap; }
+
+.inv-tag { font-size: 9px; padding: 1px 5px; border-radius: 3px; font-family: var(--font-body); }
+.inv-tag.t-cat { background: rgba(0,212,170,0.1); color: var(--accent-primary); }
+.inv-tag.t-kind { background: rgba(244,114,182,0.1); color: var(--accent-pink); }
+.inv-tag.t-pending { background: rgba(245,158,11,0.1); color: var(--accent-warning); }
+.inv-tag.t-approved { background: rgba(0,212,170,0.08); color: var(--accent-primary); }
+.inv-tag.t-auto { background: rgba(139,148,158,0.08); color: var(--text-secondary); }
+
+.inv-score { font-size: 11px; font-family: var(--font-body); font-weight: 600; padding: 2px 5px; border-radius: 3px; flex-shrink: 0; }
+.inv-score.hi { color: var(--accent-primary); background: rgba(0,212,170,0.08); }
+.inv-score.mid { color: var(--accent-warning); background: rgba(245,158,11,0.08); }
+.inv-score.lo { color: var(--accent-alert); background: rgba(239,68,68,0.08); }
+
+.inv-date { font-size: 9px; color: var(--text-muted); font-family: var(--font-body); flex-shrink: 0; }
+
+/* Detail expand */
+.inv-detail { display: none; padding: 0 14px 12px; border-top: 1px solid rgba(0,212,170,0.06); }
+.inv-item.expanded .inv-detail { display: block; }
+.inv-item.expanded { border-color: rgba(0,212,170,0.3); }
+.inv-detail-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-family: var(--font-body); margin: 8px 0 4px; letter-spacing: 0.05em; }
+.inv-detail-box { font-size: 11px; color: var(--text-secondary); line-height: 1.7; background: rgba(0,0,0,0.25); border-radius: 5px; padding: 8px 10px; white-space: pre-wrap; word-break: break-word; max-height: 160px; overflow-y: auto; }
+.inv-detail-footer { margin-top: 8px; display: flex; gap: 12px; font-size: 9px; color: var(--text-muted); font-family: var(--font-body); }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--hud-bg); border: 1px solid var(--accent-primary); color: var(--accent-primary); padding: 8px 18px; border-radius: 6px; font-size: 11px; opacity: 0; transition: all 0.3s; z-index: 999; font-family: var(--font-chinese); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+@media (max-width: 700px) { .overview-bottom { grid-template-columns: 1fr; } .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="panel">
+  <!-- Sub tabs -->
+  <div class="sub-tabs">
+    <div class="sub-tab active">Overview</div>
+    <div class="sub-tab">Rules</div>
+    <div class="sub-tab">Skills</div>
+    <div class="sub-tab">Evo Log</div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="stat-grid">
+    <div class="stat-card sc-rules"><div class="stat-value" id="ov-rules">6</div><div class="stat-label">Active Rules</div><div class="stat-delta">&nbsp;</div></div>
+    <div class="stat-card sc-skills"><div class="stat-value" id="ov-skills">4</div><div class="stat-label">Active Skills</div><div class="stat-delta">&nbsp;</div></div>
+    <div class="stat-card sc-pending"><div class="stat-value">1</div><div class="stat-label">Pending Review</div><div class="stat-delta"><span class="warn">待批准后写入 IDE</span></div></div>
+    <div class="stat-card sc-archived"><div class="stat-value">2</div><div class="stat-label">Archived</div><div class="stat-delta">已归档，不写入 IDE</div></div>
+  </div>
+
+  <!-- Category distribution + chart -->
+  <div class="overview-bottom">
+    <div class="section-block">
+      <div class="section-block-title">Rules 分类分布</div>
+      <div class="cat-rows">
+        <div class="cat-row"><span class="cat-name">代码规范</span><div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:100%;background:var(--accent-primary);"></div></div><span class="cat-count">2</span></div>
+        <div class="cat-row"><span class="cat-name">工作流规范</span><div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:100%;background:var(--accent-warning);"></div></div><span class="cat-count">2</span></div>
+        <div class="cat-row"><span class="cat-name">技术栈偏好</span><div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:50%;background:#60a5fa;"></div></div><span class="cat-count">1</span></div>
+        <div class="cat-row"><span class="cat-name">用户偏好</span><div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:50%;background:var(--accent-purple);"></div></div><span class="cat-count">1</span></div>
+      </div>
+      <div style="margin-top:16px;">
+        <div class="section-block-title" style="margin-bottom:10px;">Skills 分类</div>
+        <div class="cat-rows">
+          <div class="cat-row"><span class="cat-name">scaffold</span><div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:100%;background:var(--accent-pink);"></div></div><span class="cat-count">2</span></div>
+          <div class="cat-row"><span class="cat-name">procedure</span><div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:50%;background:var(--accent-pink);"></div></div><span class="cat-count">1</span></div>
+          <div class="cat-row"><span class="cat-name">automation</span><div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:50%;background:var(--accent-pink);"></div></div><span class="cat-count">1</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="section-block">
+      <div class="section-block-title">存量增长趋势（最近进化）</div>
+      <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:11px;font-family:var(--font-body);">
+        <svg viewBox="0 0 480 140" style="width:100%;max-width:480px;">
+          <line x1="46" y1="20" x2="470" y2="20" stroke="rgba(0,212,170,0.07)" stroke-width="1"/>
+          <line x1="46" y1="70" x2="470" y2="70" stroke="rgba(0,212,170,0.07)" stroke-width="1"/>
+          <line x1="46" y1="120" x2="470" y2="120" stroke="rgba(0,212,170,0.15)" stroke-width="1"/>
+          <polyline points="46,100 152,85 258,70 364,50 470,30" fill="none" stroke="#00d4aa" stroke-width="2" stroke-linejoin="round"/>
+          <polyline points="46,110 152,100 258,95 364,80 470,65" fill="none" stroke="#f472b6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="5,3"/>
+          <circle cx="46" cy="100" r="3" fill="#00d4aa"/><circle cx="152" cy="85" r="3" fill="#00d4aa"/><circle cx="258" cy="70" r="3" fill="#00d4aa"/><circle cx="364" cy="50" r="3" fill="#00d4aa"/><circle cx="470" cy="30" r="3" fill="#00d4aa"/>
+          <circle cx="46" cy="110" r="2.5" fill="#f472b6"/><circle cx="152" cy="100" r="2.5" fill="#f472b6"/><circle cx="258" cy="95" r="2.5" fill="#f472b6"/><circle cx="364" cy="80" r="2.5" fill="#f472b6"/><circle cx="470" cy="65" r="2.5" fill="#f472b6"/>
+          <text x="46" y="135" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono">5/20</text>
+          <text x="152" y="135" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono">5/21</text>
+          <text x="258" y="135" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono">5/22</text>
+          <text x="364" y="135" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono">5/24</text>
+          <text x="470" y="135" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono">5/25</text>
+          <rect x="46" y="6" width="14" height="3" fill="#00d4aa" rx="1.5"/><text x="64" y="10" fill="rgba(208,232,228,0.4)" font-size="8" font-family="JetBrains Mono">Rules</text>
+          <line x1="100" y1="8" x2="114" y2="8" stroke="#f472b6" stroke-width="2" stroke-dasharray="5,3"/><text x="118" y="10" fill="rgba(208,232,228,0.4)" font-size="8" font-family="JetBrains Mono">Skills</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DIVIDER: 存量管理 ===== -->
+  <hr class="section-divider">
+
+  <!-- Rules inventory -->
+  <div class="inv-header">
+    <div class="section-block-title" style="margin-bottom:0;">Rules 存量</div>
+    <span class="inv-count" id="inv-rules-count">7</span>
+  </div>
+  <div id="inv-rules-list"></div>
+
+  <!-- Skills inventory -->
+  <div class="inv-header" style="margin-top:24px;">
+    <div class="section-block-title" style="margin-bottom:0;">Skills 存量</div>
+    <span class="inv-count" id="inv-skills-count">5</span>
+  </div>
+  <div id="inv-skills-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const rules = [
+  { id:1, title:'函数命名必须使用 camelCase', content:'所有 TypeScript/JavaScript 中定义的函数和方法必须使用 camelCase 命名。', category:'代码规范', status:'active', audit_status:'approved', quality_score:85, created_at:'2026-05-24T10:00:00Z', source:'abc12345' },
+  { id:2, title:'禁止在循环体内使用 await', content:'不在 for/while 循环内直接 await 单个 Promise，应改为 Promise.all() 或批量处理。', category:'代码规范', status:'active', audit_status:'auto', quality_score:92, created_at:'2026-05-23T15:30:00Z', source:'xyz98765' },
+  { id:3, title:'文档必须放在对应模块目录下', content:'功能文档不放在公共 docs/ 根目录，而是放到 docs/<module>/features/<name>/ 下。', category:'工作流规范', status:'active', audit_status:'approved', quality_score:78, created_at:'2026-05-25T03:15:00Z', source:'doc00001' },
+  { id:4, title:'偏好使用 better-sqlite3 同步 API', content:'在 worker 进程内优先使用 better-sqlite3 的同步接口，WAL 模式下同步写不阻塞读。', category:'技术栈偏好', status:'active', audit_status:'auto', quality_score:71, created_at:'2026-05-22T09:00:00Z', source:'tech0001' },
+  { id:5, title:'提交信息使用 conventional commits', content:'所有 git commit 消息必须遵循 conventional commits 格式：type(scope): description。', category:'工作流规范', status:'active', audit_status:'approved', quality_score:88, created_at:'2026-05-21T14:20:00Z', source:'git00001' },
+  { id:6, title:'界面文本优先使用中文', content:'面向用户的 UI 文本优先使用中文，代码注释和日志可中英混用。', category:'用户偏好', status:'active', audit_status:'pending', quality_score:65, created_at:'2026-05-25T11:00:00Z', source:'ui000001' },
+  { id:7, title:'electron-store 配置键名不用嵌套', content:'桌面端 electron-store 的键名保持扁平结构，不使用点分隔嵌套。', category:'技术栈偏好', status:'archived', audit_status:'auto', quality_score:58, created_at:'2026-05-20T08:00:00Z', source:'arch0001' },
+];
+
+const skills = [
+  { id:1, name:'release-agent-memory', kind:'automation', status:'active', audit_status:'approved', quality_score:90, trigger:'打包/发布/构建安装包', content:'# Agent Memory Release\n\n1. Run preflight\n2. Use root release scripts\n3. Report artifacts with sha256', created_at:'2026-05-22T10:00:00Z', source:'rel00001' },
+  { id:2, name:'add-feature-doc', kind:'scaffold', status:'active', audit_status:'approved', quality_score:82, trigger:'新建需求文档/PRD/设计文档', content:'# Add Feature Doc\n\nScaffold under docs/<module>/features/<name>/', created_at:'2026-05-21T16:00:00Z', source:'doc00002' },
+  { id:3, name:'add-bug-doc', kind:'scaffold', status:'active', audit_status:'auto', quality_score:79, trigger:'Bug 归档/分析文档', content:'# Add Bug Doc\n\nScaffold under docs/<module>/bugs/<name>/', created_at:'2026-05-20T11:00:00Z', source:'bug00001' },
+  { id:4, name:'frameless-window-conversion', kind:'procedure', status:'active', audit_status:'auto', quality_score:74, trigger:'网页转无边框 Electron 窗口', content:'# 无边框窗口改造\n\n分析 → 设计 → 实现 → 验证', created_at:'2026-05-19T09:00:00Z', source:'win00001' },
+  { id:5, name:'install-agent-memory', kind:'procedure', status:'archived', audit_status:'approved', quality_score:86, trigger:'安装配置记忆系统', content:'# 安装 AgentMemory\n\nNode.js >= 18, npm install && build', created_at:'2026-05-18T14:00:00Z', source:'ins00001' },
+];
+
+function render() {
+  document.getElementById('inv-rules-count').textContent = rules.length;
+  document.getElementById('inv-skills-count').textContent = skills.length;
+  document.getElementById('ov-rules').textContent = rules.filter(r=>r.status==='active').length;
+  document.getElementById('ov-skills').textContent = skills.filter(s=>s.status==='active').length;
+
+  const rl = document.getElementById('inv-rules-list');
+  rl.innerHTML = rules.sort((a,b)=> (a.status==='archived'?1:0)-(b.status==='archived'?1:0) || new Date(b.created_at)-new Date(a.created_at))
+    .map(r => ruleCard(r)).join('');
+
+  const sl = document.getElementById('inv-skills-list');
+  sl.innerHTML = skills.sort((a,b)=> (a.status==='archived'?1:0)-(b.status==='archived'?1:0) || new Date(b.created_at)-new Date(a.created_at))
+    .map(s => skillCard(s)).join('');
+}
+
+function ruleCard(r) {
+  const on = r.status==='active';
+  const sc = r.quality_score>=80?'hi':r.quality_score>=60?'mid':'lo';
+  const audit = r.audit_status==='pending'?'<span class="inv-tag t-pending">⚑ 待审核</span>':r.audit_status==='approved'?'<span class="inv-tag t-approved">✓ 已批准</span>':'<span class="inv-tag t-auto">自动</span>';
+  return `<div class="inv-item ${on?'':'archived'}" id="r${r.id}">
+    <div class="inv-row">
+      <div class="inv-toggle ${on?'on':''}" onclick="event.stopPropagation();toggleR(${r.id})"></div>
+      <span class="inv-chevron" onclick="expand('r${r.id}')">▶</span>
+      <div class="inv-info" onclick="expand('r${r.id}')">
+        <div class="inv-title">${esc(r.title)}</div>
+        <div class="inv-meta"><span class="inv-tag t-cat">${esc(r.category)}</span>${audit}</div>
+      </div>
+      <span class="inv-score ${sc}">${r.quality_score}</span>
+      <span class="inv-date">${fmtD(r.created_at)}</span>
+    </div>
+    <div class="inv-detail">
+      <div class="inv-detail-label">规则内容</div>
+      <div class="inv-detail-box">${esc(r.content)}</div>
+      <div class="inv-detail-footer"><span>来源: ${r.source.slice(0,8)}</span><span>质量: ${r.quality_score}/100</span></div>
+    </div>
+  </div>`;
+}
+
+function skillCard(s) {
+  const on = s.status==='active';
+  const sc = s.quality_score>=80?'hi':s.quality_score>=60?'mid':'lo';
+  const audit = s.audit_status==='pending'?'<span class="inv-tag t-pending">⚑ 待审核</span>':s.audit_status==='approved'?'<span class="inv-tag t-approved">✓ 已批准</span>':'<span class="inv-tag t-auto">自动</span>';
+  return `<div class="inv-item ${on?'':'archived'}" id="s${s.id}">
+    <div class="inv-row">
+      <div class="inv-toggle ${on?'on':''}" onclick="event.stopPropagation();toggleS(${s.id})"></div>
+      <span class="inv-chevron" onclick="expand('s${s.id}')">▶</span>
+      <div class="inv-info" onclick="expand('s${s.id}')">
+        <div class="inv-title">${esc(s.name)}</div>
+        <div class="inv-meta"><span class="inv-tag t-kind">${esc(s.kind)}</span>${audit}<span class="inv-tag t-auto" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(s.trigger)}</span></div>
+      </div>
+      <span class="inv-score ${sc}">${s.quality_score}</span>
+      <span class="inv-date">${fmtD(s.created_at)}</span>
+    </div>
+    <div class="inv-detail">
+      <div class="inv-detail-label">Skill 内容</div>
+      <div class="inv-detail-box">${esc(s.content)}</div>
+      <div class="inv-detail-footer"><span>slug: ${esc(s.name)}</span><span>质量: ${s.quality_score}/100</span></div>
+    </div>
+  </div>`;
+}
+
+function expand(id) { document.getElementById(id).classList.toggle('expanded'); }
+function toggleR(id) { const r=rules.find(x=>x.id===id); r.status=r.status==='active'?'archived':'active'; toast(r.status==='active'?`✓ 已启用「${r.title}」`:`归档「${r.title}」`); render(); }
+function toggleS(id) { const s=skills.find(x=>x.id===id); s.status=s.status==='active'?'archived':'active'; toast(s.status==='active'?`✓ 已启用「${s.name}」`:`归档「${s.name}」`); render(); }
+function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+function esc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function fmtD(s) { if(!s) return '-'; const d=new Date(s); return `${d.getMonth()+1}/${d.getDate()}`; }
+
+render();
+</script>
+</body>
+</html>

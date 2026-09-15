@@ -1,0 +1,3 @@
+{"type":"user","message":{"content":"test"}}
+{this is not json
+{"type":"assistant","message":{"content":[{"type":"text","text":"Parsed despite corrupt line above."}]}}

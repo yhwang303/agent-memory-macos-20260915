@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>初始化设置 - AgentMemory</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f7f8fa;
+      color: #1a1a2e;
+      padding: 20px 22px;
+      font-size: 13px;
+      line-height: 1.5;
+      user-select: none;
+    }
+    h1 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #6b6b8d;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .ide-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f4;
+    }
+    .ide-row:last-child { border-bottom: none; }
+    .ide-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      accent-color: #00d4aa;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .ide-main { flex: 1; min-width: 0; }
+    .ide-name {
+      font-weight: 500;
+      color: #1a1a2e;
+      font-size: 13px;
+    }
+    .ide-path {
+      font-size: 11px;
+      color: #8e8ea9;
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      word-break: break-all;
+      margin-top: 2px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 4px;
+    }
+    .badge-ok {
+      background: rgba(0, 212, 170, 0.12);
+      color: #00d4aa;
+    }
+    .badge-warn {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    .empty-hint {
+      color: #9b9bb5;
+      font-size: 12px;
+      padding: 8px 0;
+    }
+    .results {
+      display: none;
+      margin-top: 10px;
+    }
+    .results.visible { display: block; }
+    .result-row {
+      font-size: 12px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f0f0f4;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-ok { color: #2e7d32; }
+    .result-err { color: #c62828; }
+    .button-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .btn {
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #00d4aa, #00ff88);
+      color: #0a1014;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,212,170,0.25);
+    }
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 4px 12px rgba(0,212,170,0.35);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #6b6b8d;
+      border: 1px solid #dcdfe6;
+    }
+    .btn-secondary:hover {
+      border-color: #b0b0c8;
+      color: #4a4a6a;
+    }
+  </style>
+</head>
+<body>
+  <h1>欢迎使用 AgentMemory</h1>
+  <p class="subtitle">检测到以下 IDE，勾选要关联的 IDE 来启用记忆采集。</p>
+
+  <div class="card" id="ideList">
+    <div class="empty-hint" id="loadingHint">检测中…</div>
+  </div>
+
+  <div class="results" id="resultsSection">
+    <div class="subtitle" style="margin-bottom:6px;">关联结果</div>
+    <div class="card" id="resultsBody"></div>
+  </div>
+
+  <!-- 历史对话导入勾选 — 在扫盘出"有可导入对话"时才显示。
+       默认不勾选: Worker 启动后会静默自动跑一次, 不需要在 wizard 里强加这步。
+       保留勾选项是给"想立刻看到进度面板"的用户一个手动入口。-->
+  <div class="results" id="importSection">
+    <div class="subtitle" style="margin-bottom:6px;">同时导入历史对话</div>
+    <div class="card" style="display:flex;align-items:flex-start;gap:10px;padding:10px;">
+      <input type="checkbox" id="importCheckbox" style="margin-top:4px;" />
+      <label for="importCheckbox" style="flex:1;cursor:pointer;line-height:1.5;">
+        <div style="font-size:13px;color:#1f1f3b;font-weight:600;">
+          检测到 <span id="importCount">0</span> 段未被 AgentMemory 记录的历史会话
+        </div>
+        <div id="importBreakdown" style="font-size:11px;color:#6b6b8d;margin-top:4px;"></div>
+        <div style="font-size:10px;color:#9c9cb8;margin-top:6px;">
+          AgentMemory 启动后会自动在后台静默跑一次（每段会话一条 summary，hook 已记录的不重复）。<br>
+          勾选此项可以立刻打开右下角进度浮窗看导入过程，不勾选也会自动跑。
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <div class="button-bar">
+    <button type="button" class="btn btn-secondary" id="skipBtn">跳过</button>
+    <button type="button" class="btn btn-primary" id="primaryBtn" disabled>开始关联</button>
+  </div>
+
+  <script>
+    const IDE_LABEL = {
+      codebuddy: 'CodeBuddy',
+      cursor: 'Cursor',
+      'codebuddy-ide': 'CodeBuddy IDE',
+      'claude-code': 'Claude Code',
+      'claude-internal': 'Claude Internal',
+      codex: 'Codex App / CLI',
+      openclaw: 'OpenClaw Gateway',
+      // Import-discovery adapter ids — different namespace from hook IDE ids;
+      // import-side `claude` covers both `claude-code` and `claude-internal`.
+      claude: 'Claude / claude-internal',
+      'cursor-agent': 'Cursor (Agent mode)',
+    };
+
+    let detected = [];
+    let registrationDone = false;
+
+    function badgeHtml(isRegistered) {
+      if (isRegistered) {
+        return '<span class="badge badge-ok">已关联</span>';
+      }
+      return '<span class="badge badge-warn">未关联</span>';
+    }
+
+    function updatePrimaryState() {
+      const btn = document.getElementById('primaryBtn');
+      if (registrationDone) {
+        btn.disabled = false;
+        btn.textContent = '完成';
+        return;
+      }
+      const checked = document.querySelectorAll('#ideList input[type="checkbox"]:checked');
+      btn.disabled = checked.length === 0;
+    }
+
+    function renderList(list) {
+      const container = document.getElementById('ideList');
+      container.innerHTML = '';
+      if (!list.length) {
+        container.innerHTML = '<div class="empty-hint">未检测到已安装的 IDE（CodeBuddy / Cursor / CodeBuddy IDE）</div>';
+        updatePrimaryState();
+        return;
+      }
+      list.forEach((ide) => {
+        const row = document.createElement('div');
+        row.className = 'ide-row';
+        const id = 'cb-' + ide.type;
+        row.innerHTML =
+          '<input type="checkbox" id="' + id + '" data-type="' + ide.type + '"' +
+          (ide.isRegistered ? ' disabled' : '') + ' />' +
+          '<div class="ide-main">' +
+            '<div class="ide-name">' + (IDE_LABEL[ide.type] || ide.type) + '</div>' +
+            '<div class="ide-path">' + (ide.hooksJsonPath || ide.ideDataDir) + '</div>' +
+            badgeHtml(ide.isRegistered) +
+          '</div>';
+        container.appendChild(row);
+        const cb = row.querySelector('input');
+        cb.addEventListener('change', updatePrimaryState);
+      });
+      updatePrimaryState();
+    }
+
+    async function loadIDEs() {
+      try {
+        detected = await window.setupAPI.detectIDEs();
+        renderList(detected);
+      } catch (e) {
+        document.getElementById('ideList').innerHTML =
+          '<div class="empty-hint">检测失败，请稍后重试。</div>';
+      }
+    }
+
+    function showResults(resultMap) {
+      const section = document.getElementById('resultsSection');
+      const body = document.getElementById('resultsBody');
+      body.innerHTML = '';
+      Object.keys(resultMap).forEach((type) => {
+        const r = resultMap[type];
+        const name = IDE_LABEL[type] || type;
+        const row = document.createElement('div');
+        row.className = 'result-row ' + (r.success ? 'result-ok' : 'result-err');
+        let msg = r.success ? '成功' : ('失败：' + (r.message || '未知错误'));
+        if (r.success && r.skippedEvents && r.skippedEvents.length) {
+          msg += '（部分事件已存在，已跳过）';
+        }
+        row.textContent = name + ' — ' + msg;
+        body.appendChild(row);
+      });
+      section.classList.add('visible');
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadIDEs();
+      void loadImportSummary();
+
+      document.getElementById('skipBtn').addEventListener('click', () => {
+        window.setupAPI.skip();
+      });
+
+      document.getElementById('primaryBtn').addEventListener('click', async () => {
+        if (registrationDone) {
+          // Wizard 完成时,如果勾了"导入历史对话"就先触发导入。
+          // 不阻塞 skip — 导入是后台任务,wizard 关掉不影响进度面板。
+          const cb = document.getElementById('importCheckbox');
+          if (cb && cb.checked && document.getElementById('importSection').classList.contains('visible')) {
+            try { await window.setupAPI.triggerImport(); } catch {}
+          }
+          await window.setupAPI.skip();
+          return;
+        }
+        const checked = Array.from(
+          document.querySelectorAll('#ideList input[type="checkbox"]:checked'),
+        ).map((el) => el.getAttribute('data-type'));
+        if (!checked.length) return;
+        const resultMap = await window.setupAPI.register(checked);
+        showResults(resultMap);
+        registrationDone = true;
+        document.getElementById('skipBtn').style.display = 'none';
+        updatePrimaryState();
+      });
+    });
+
+    /**
+     * 拉一次"可导入历史对话"的扫盘结果。
+     * 总数为 0 时不显示勾选区,避免打扰从未用过相关 IDE 的用户。
+     */
+    async function loadImportSummary() {
+      try {
+        const r = await window.setupAPI.discoverImport();
+        if (!r || !r.totalFiles || r.totalFiles <= 0) return;
+        document.getElementById('importCount').textContent = String(r.totalFiles);
+        const breakdown = (r.perAdapter || [])
+          .filter((a) => a.files > 0)
+          .map((a) => {
+            const name = IDE_LABEL[a.id] || (a.id === 'claude' ? 'Claude' : a.id);
+            return name + ' ' + a.files + ' 个';
+          })
+          .join('， ');
+        document.getElementById('importBreakdown').textContent = breakdown;
+        document.getElementById('importSection').classList.add('visible');
+      } catch {
+        // discover 失败 → 静默隐藏勾选区,后续可在托盘菜单里手动触发。
+      }
+    }
+  </script>
+</body>
+</html>

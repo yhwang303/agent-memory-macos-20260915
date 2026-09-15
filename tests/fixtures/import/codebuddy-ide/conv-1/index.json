@@ -1,0 +1,10 @@
+{
+  "messages": [
+    { "id": "u1", "role": "user", "type": "text", "isComplete": true },
+    { "id": "a1", "role": "assistant", "type": "text", "isComplete": true },
+    { "id": "t1", "role": "tool", "type": "text", "isComplete": true },
+    { "id": "a2", "role": "assistant", "type": "text", "isComplete": true },
+    { "id": "u2", "role": "user", "type": "text", "isComplete": true },
+    { "id": "a3", "role": "assistant", "type": "text", "isComplete": true }
+  ]
+}

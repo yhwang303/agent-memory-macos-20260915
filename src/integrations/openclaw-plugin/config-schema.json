@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "agent-memory OpenClaw Plugin Config",
+  "type": "object",
+  "properties": {
+    "enabled": { "type": "boolean", "default": true },
+    "project": { "type": "string", "default": "openclaw-gateway" },
+    "workerHost": { "type": "string", "default": "127.0.0.1" },
+    "workerPort": { "type": "integer", "default": 3847, "minimum": 1, "maximum": 65535 },
+    "syncMemoryFile": { "type": "boolean", "default": true },
+    "syncMemoryFileExclude": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["debugger"]
+    },
+    "captureChannel": { "type": "boolean", "default": true },
+    "captureLLMIO": { "type": "boolean", "default": false },
+    "observationFeed": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "channel": { "type": "string", "enum": ["telegram", "discord", "slack"], "default": "telegram" },
+        "to": { "type": "string" },
+        "botToken": { "type": "string" }
+      },
+      "required": ["enabled", "channel", "to"]
+    }
+  },
+  "required": ["enabled", "project"]
+}

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentMemory — Quick Search</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep-space: #0a1014;
+    --bg-void: #060a0c;
+    --bg-panel: rgba(8, 20, 28, 0.92);
+    --accent-primary: #00d4aa;
+    --accent-glow: rgba(0, 212, 170, 0.4);
+    --accent-dim: rgba(0, 212, 170, 0.15);
+    --accent-active: #00ff88;
+    --accent-alert: #ff4466;
+    --accent-warning: #ffaa33;
+    --hud-border: rgba(0, 212, 170, 0.35);
+    --hud-border-bright: rgba(0, 212, 170, 0.7);
+    --hud-bg: rgba(8, 20, 28, 0.88);
+    --hud-glow: rgba(0, 212, 170, 0.12);
+    --text-primary: #d0e8e4;
+    --text-secondary: rgba(208, 232, 228, 0.6);
+    --text-dim: rgba(208, 232, 228, 0.35);
+    --text-muted: #4a6670;
+    --font-pixel: 'Press Start 2P', cursive;
+    --font-heading: 'Orbitron', sans-serif;
+    --font-body: 'JetBrains Mono', 'Noto Sans SC', monospace;
+    --font-chinese: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: transparent;
+  }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-deep-space);
+    color: var(--text-primary);
+    overflow: hidden;
+    user-select: none;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-radius: 8px;
+  }
+
+
+  .container {
+    padding: 14px 14px 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .header-label {
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    color: var(--accent-primary);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-left: 2px;
+    text-shadow: 0 0 8px var(--accent-glow);
+  }
+
+  .search-wrap {
+    position: relative;
+    margin-bottom: 10px;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  #searchInput {
+    width: 100%;
+    height: 40px;
+    padding: 0 14px 0 38px;
+    border: 1px solid var(--hud-border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: var(--font-chinese);
+    color: var(--text-primary);
+    background: var(--bg-void);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #searchInput:focus {
+    border-color: var(--hud-border-bright);
+    box-shadow: 0 0 12px var(--hud-glow), inset 0 0 8px rgba(0, 212, 170, 0.03);
+  }
+
+  #searchInput::placeholder { color: var(--text-muted); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .filters select {
+    padding: 5px 8px;
+    border: 1px solid var(--hud-border);
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: var(--font-chinese);
+    color: var(--text-secondary);
+    background: var(--bg-void);
+    outline: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+  }
+
+  .filters select:focus { border-color: var(--hud-border-bright); }
+  .filters select option { background: var(--bg-deep-space); color: var(--text-primary); }
+  #projectFilter { max-width: 200px; }
+
+  .results {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 8px;
+  }
+
+  .results::-webkit-scrollbar { width: 6px; }
+  .results::-webkit-scrollbar-track { background: rgba(0, 212, 170, 0.05); border-radius: 3px; }
+  .results::-webkit-scrollbar-thumb { background: rgba(0, 212, 170, 0.25); border-radius: 3px; }
+  .results::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 170, 0.4); }
+
+  .card {
+    padding: 10px 12px;
+    border-left: 3px solid var(--accent-primary);
+    border-radius: 4px;
+    margin-bottom: 6px;
+    background: var(--hud-bg);
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.2s;
+  }
+
+  .card:hover {
+    background: rgba(0, 212, 170, 0.08);
+    transform: translateX(2px);
+  }
+
+  .card:active { transform: translateX(1px); }
+
+  .card-type-observation { border-left-color: var(--accent-warning); }
+
+  .card-title {
+    font-size: 12px;
+    font-family: var(--font-chinese);
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-all;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .card-meta .project {
+    background: var(--accent-dim);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--accent-primary);
+    font-family: var(--font-body);
+    font-size: 10px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .section-label {
+    font-family: var(--font-heading);
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent-primary);
+    padding: 8px 0 4px;
+    text-shadow: 0 0 6px var(--hud-glow);
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+    color: var(--text-muted);
+  }
+
+  .empty-state svg { margin-bottom: 12px; opacity: 0.4; color: var(--accent-primary); }
+  .empty-state .msg { font-size: 12px; font-family: var(--font-chinese); }
+
+  .error-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--accent-alert);
+    font-size: 12px;
+    font-family: var(--font-chinese);
+  }
+
+  .loading {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: var(--font-chinese);
+  }
+
+  .loading::after {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(0, 212, 170, 0.2);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: var(--bg-void);
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .footer a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, text-shadow 0.15s;
+    font-family: var(--font-chinese);
+    font-size: 11px;
+  }
+
+  .footer a:hover {
+    color: var(--accent-active);
+    text-shadow: 0 0 8px var(--accent-glow);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-label">Memory Search</div>
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="searchInput" type="text" placeholder="搜索记忆..." autofocus>
+  </div>
+  <div class="filters">
+    <select id="typeFilter">
+      <option value="summaries">总结</option>
+      <option value="observations">观察</option>
+      <option value="all">全部</option>
+    </select>
+    <select id="projectFilter">
+      <option value="">所有项目</option>
+    </select>
+  </div>
+  <div class="results" id="results">
+    <div class="loading">加载中</div>
+  </div>
+</div>
+<div class="footer">
+  <span id="countLabel">—</span>
+  <a id="openViewer" href="#">打开完整浏览器 →</a>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const PORT = params.get('port') || '3847';
+const BASE = `http://127.0.0.1:${PORT}`;
+
+let debounceTimer = null;
+let currentResultCount = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadRecent();
+  loadProjects();
+
+  window.addEventListener('focus', () => {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) loadRecent();
+    loadProjects();
+  });
+
+  const input = document.getElementById('searchInput');
+  input.addEventListener('input', (e) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const query = e.target.value.trim();
+      if (query) {
+        search(query);
+      } else {
+        loadRecent();
+      }
+    }, 300);
+  });
+
+  document.getElementById('typeFilter').addEventListener('change', () => {
+    const query = input.value.trim();
+    if (query) search(query);
+    else loadRecent();
+  });
+
+  document.getElementById('projectFilter').addEventListener('change', () => {
+    const query = input.value.trim();
+    if (query) search(query);
+    else loadRecent();
+  });
+
+  document.getElementById('openViewer').addEventListener('click', (e) => {
+    e.preventDefault();
+    const tab = document.getElementById('typeFilter').value;
+    const targetTab = tab === 'all' ? 'summaries' : tab;
+    if (window.quickAPI && typeof window.quickAPI.openViewer === 'function') {
+      window.quickAPI.openViewer({ tab: targetTab });
+    } else {
+      window.open(`${BASE}/viewer.html?tab=${targetTab}`);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') window.close();
+  });
+});
+
+async function loadRecent(retryCount = 0) {
+  showLoading();
+  const type = document.getElementById('typeFilter').value;
+  const project = document.getElementById('projectFilter').value;
+
+  const projectParam = project ? `&project=${encodeURIComponent(project)}` : '';
+
+  let url;
+  if (type === 'observations') {
+    url = `${BASE}/api/viewer/observations?limit=10${projectParam}`;
+  } else {
+    url = `${BASE}/api/viewer/summaries?limit=10${projectParam}`;
+  }
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    let data = Array.isArray(json) ? json : (json.data || []);
+
+    if (type === 'all') {
+      const res2 = await fetch(`${BASE}/api/viewer/observations?limit=10${projectParam}`);
+      const json2 = await res2.json();
+      const obs = Array.isArray(json2) ? json2 : (json2.data || []);
+      renderMixed(data, obs);
+    } else {
+      renderCards(data, type === 'observations' ? 'observations' : 'summaries');
+    }
+  } catch (err) {
+    if (retryCount < 2) {
+      setTimeout(() => loadRecent(retryCount + 1), 800);
+    } else {
+      showError('无法连接到服务');
+    }
+  }
+}
+
+async function search(query) {
+  showLoading();
+  const type = document.getElementById('typeFilter').value;
+  const project = document.getElementById('projectFilter').value;
+
+  let url = `${BASE}/api/search_like?query=${encodeURIComponent(query)}&type=${type}&limit=20`;
+  if (project) url += `&project=${encodeURIComponent(project)}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    renderSearchResults(data);
+  } catch (err) {
+    showError('搜索失败');
+  }
+}
+
+async function loadProjects() {
+  try {
+    const res = await fetch(`${BASE}/api/viewer/projects`);
+    if (!res.ok) return;
+    const json = await res.json();
+    const projects = Array.isArray(json) ? json : (json.data || []);
+    const sel = document.getElementById('projectFilter');
+    const currentValue = sel.value;
+    sel.innerHTML = '<option value="">所有项目</option>';
+    projects.forEach(p => {
+      const opt = document.createElement('option');
+      const name = typeof p === 'string' ? p : (p.name || p.project_path || '');
+      const short = name.split(/[/\\]/).pop() || name;
+      opt.value = name;
+      opt.textContent = short;
+      sel.appendChild(opt);
+    });
+    if (currentValue) sel.value = currentValue;
+  } catch {}
+}
+
+function filterByProject(items, project) {
+  if (!project) return items;
+  return items.filter(item => {
+    const p = item.project || item.project_path || '';
+    return p.includes(project);
+  });
+}
+
+function renderCards(items, type) {
+  const container = document.getElementById('results');
+  if (!items || items.length === 0) {
+    showEmpty();
+    return;
+  }
+  currentResultCount = items.length;
+  container.innerHTML = items.map(item => cardHTML(item, type)).join('');
+  updateCount();
+  bindCardClicks();
+}
+
+function renderMixed(summaries, observations) {
+  const container = document.getElementById('results');
+  const all = [];
+
+  if (summaries && summaries.length > 0) {
+    all.push('<div class="section-label">Summaries</div>');
+    all.push(...summaries.map(item => cardHTML(item, 'summaries')));
+  }
+  if (observations && observations.length > 0) {
+    all.push('<div class="section-label">Observations</div>');
+    all.push(...observations.map(item => cardHTML(item, 'observations')));
+  }
+
+  currentResultCount = (summaries?.length || 0) + (observations?.length || 0);
+  if (currentResultCount === 0) { showEmpty(); return; }
+
+  container.innerHTML = all.join('');
+  updateCount();
+  bindCardClicks();
+}
+
+function renderSearchResults(data) {
+  const container = document.getElementById('results');
+  const results = data.results || data;
+  const summaries = results.summaries || [];
+  const observations = results.observations || [];
+  const flat = Array.isArray(results) ? results : null;
+
+  if (flat) {
+    currentResultCount = flat.length;
+    if (flat.length === 0) { showEmpty('未找到匹配结果'); return; }
+    container.innerHTML = flat.map(item => {
+      const t = item.type === 'observation' ? 'observations' : 'summaries';
+      return cardHTML(item, t);
+    }).join('');
+  } else {
+    const all = [];
+    if (summaries.length > 0) {
+      all.push('<div class="section-label">Summaries</div>');
+      all.push(...summaries.map(item => cardHTML(item, 'summaries')));
+    }
+    if (observations.length > 0) {
+      all.push('<div class="section-label">Observations</div>');
+      all.push(...observations.map(item => cardHTML(item, 'observations')));
+    }
+    currentResultCount = summaries.length + observations.length;
+    if (currentResultCount === 0) { showEmpty('未找到匹配结果'); return; }
+    container.innerHTML = all.join('');
+  }
+
+  updateCount();
+  bindCardClicks();
+}
+
+function cardHTML(item, type) {
+  const id = item.id || '';
+  const title = escapeHtml(
+    item.request || item.title || item.content || item.observation || '(无标题)'
+  );
+  const projectRaw = item.project || item.project_path || '';
+  const project = projectRaw.split(/[/\\]/).pop() || projectRaw;
+  const time = timeAgo(item.created_at || item.timestamp || '');
+  const cls = type === 'observations' ? 'card card-type-observation' : 'card';
+
+  return `<div class="${cls}" data-type="${type}" data-id="${id}">
+    <div class="card-title">${title}</div>
+    <div class="card-meta">
+      ${project ? `<span class="project">${escapeHtml(project)}</span>` : ''}
+      <span>${time}</span>
+    </div>
+  </div>`;
+}
+
+function bindCardClicks() {
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => {
+      const type = card.dataset.type;
+      const id = card.dataset.id;
+      if (id) openInViewer(type, id);
+    });
+  });
+}
+
+function openInViewer(type, id) {
+  if (window.quickAPI && typeof window.quickAPI.openViewer === 'function') {
+    window.quickAPI.openViewer({ tab: type, id });
+  } else {
+    window.open(`${BASE}/viewer.html?tab=${type}&id=${id}`);
+  }
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  if (isNaN(then)) return '';
+  const diff = now - then;
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return '刚刚';
+  if (minutes < 60) return `${minutes}分钟前`;
+  if (hours < 24) return `${hours}小时前`;
+  if (days === 1) return '昨天';
+  if (days < 30) return `${days}天前`;
+  return new Date(dateStr).toLocaleDateString('zh-CN');
+}
+
+function showLoading() {
+  document.getElementById('results').innerHTML = '<div class="loading">加载中</div>';
+}
+
+function showError(msg) {
+  document.getElementById('results').innerHTML = `<div class="error-state">${escapeHtml(msg)}</div>`;
+  document.getElementById('countLabel').textContent = '—';
+}
+
+function showEmpty(msg) {
+  document.getElementById('results').innerHTML = `
+    <div class="empty-state">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span class="msg">${escapeHtml(msg || '暂无记忆')}</span>
+    </div>`;
+  currentResultCount = 0;
+  updateCount();
+}
+
+function updateCount() {
+  document.getElementById('countLabel').textContent =
+    currentResultCount > 0 ? `显示 ${currentResultCount} 条` : '—';
+}
+
+function escapeHtml(str) {
+  const el = document.createElement('span');
+  el.textContent = str;
+  return el.innerHTML;
+}
+</script>
+</body>
+</html>

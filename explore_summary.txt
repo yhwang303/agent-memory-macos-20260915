@@ -1,0 +1,176 @@
+CODEBUDDY MEMORY CLIENT - PROJECT EXPLORATION SUMMARY
+======================================================
+
+Report Date: May 25, 2026
+Current Version: 2.0.11
+Client Type: Electron Desktop App + Headless CLI + MCP Server
+
+1. PROJECT OVERVIEW
+=====================
+
+Purpose: Persistent cross-session memory for CodeBuddy/Cursor AI agents
+
+Delivery Models:
+  - Electron Desktop App: System tray with UI + background worker
+  - Headless CLI: CLI tools for IDE hook integration  
+  - NPM Package: SDK for programmatic use
+  - MCP Server: ModelContextProtocol for memory search
+
+2. VERSION DEFINITIONS
+=======================
+
+Current Version: 2.0.11 (in both package.json files)
+
+Sources:
+  /package.json (root)          "version": "2.0.11"
+  /desktop/package.json         "version": "2.0.11"
+  
+NOTE: Versions MUST be manually synchronized
+No automation detected (no semantic-release, standard-version)
+
+3. ENTRY POINTS
+================
+
+Electron Main:       desktop/src/main.ts
+CLI:                 src/cli.ts
+Worker Service:      src/bin/worker.ts (Express on port 3847)
+MCP Server:          src/servers/mcp-server.ts
+
+4. UPDATE SYSTEM - CRITICAL FINDINGS
+=====================================
+
+File: desktop/src/services/UpdateChecker.ts
+
+IMPLEMENTED:
+  ✓ UpdateChecker class with event system
+  ✓ Version comparison (semver logic)
+  ✓ System notifications
+  ✓ Dismissal tracking
+  ✓ 24-hour check interval
+
+TODO - CRITICAL:
+  ✗ HARDCODED PLACEHOLDER URL (line 11):
+    const VERSION_CHECK_URL = 'https://YOUR_SERVER_DOMAIN/api/releases/latest'
+    
+  ✗ Backend API NOT implemented
+    Endpoint needed: GET /api/releases/latest
+    Response format: { version, releaseNotes, downloadPage, releasedAt }
+
+Update Flow:
+  1. App starts (15s delay)
+  2. Check VERSION_CHECK_URL every 24 hours
+  3. Compare versions using isNewer()
+  4. If newer: show notification
+  5. On click: open downloadPage in browser
+  6. On dismiss: store dismissedVersion in config
+
+5. CONFIGURATION
+==================
+
+Desktop Config:
+  Path: ~/.agent-memory/desktop-config.json
+  Storage: Electron Store
+  Encryption: electron.safeStorage (for apiKey, serverToken)
+  Update tracking: dismissedVersion field
+
+Environment Variables:
+  CODEBUDDY_MEM_PORT=3847
+  CODEBUDDY_MEM_REMOTE_URL=<optional server>
+  CODEBUDDY_MEM_REMOTE_TOKEN=<optional auth>
+  TIMIAI_API_KEY or OPENAI_API_KEY or ANTHROPIC_API_KEY
+
+6. API ENDPOINTS
+=================
+
+Worker API (internal): http://127.0.0.1:3847/api/*
+  - /api/observations
+  - /api/sessions
+  - /api/context
+  - /api/status
+  - /api/sync
+
+Update Endpoint (TODO):
+  GET https://YOUR_SERVER_DOMAIN/api/releases/latest
+
+Remote Server (optional):
+  /api/sync/push
+  /api/sync/pull
+  /auth/token
+
+7. DISTRIBUTION
+=================
+
+NPM Package: agent-memory (primary)
+Standalone executables: win-x64, mac-x64, linux-x64
+Electron app: Windows NSIS installer, macOS DMG
+
+8. TECHNOLOGY
+===============
+
+Electron 33.0.0
+TypeScript 5.3.0
+Express 4.18.2
+SQLite (better-sqlite3 12.6.2)
+electron-store 8.2.0
+electron-builder 25.1.0
+
+9. KEY FILES
+=============
+
+package.json              Version 2.0.11 (ROOT)
+desktop/package.json      Version 2.0.11 (DESKTOP)
+desktop/src/main.ts       Electron main
+desktop/src/services/UpdateChecker.ts   UPDATE LOGIC
+desktop/src/config/store.ts             Config storage
+src/cli.ts                CLI entry
+src/bin/worker.ts         Worker service
+CHANGELOG.md              Manual version history
+
+10. CRITICAL TODOs
+===================
+
+MUST DO:
+  1. Implement backend API endpoint: GET /api/releases/latest
+  2. Replace VERSION_CHECK_URL placeholder with real server URL
+  3. Automate package.json version sync (desktop ↔ root)
+  4. Set up CI/CD for release builds and artifact hosting
+
+OPTIONAL:
+  5. Integrate electron-updater for auto-install
+  6. Add binary delta update support
+  7. Add download progress UI
+
+11. WHAT'S WORKING
+===================
+
+✓ UpdateChecker service (needs URL only)
+✓ Version comparison logic
+✓ System notification integration
+✓ Dismissal tracking
+✓ Config persistence with encryption
+✓ Multi-platform build config
+✓ Comprehensive env var system
+✓ Error handling in update check
+✓ CLI version command
+
+12. NEXT STEPS
+===============
+
+Phase 1 (Required):
+  - Implement backend /api/releases/latest endpoint
+  - Replace hardcoded URL in UpdateChecker.ts
+  - Test end-to-end
+
+Phase 2 (Required):
+  - Automate version sync
+  - Set up CI/CD pipeline
+  - Host release artifacts
+
+Phase 3 (Optional):
+  - Integrate electron-updater
+  - Implement auto-install
+  - Add progress UI
+
+SUMMARY: Update infrastructure is ~90% done.
+Just needs backend API + URL replacement + release automation.
+

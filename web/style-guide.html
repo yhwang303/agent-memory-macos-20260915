@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentMemory · Style Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    /* ========== ShadowFolk Design Tokens ========== */
+    :root {
+      --bg-deep-space: #0a1014;
+      --bg-void: #060a0c;
+      --bg-panel: rgba(8, 20, 28, 0.92);
+
+      --accent-primary: #00d4aa;
+      --accent-glow: rgba(0, 212, 170, 0.4);
+      --accent-dim: rgba(0, 212, 170, 0.15);
+      --accent-active: #00ff88;
+      --accent-alert: #ff4466;
+      --accent-warning: #ffaa33;
+
+      --hud-border: rgba(0, 212, 170, 0.35);
+      --hud-border-bright: rgba(0, 212, 170, 0.7);
+      --hud-bg: rgba(8, 20, 28, 0.88);
+      --hud-glow: rgba(0, 212, 170, 0.12);
+
+      --text-primary: #d0e8e4;
+      --text-secondary: rgba(208, 232, 228, 0.6);
+      --text-dim: rgba(208, 232, 228, 0.35);
+      --text-muted: #4a6670;
+
+      --font-pixel: 'Press Start 2P', cursive;
+      --font-heading: 'Orbitron', sans-serif;
+      --font-body: 'JetBrains Mono', 'Noto Sans SC', monospace;
+      --font-chinese: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-deep-space);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+      padding: 40px 32px 80px;
+    }
+
+    /* CRT scanlines + vignette */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0, transparent 3px,
+        rgba(0, 0, 0, 0.06) 3px, rgba(0, 0, 0, 0.06) 6px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 0%, transparent 65%, rgba(0, 0, 0, 0.35) 100%);
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ========== Header ========== */
+    .topbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding-bottom: 18px;
+      margin-bottom: 36px;
+      border-bottom: 1px solid var(--hud-border);
+    }
+    .brand {
+      font-family: var(--font-pixel);
+      font-size: 14px;
+      color: var(--accent-primary);
+      letter-spacing: 0.16em;
+      text-shadow: 0 0 12px var(--accent-glow);
+    }
+    .brand small {
+      display: block;
+      margin-top: 8px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      letter-spacing: 0.32em;
+      color: var(--text-secondary);
+      text-shadow: none;
+    }
+    .meta {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+    .meta .pulse {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-active);
+      box-shadow: 0 0 8px var(--accent-active);
+      margin-right: 6px;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse { 50% { opacity: 0.35; } }
+
+    /* ========== Section ========== */
+    section { margin-bottom: 56px; }
+
+    .section-label {
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      color: var(--accent-primary);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      text-shadow: 0 0 6px var(--accent-glow);
+    }
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .section-desc {
+      font-family: var(--font-chinese);
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 22px;
+    }
+
+    /* ========== Color tiles ========== */
+    .colors {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+    }
+    .swatch {
+      border: 1px solid var(--hud-border);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--hud-bg);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .swatch:hover {
+      border-color: var(--hud-border-bright);
+      box-shadow: 0 0 16px var(--hud-glow);
+    }
+    .swatch .chip {
+      height: 70px;
+      border-bottom: 1px solid var(--hud-border);
+    }
+    .swatch .info {
+      padding: 10px 12px;
+      font-size: 11px;
+    }
+    .swatch .name {
+      font-family: var(--font-heading);
+      letter-spacing: 0.06em;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .swatch .var {
+      color: var(--text-muted);
+      font-size: 10px;
+    }
+
+    /* ========== Typography ========== */
+    .type-grid { display: grid; gap: 16px; }
+    .type-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      align-items: baseline;
+      padding: 14px 18px;
+      border: 1px solid var(--hud-border);
+      border-radius: 6px;
+      background: var(--hud-bg);
+    }
+    .type-tag {
+      font-family: var(--font-pixel);
+      font-size: 8px;
+      color: var(--accent-primary);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .type-pixel  { font-family: var(--font-pixel);  font-size: 14px; color: var(--accent-primary); text-shadow: 0 0 8px var(--accent-glow); letter-spacing: 0.1em; }
+    .type-h1     { font-family: var(--font-heading); font-size: 28px; font-weight: 700; letter-spacing: 0.04em; }
+    .type-h2     { font-family: var(--font-heading); font-size: 18px; font-weight: 500; letter-spacing: 0.06em; color: var(--text-primary); }
+    .type-body   { font-family: var(--font-body);   font-size: 13px; color: var(--text-primary); }
+    .type-zh     { font-family: var(--font-chinese); font-size: 14px; color: var(--text-primary); }
+    .type-mute   { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); }
+
+    /* ========== Buttons ========== */
+    .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+    .btn {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 9px 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .18s;
+      border: 1px solid var(--hud-border);
+      background: var(--hud-bg);
+      color: var(--text-primary);
+    }
+    .btn:hover { border-color: var(--hud-border-bright); box-shadow: 0 0 14px var(--hud-glow); color: var(--accent-primary); }
+
+    .btn-primary {
+      background: var(--accent-dim);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      text-shadow: 0 0 6px var(--accent-glow);
+    }
+    .btn-primary:hover {
+      background: var(--accent-primary);
+      color: var(--bg-void);
+      box-shadow: 0 0 18px var(--accent-glow);
+      text-shadow: none;
+    }
+    .btn-danger {
+      border-color: var(--accent-alert);
+      color: var(--accent-alert);
+    }
+    .btn-danger:hover { background: var(--accent-alert); color: var(--bg-void); }
+    .btn-ghost { border-color: rgba(208, 232, 228, 0.18); color: var(--text-secondary); }
+    .btn-ghost:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+
+    /* ========== Inputs ========== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label {
+      font-family: var(--font-pixel);
+      font-size: 8px;
+      letter-spacing: 0.12em;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-void);
+      border: 1px solid var(--hud-border);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-family: var(--font-chinese);
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--hud-border-bright);
+      box-shadow: 0 0 12px var(--hud-glow);
+    }
+    .field textarea { min-height: 80px; resize: vertical; font-family: var(--font-body); }
+
+    /* ========== Cards ========== */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      padding: 14px 16px;
+      border-left: 3px solid var(--accent-primary);
+      border-top: 1px solid var(--hud-border);
+      border-right: 1px solid var(--hud-border);
+      border-bottom: 1px solid var(--hud-border);
+      border-radius: 4px;
+      background: var(--hud-bg);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .card:hover { background: rgba(0, 212, 170, 0.08); transform: translateX(2px); box-shadow: 0 0 14px var(--hud-glow); }
+    .card.warn  { border-left-color: var(--accent-warning); }
+    .card.alert { border-left-color: var(--accent-alert); }
+
+    .card-id {
+      font-family: var(--font-pixel);
+      font-size: 8px;
+      color: var(--accent-primary);
+      letter-spacing: 0.1em;
+    }
+    .card-title {
+      font-family: var(--font-chinese);
+      font-size: 14px;
+      color: var(--text-primary);
+      margin: 6px 0 8px;
+      line-height: 1.5;
+    }
+    .card-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .tag {
+      padding: 2px 8px;
+      border-radius: 3px;
+      background: var(--accent-dim);
+      color: var(--accent-primary);
+      font-family: var(--font-body);
+      font-size: 10px;
+    }
+    .tag.warn  { background: rgba(255, 170, 51, 0.15); color: var(--accent-warning); }
+    .tag.alert { background: rgba(255, 68, 102, 0.15); color: var(--accent-alert); }
+    .tag.muted { background: rgba(208, 232, 228, 0.08); color: var(--text-secondary); }
+
+    /* ========== Stats ========== */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+    .stat {
+      padding: 18px 20px;
+      border: 1px solid var(--hud-border);
+      border-radius: 6px;
+      background: var(--hud-bg);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--hud-glow), transparent 60%);
+      pointer-events: none;
+    }
+    .stat .label {
+      font-family: var(--font-pixel);
+      font-size: 8px;
+      color: var(--accent-primary);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .stat .value {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.04em;
+    }
+    .stat .delta {
+      margin-top: 8px;
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--accent-active);
+    }
+    .stat .delta.down { color: var(--accent-alert); }
+
+    /* ========== Status indicators ========== */
+    .status-list { display: grid; gap: 10px; }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 14px;
+      border: 1px solid var(--hud-border);
+      border-radius: 4px;
+      background: var(--hud-bg);
+      font-size: 12px;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot.green  { background: var(--accent-active); box-shadow: 0 0 6px var(--accent-active); }
+    .dot.yellow { background: var(--accent-warning); box-shadow: 0 0 6px var(--accent-warning); }
+    .dot.red    { background: var(--accent-alert); box-shadow: 0 0 6px var(--accent-alert); }
+    .dot.gray   { background: var(--text-muted); }
+    .status-row .name { font-family: var(--font-heading); letter-spacing: 0.04em; flex: 1; }
+    .status-row .desc { color: var(--text-secondary); font-family: var(--font-chinese); }
+
+    /* ========== Code block ========== */
+    pre.code {
+      padding: 16px 18px;
+      background: var(--bg-void);
+      border: 1px solid var(--hud-border);
+      border-left: 3px solid var(--accent-primary);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--text-primary);
+      overflow-x: auto;
+      line-height: 1.7;
+    }
+    pre.code .k { color: var(--accent-primary); }
+    pre.code .s { color: var(--accent-warning); }
+    pre.code .c { color: var(--text-muted); font-style: italic; }
+
+    /* ========== Footer ========== */
+    .foot {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid var(--hud-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .foot .corner {
+      font-family: var(--font-pixel);
+      font-size: 7px;
+      letter-spacing: 0.18em;
+      color: var(--accent-primary);
+      text-shadow: 0 0 6px var(--accent-glow);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="brand">
+        SHADOWFOLK · UI
+        <small>CODEBUDDY MEMORY DESIGN SYSTEM</small>
+      </div>
+      <div class="meta">
+        <div><span class="pulse"></span>SYSTEM ONLINE · v2.0.2</div>
+        <div>theme · ShadowFolk-Dark / HUD</div>
+      </div>
+    </header>
+
+    <!-- Colors -->
+    <section>
+      <div class="section-label">// 01 PALETTE</div>
+      <h2 class="section-title">Color System</h2>
+      <p class="section-desc">深空背景 + 青绿主色 (#00d4aa) 的 HUD 配色，强调辉光与对比。</p>
+      <div class="colors">
+        <div class="swatch"><div class="chip" style="background:var(--bg-deep-space)"></div><div class="info"><div class="name">Deep Space</div><div class="var">--bg-deep-space · #0a1014</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--bg-void)"></div><div class="info"><div class="name">Void</div><div class="var">--bg-void · #060a0c</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--bg-panel)"></div><div class="info"><div class="name">Panel</div><div class="var">--bg-panel</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--accent-primary); box-shadow: inset 0 0 30px var(--accent-glow)"></div><div class="info"><div class="name">Accent Primary</div><div class="var">--accent-primary · #00d4aa</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--accent-active)"></div><div class="info"><div class="name">Active / Live</div><div class="var">--accent-active · #00ff88</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--accent-warning)"></div><div class="info"><div class="name">Warning</div><div class="var">--accent-warning · #ffaa33</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--accent-alert)"></div><div class="info"><div class="name">Alert</div><div class="var">--accent-alert · #ff4466</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--text-primary)"></div><div class="info"><div class="name">Text Primary</div><div class="var">--text-primary · #d0e8e4</div></div></div>
+      </div>
+    </section>
+
+    <!-- Typography -->
+    <section>
+      <div class="section-label">// 02 TYPOGRAPHY</div>
+      <h2 class="section-title">Typography Stack</h2>
+      <p class="section-desc">像素体作品牌 / 标签，Orbitron 作标题，JetBrains Mono 作正文与数据，Noto Sans SC 作中文。</p>
+      <div class="type-grid">
+        <div class="type-row"><span class="type-tag">Pixel · brand</span><span class="type-pixel">CODEBUDDY MEMORY</span></div>
+        <div class="type-row"><span class="type-tag">Orbitron · h1</span><span class="type-h1">Cross-Device Sync</span></div>
+        <div class="type-row"><span class="type-tag">Orbitron · h2</span><span class="type-h2">Observation Stream</span></div>
+        <div class="type-row"><span class="type-tag">Mono · body</span><span class="type-body">const remote = await client.fetch(endpoint);</span></div>
+        <div class="type-row"><span class="type-tag">SC · 中文</span><span class="type-zh">跨设备记忆同步与本地优先回放</span></div>
+        <div class="type-row"><span class="type-tag">Mono · muted</span><span class="type-mute">2026-04-23 10:10:33 · device 7f3a · synced</span></div>
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <section>
+      <div class="section-label">// 03 ACTIONS</div>
+      <h2 class="section-title">Buttons</h2>
+      <p class="section-desc">主操作辉光强调，次级动作收敛在边框上，危险动作使用警示色。</p>
+      <div class="row">
+        <button class="btn btn-primary">Refresh Stream</button>
+        <button class="btn">Export Markdown</button>
+        <button class="btn btn-ghost">Settings</button>
+        <button class="btn btn-danger">Wipe Index</button>
+      </div>
+    </section>
+
+    <!-- Inputs -->
+    <section>
+      <div class="section-label">// 04 INPUTS</div>
+      <h2 class="section-title">Form Controls</h2>
+      <p class="section-desc">Void 色填充 + HUD 边框，聚焦时点亮辉光。</p>
+      <div class="form-grid">
+        <div class="field">
+          <label>Search Query</label>
+          <input type="text" placeholder="搜索 observations / summaries…" value="rag hybrid">
+        </div>
+        <div class="field">
+          <label>Project Filter</label>
+          <select>
+            <option>所有项目</option>
+            <option selected>agent-memory</option>
+            <option>codebuddy-ide</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Notes</label>
+          <textarea placeholder="输入备注 / 上下文…"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section>
+      <div class="section-label">// 05 METRICS</div>
+      <h2 class="section-title">Stat Tiles</h2>
+      <p class="section-desc">主页 / Dashboard 关键指标，渐变叠层强调主色。</p>
+      <div class="stats">
+        <div class="stat"><div class="label">Summaries</div><div class="value">1,284</div><div class="delta">+12 last 24h</div></div>
+        <div class="stat"><div class="label">Observations</div><div class="value">9,617</div><div class="delta">+387 last 24h</div></div>
+        <div class="stat"><div class="label">Sessions</div><div class="value">214</div><div class="delta down">−3 vs yesterday</div></div>
+        <div class="stat"><div class="label">Devices</div><div class="value">4</div><div class="delta">all in sync</div></div>
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section>
+      <div class="section-label">// 06 CARDS</div>
+      <h2 class="section-title">Memory Cards</h2>
+      <p class="section-desc">左侧色条编码类型，悬停右移 + 辉光，点击进入详情。</p>
+      <div class="cards">
+        <div class="card">
+          <div class="card-id">#1284</div>
+          <div class="card-title">合并 feat/claude-mem-integration 到 master，解决 4 个冲突文件</div>
+          <div class="card-meta">
+            <span class="tag">summary</span>
+            <span class="tag muted">agent-memory</span>
+            <span>10:12</span>
+          </div>
+        </div>
+        <div class="card warn">
+          <div class="card-id">#9617</div>
+          <div class="card-title">检测到 Chroma sync 状态：3 pending，未配置 uvx 环境</div>
+          <div class="card-meta">
+            <span class="tag warn">observation</span>
+            <span class="tag muted">cursor</span>
+            <span>10:08</span>
+          </div>
+        </div>
+        <div class="card alert">
+          <div class="card-id">#9612</div>
+          <div class="card-title">远程同步失败：CODEBUDDY_MEM_REMOTE_URL 不可达</div>
+          <div class="card-meta">
+            <span class="tag alert">error</span>
+            <span class="tag muted">device · 7f3a2c1e</span>
+            <span>09:55</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Status -->
+    <section>
+      <div class="section-label">// 07 STATUS</div>
+      <h2 class="section-title">Service Health</h2>
+      <p class="section-desc">圆点 + 名称 + 描述的水平指示行，常用于设置面板与系统托盘。</p>
+      <div class="status-list">
+        <div class="status-row"><span class="dot green"></span><span class="name">Worker</span><span class="desc">运行中 · 127.0.0.1:3847 · uptime 02:14:36</span></div>
+        <div class="status-row"><span class="dot green"></span><span class="name">MCP Server</span><span class="desc">已连接 · 6 tools 已注册</span></div>
+        <div class="status-row"><span class="dot yellow"></span><span class="name">Chroma Sync</span><span class="desc">未启用 · 缺少 uvx 运行时</span></div>
+        <div class="status-row"><span class="dot red"></span><span class="name">Remote Sync</span><span class="desc">失败 · 检查 CODEBUDDY_MEM_REMOTE_URL / TOKEN</span></div>
+        <div class="status-row"><span class="dot gray"></span><span class="name">OpenClaw Plugin</span><span class="desc">未配置</span></div>
+      </div>
+    </section>
+
+    <!-- Code -->
+    <section>
+      <div class="section-label">// 08 CODE BLOCK</div>
+      <h2 class="section-title">Inline Code</h2>
+      <p class="section-desc">代码块沿用左侧主色条，配合 mono 字体维持 HUD 节奏。</p>
+<pre class="code"><span class="c">// /api/chroma/status — feat 分支带入并改名以避开 master 远程同步命名空间</span>
+<span class="k">async function</span> handleChromaStatus(req, res) {
+  <span class="k">const</span> db = getDatabase();
+  <span class="k">const</span> pending = db.prepare(<span class="s">`SELECT COUNT(*) FROM chroma_sync_state WHERE status='pending'`</span>).get();
+  res.end(JSON.stringify({ chromaAvailable: !!chromaSync, pending }));
+}</pre>
+    </section>
+
+    <footer class="foot">
+      <span class="corner">// END · OF · BUFFER</span>
+      <span>ShadowFolk Style Guide · AgentMemory v2.0.2 · 2026-04-23</span>
+    </footer>
+  </div>
+</body>
+</html>

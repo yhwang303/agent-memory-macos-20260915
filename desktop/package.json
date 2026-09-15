@@ -1,0 +1,214 @@
+{
+  "name": "agent-memory-desktop",
+  "version": "2.0.34",
+  "description": "AgentMemory Desktop - System tray guardian for agent-memory worker",
+  "main": "dist/main.js",
+  "private": true,
+  "scripts": {
+    "copy-assets": "node -e \"const fs=require('fs');const p=require('path');['windows','assets'].forEach(d=>{const s=p.join('src',d),t=p.join('dist',d);fs.cpSync(s,t,{recursive:true,force:true})})\"",
+    "dev": "tsc && npm run copy-assets && electron dist/main.js",
+    "prepare:worker": "npm --prefix .. run build",
+    "build:ts": "node scripts/build-ts.js",
+    "prepare-worker-modules": "node scripts/prepare-worker-modules.js",
+    "ensure-worker-sqlite-binary": "node scripts/ensure-worker-sqlite-binary.js",
+    "prepare-models": "node scripts/prepare-models.js",
+    "prepare-hybrid-mcp": "node scripts/prepare-hybrid-mcp.js",
+    "prepare:bundle": "npm run prepare:worker && npm run build:ts && npm run bundle-node && npm run ensure-worker-sqlite-binary && npm run prepare-worker-modules && npm run prepare-models && npm run prepare-hybrid-mcp",
+    "bundle-node": "node scripts/bundle-node.js",
+    "build": "npm run prepare:bundle && electron-builder",
+    "build:win": "npm run prepare:bundle && electron-builder --win",
+    "build:mac": "npm run prepare:bundle && electron-builder --mac",
+    "build:mac:x64": "TARGET_ARCH=x64 npm run prepare:bundle && electron-builder --mac --x64",
+    "build:mac:arm64": "TARGET_ARCH=arm64 npm run prepare:bundle && electron-builder --mac --arm64",
+    "test:mcp-bundle": "node scripts/smoke-test-mcp-bundle.js",
+    "release:build:win": "npm --prefix .. run release:build:win",
+    "release:build:mac": "npm --prefix .. run release:build:mac",
+    "postinstall": "electron-rebuild -f -w better-sqlite3"
+  },
+  "build": {
+    "appId": "com.agentmemory.desktop",
+    "productName": "AgentMemory",
+    "directories": {
+      "output": "release5"
+    },
+    "afterPack": "scripts/ad-hoc-sign-mac.js",
+    "files": [
+      "dist/**/*",
+      "src/assets/**/*",
+      "src/windows/*.html"
+    ],
+    "extraResources": [
+      {
+        "from": "build-resources/",
+        "to": ".",
+        "filter": [
+          "node.exe",
+          "node"
+        ]
+      },
+      {
+        "from": "../dist",
+        "to": "worker",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../src/plugins/injector/library",
+        "to": "injector-library",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../web",
+        "to": "web",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../package.json",
+        "to": "package.json"
+      },
+      {
+        "from": "build-resources/models",
+        "to": "models",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "build-resources/hybrid-mcp",
+        "to": "hybrid-mcp",
+        "filter": [
+          "**/*",
+          "!agentmem-hybrid-mcp.cmd"
+        ]
+      }
+    ],
+    "npmRebuild": true,
+    "buildDependenciesFromSource": true,
+    "asar": false,
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.ico",
+      "signAndEditExecutable": false,
+      "extraResources": [
+        {
+          "from": "../node_modules",
+          "to": "node_modules",
+          "filter": [
+            "**/*",
+            "!@types/**/*",
+            "!typescript/**/*",
+            "!tsx/**/*",
+            "!esbuild/**/*",
+            "!@esbuild/**/*",
+            "!png-to-ico/**/*",
+            "!**/*.md",
+            "!**/*.markdown",
+            "!**/CHANGELOG*",
+            "!**/test/**/*",
+            "!**/tests/**/*",
+            "!**/__tests__/**/*",
+            "!**/example/**/*",
+            "!**/examples/**/*",
+            "!**/docs/**/*",
+            "!**/.github/**/*",
+            "!**/*.map",
+            "!**/*.ts",
+            "!**/*.tsx"
+          ]
+        },
+        {
+          "from": "../plugins/shadwmonitor",
+          "to": "plugins/shadwmonitor",
+          "filter": [
+            "**/*",
+            "!data/**",
+            "!__pycache__",
+            "!**/__pycache__/**",
+            "!**/*.pyc",
+            "!**/*.pyo",
+            "!.env",
+            "!.venv/**",
+            "!venv/**",
+            "!dist/**",
+            "!build/**",
+            "!*.egg-info/**"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "AgentMemory-Setup-${version}.${ext}",
+      "include": "build/installer.nsh"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "src/assets/icon.png",
+      "category": "public.app-category.developer-tools",
+      "artifactName": "AgentMemory-${version}-mac-${arch}.${ext}",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "extraResources": [
+        {
+          "from": "build-resources/worker-node-modules",
+          "to": "node_modules",
+          "filter": [
+            "**/*"
+          ]
+        },
+        {
+          "from": "../plugins/shadwmonitor",
+          "to": "plugins/shadwmonitor",
+          "filter": [
+            "**/*",
+            "!data/**",
+            "!__pycache__",
+            "!**/__pycache__/**",
+            "!**/*.pyc",
+            "!**/*.pyo",
+            "!.env",
+            "!.venv/**",
+            "!venv/**",
+            "!dist/**",
+            "!build/**",
+            "!*.egg-info/**"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "title": "AgentMemory ${version}",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "js-yaml": "^4.1.1"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^3.6.0",
+    "@types/js-yaml": "^4.0.9",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.0",
+    "typescript": "^5.3.0"
+  }
+}

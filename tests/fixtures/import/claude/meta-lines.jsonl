@@ -1,0 +1,6 @@
+{"type":"user","message":{"role":"user","content":[{"type":"text","text":"check this screenshot"},{"type":"image","source":{"type":"base64","media_type":"image/png","data":"iVBOR"}}]},"timestamp":"2026-06-09T07:08:41.554Z","cwd":"D:\\agent-memory","sessionId":"sess-meta"}
+{"type":"user","isMeta":true,"message":{"role":"user","content":[{"type":"text","text":"[Image: source: C:\\Users\\foo\\.claude-internal\\image-cache\\xxx\\1.png]"}]},"timestamp":"2026-06-09T07:08:41.554Z","cwd":"D:\\agent-memory","sessionId":"sess-meta"}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"i can see the screenshot, working on it"}]},"timestamp":"2026-06-09T07:09:00.000Z","cwd":"D:\\agent-memory","sessionId":"sess-meta"}
+{"type":"user","isCompactSummary":true,"message":{"role":"user","content":"This session is being continued from a previous conversation that ran out of context."},"timestamp":"2026-06-09T07:14:52.000Z","cwd":"D:\\agent-memory","sessionId":"sess-meta"}
+{"type":"user","message":{"role":"user","content":"follow-up question"},"timestamp":"2026-06-09T07:31:53.505Z","cwd":"D:\\agent-memory","sessionId":"sess-meta"}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"sure, here is the answer to the follow-up"}]},"timestamp":"2026-06-09T07:32:00.000Z","cwd":"D:\\agent-memory","sessionId":"sess-meta"}

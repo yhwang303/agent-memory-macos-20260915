@@ -1,0 +1,15 @@
+---
+description: Harness 项目偏好（由 /harness-init 生成与维护）
+alwaysApply: true
+---
+
+# Harness 偏好
+
+<!-- harness:preferences:managed:start -->
+## Harness 偏好（自动生成，可运行 /harness-init 重新问询覆盖）
+- 文档展示形态: both    # md | html | both（both=Markdown 为源 + 附 *.html 渲染版）
+- 默认语言: 中文
+- assignee 格式: agent:<model>@<session>
+<!-- harness:preferences:managed:end -->
+
+> 块外内容可手写，`/harness-init` 只重写受管块。

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Monitor - 屏幕活动感知</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #242836;
+  --border: #2e3348;
+  --text: #e1e4ed;
+  --text2: #8b8fa8;
+  --accent: #6c5ce7;
+  --accent2: #a29bfe;
+  --green: #00b894;
+  --orange: #fdcb6e;
+  --red: #e17055;
+  --blue: #74b9ff;
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+/* Header */
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 0 28px; border-bottom: 1px solid var(--border); margin-bottom: 28px;
+}
+header h1 {
+  font-size: 22px; font-weight: 700;
+  background: linear-gradient(135deg, var(--accent2), var(--blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.date-nav { display: flex; align-items: center; gap: 12px; }
+.date-nav button {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all .2s;
+}
+.date-nav button:hover { background: var(--surface2); border-color: var(--accent); }
+.date-nav input[type="date"] {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  padding: 8px 14px; border-radius: 8px; font-size: 14px; font-family: inherit;
+}
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); border-radius: 10px; padding: 4px; }
+.tab-btn {
+  flex: 1; padding: 10px 16px; border: none; background: transparent; color: var(--text2);
+  font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.tab-btn.active { background: var(--accent); color: #fff; }
+.tab-btn:hover:not(.active) { color: var(--text); background: var(--surface2); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Query Bar */
+.query-bar { display: flex; gap: 10px; margin-bottom: 24px; }
+.query-bar input {
+  flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  padding: 12px 18px; border-radius: var(--radius); font-size: 15px; font-family: inherit; outline: none; transition: border-color .2s;
+}
+.query-bar input:focus { border-color: var(--accent); }
+.query-bar input::placeholder { color: var(--text2); }
+.query-bar button {
+  background: var(--accent); border: none; color: #fff; padding: 12px 24px;
+  border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .2s; white-space: nowrap;
+}
+.query-bar button:hover { opacity: .85; }
+
+/* Stats Bar */
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; text-align: center; }
+.stat-card .num { font-size: 28px; font-weight: 700; color: var(--accent2); }
+.stat-card .label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; transition: border-color .2s; }
+.card:hover { border-color: var(--accent); }
+.card-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+.card-header:hover { background: var(--surface2); }
+.card-header .time { font-size: 13px; color: var(--accent2); font-weight: 600; min-width: 160px; }
+.card-header .summary { flex: 1; margin: 0 16px; font-size: 14px; }
+.card-header .meta { display: flex; gap: 6px; flex-shrink: 0; }
+.tag { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--surface2); color: var(--text2); border: 1px solid var(--border); white-space: nowrap; }
+.tag.app { color: var(--blue); border-color: rgba(116,185,255,.3); }
+.tag.ocr-done { color: var(--green); border-color: rgba(0,184,148,.3); }
+.tag.ocr-pending { color: var(--orange); border-color: rgba(253,203,110,.3); }
+.tag.ocr-failed { color: var(--red); border-color: rgba(225,112,85,.3); }
+.chevron { width: 20px; height: 20px; color: var(--text2); transition: transform .2s; flex-shrink: 0; margin-left: 8px; }
+.chevron.open { transform: rotate(90deg); }
+.card-body { display: none; padding: 0 20px 16px; border-top: 1px solid var(--border); }
+.card-body.open { display: block; padding-top: 16px; }
+
+/* Level Indicators */
+.level-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-right: 10px; }
+.level-badge.l3 { background: rgba(108,92,231,.2); color: var(--accent2); }
+.level-badge.l2 { background: rgba(0,184,148,.15); color: var(--green); }
+.level-badge.l1 { background: rgba(253,203,110,.15); color: var(--orange); }
+
+/* Capture Grid */
+.capture-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 12px; }
+.capture-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: all .2s; }
+.capture-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+.capture-item img { width: 100%; height: 160px; object-fit: cover; display: block; }
+.capture-item .info { padding: 10px 14px; }
+.capture-item .info .ts { font-size: 12px; color: var(--accent2); font-weight: 600; }
+.capture-item .info .app { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* Recent List */
+.recent-item {
+  display: flex; gap: 16px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; transition: border-color .2s;
+  max-height: 220px;
+}
+.recent-item:hover { border-color: var(--accent); }
+.recent-item .thumb {
+  width: 220px; min-height: 130px; flex-shrink: 0; cursor: pointer; overflow: hidden; position: relative;
+}
+.recent-item .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
+.recent-item .thumb:hover img { transform: scale(1.05); }
+.recent-item .detail { flex: 1; min-width: 0; padding: 14px 16px 14px 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.recent-item .detail .top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.recent-item .detail .top .ts { font-size: 13px; color: var(--accent2); font-weight: 600; }
+.recent-item .detail .top .app-name { font-size: 13px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent-item .zone-text {
+  font-family: "Cascadia Code", "Fira Code", monospace; font-size: 12px; line-height: 1.7;
+  color: var(--text2); background: var(--bg); border-radius: 8px; padding: 10px 14px;
+  height: 110px; max-height: 110px; overflow-y: auto; white-space: pre-wrap; flex-shrink: 0;
+}
+.recent-item .zone-text::-webkit-scrollbar { width: 4px; }
+.recent-item .zone-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.recent-item .no-ocr { font-size: 12px; color: var(--text2); font-style: italic; padding: 8px 0; }
+
+/* Refresh button */
+.panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.panel-header h2 { font-size: 16px; font-weight: 600; }
+.btn-sm {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+  padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all .2s; font-family: inherit;
+}
+.btn-sm:hover { border-color: var(--accent); color: var(--text); }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 1000; justify-content: center; align-items: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 900px; max-height: 85vh; width: 90vw; overflow: auto; position: relative; }
+.modal-close { position: absolute; top: 14px; right: 14px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; z-index: 10; }
+.modal img { width: 100%; display: block; border-radius: 16px 16px 0 0; }
+.modal .zone-map { padding: 20px 24px; font-family: "Cascadia Code","Fira Code",monospace; font-size: 13px; line-height: 1.8; white-space: pre-wrap; color: var(--text); background: var(--bg); border-radius: 0 0 16px 16px; }
+
+/* Monitor Settings Modal */
+.monitor-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 90vw; padding: 28px; position: relative; }
+.monitor-modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.monitor-modal .sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+.monitor-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.monitor-item { display: flex; align-items: center; gap: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: border-color .2s; }
+.monitor-item:hover { border-color: var(--accent); }
+.monitor-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.monitor-item .mon-info { flex: 1; }
+.monitor-item .mon-name { font-size: 14px; font-weight: 600; }
+.monitor-item .mon-res { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.monitor-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.monitor-save-msg { font-size: 13px; color: var(--green); margin-top: 12px; display: none; }
+.monitor-save-msg.show { display: block; }
+
+/* Empty & Loading */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+.empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: .5; }
+.empty-state p { font-size: 15px; }
+.loading { text-align: center; padding: 40px; color: var(--text2); }
+.loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; margin-left: 10px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.query-result { background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; display: none; }
+.query-result.open { display: block; }
+.query-result h3 { font-size: 14px; color: var(--accent2); margin-bottom: 10px; }
+.query-result .text { font-size: 14px; line-height: 1.8; }
+
+/* Auto-refresh indicator */
+.auto-refresh { display: flex; align-items: center; gap: 8px; }
+.auto-refresh label { font-size: 13px; color: var(--text2); cursor: pointer; }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse-anim 2s ease-in-out infinite; }
+@keyframes pulse-anim { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+@media (max-width: 768px) {
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .capture-grid { grid-template-columns: 1fr; }
+  .card-header .meta { display: none; }
+  .recent-item { flex-direction: column; }
+  .recent-item .thumb { width: 100%; height: 160px; }
+  .recent-item .detail { padding: 14px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>AI Monitor</h1>
+    <div class="date-nav">
+      <button class="btn-sm" onclick="openMonitorSettings()" title="显示器监控设置" style="margin-right:8px">显示器设置</button>
+      <button onclick="changeDate(-1)">&larr; 前一天</button>
+      <input type="date" id="datePicker" onchange="loadDate(this.value)">
+      <button onclick="changeDate(1)">后一天 &rarr;</button>
+    </div>
+  </header>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card"><div class="num" id="statCaptures">-</div><div class="label">截图数</div></div>
+    <div class="stat-card"><div class="num" id="statMoments">-</div><div class="label">时刻描述</div></div>
+    <div class="stat-card"><div class="num" id="statSessions">-</div><div class="label">时段摘要</div></div>
+    <div class="stat-card"><div class="num" id="statApps">-</div><div class="label">应用数</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('recent')">实时截图 + OCR</button>
+    <button class="tab-btn" onclick="switchTab('timeline')">时间线蒸馏</button>
+    <button class="tab-btn" onclick="switchTab('query')">查询</button>
+  </div>
+
+  <!-- Tab 1: 最近截图 + OCR -->
+  <div class="tab-panel active" id="panel-recent">
+    <div class="panel-header">
+      <h2>最近截图与 OCR 捕获 <span id="monitorBadge" style="font-size:12px;font-weight:400;color:var(--text2);margin-left:10px;background:var(--surface2);padding:3px 10px;border-radius:6px;border:1px solid var(--border);display:none"></span></h2>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="auto-refresh">
+          <div class="pulse" id="pulseDot"></div>
+          <label><input type="checkbox" id="autoRefresh" checked onchange="toggleAutoRefresh()"> 自动刷新</label>
+        </div>
+        <button class="btn-sm" onclick="loadRecent()">手动刷新</button>
+      </div>
+    </div>
+    <div id="recentList"></div>
+  </div>
+
+  <!-- Tab 2: 时间线蒸馏 -->
+  <div class="tab-panel" id="panel-timeline">
+    <div id="dailySummary"></div>
+    <div id="sessionList"></div>
+  </div>
+
+  <!-- Tab 3: 查询 -->
+  <div class="tab-panel" id="panel-query">
+    <div class="query-bar">
+      <input type="text" id="queryInput" placeholder="输入时间 (如 14:30) 或应用名 (如 chrome)，回车搜索">
+      <button onclick="doQuery()">查询</button>
+    </div>
+    <div class="query-result" id="queryResult">
+      <h3 id="queryTitle"></h3>
+      <div class="text" id="queryText"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 截图详情弹窗 -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <img id="modalImg" src="" alt="">
+    <div class="zone-map" id="modalZoneMap"></div>
+  </div>
+</div>
+
+<!-- 显示器设置弹窗 -->
+<div class="modal-overlay" id="monitorModal" onclick="if(event.target===this)closeMonitorModal()">
+  <div class="monitor-modal">
+    <button class="modal-close" onclick="closeMonitorModal()">&times;</button>
+    <h3>显示器监控设置</h3>
+    <p class="sub">选择需要监控的屏幕，保存后重启采集服务生效。</p>
+    <div class="monitor-list" id="monitorList"><div class="loading">加载中</div></div>
+    <div class="monitor-modal-actions">
+      <button class="btn-sm" onclick="closeMonitorModal()">取消</button>
+      <button style="background:var(--accent);border:none;color:#fff;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600" onclick="saveMonitorSettings()">保存</button>
+    </div>
+    <div class="monitor-save-msg" id="monitorSaveMsg"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let currentDate = new Date().toISOString().split('T')[0];
+let refreshTimer = null;
+
+function init() {
+  $('datePicker').value = currentDate;
+  loadDate(currentDate);
+  loadRecent();
+  loadMonitorInfo();
+  startAutoRefresh();
+  $('queryInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') doQuery(); });
+}
+
+async function loadMonitorInfo() {
+  try {
+    const r = await fetch('/api/monitor_info'); const info = await r.json();
+    const badge = $('monitorBadge');
+    const active = info.active_indices || [];
+    const total = info.total_monitors || 0;
+    const label = active.length === 0
+      ? '未配置'
+      : active.map(i => `显示器${i}`).join('+') + ` / 共${total}块`;
+    badge.textContent = label;
+    badge.style.display = 'inline';
+  } catch {}
+}
+
+let _monitorInfoCache = null;
+
+async function openMonitorSettings() {
+  $('monitorModal').classList.add('open');
+  $('monitorSaveMsg').classList.remove('show');
+  $('monitorList').innerHTML = '<div class="loading">加载中</div>';
+  try {
+    const r = await fetch('/api/monitor_info');
+    _monitorInfoCache = await r.json();
+    renderMonitorList(_monitorInfoCache);
+  } catch {
+    $('monitorList').innerHTML = '<p style="color:var(--text2);font-size:13px">加载失败</p>';
+  }
+}
+
+function renderMonitorList(info) {
+  const active = new Set(info.active_indices || [1]);
+  if (!info.monitors || !info.monitors.length) {
+    $('monitorList').innerHTML = '<p style="color:var(--text2);font-size:13px">未检测到显示器</p>';
+    return;
+  }
+  $('monitorList').innerHTML = info.monitors.map(m => `
+    <label class="monitor-item">
+      <input type="checkbox" id="mon-chk-${m.index}" value="${m.index}" ${active.has(m.index) ? 'checked' : ''}>
+      <div class="mon-info">
+        <div class="mon-name">显示器 ${m.index}${m.index === 1 ? '（主屏）' : ''}</div>
+        <div class="mon-res">${m.width} × ${m.height} &nbsp;|&nbsp; 位置 +${m.left},+${m.top}</div>
+      </div>
+    </label>`).join('');
+}
+
+async function saveMonitorSettings() {
+  const checkboxes = document.querySelectorAll('#monitorList input[type=checkbox]');
+  const indices = Array.from(checkboxes).filter(c => c.checked).map(c => parseInt(c.value));
+  if (!indices.length) {
+    $('monitorSaveMsg').textContent = '请至少选择一块显示器。';
+    $('monitorSaveMsg').style.color = 'var(--red)';
+    $('monitorSaveMsg').classList.add('show');
+    return;
+  }
+  try {
+    const r = await fetch('/api/settings/monitors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ indices }),
+    });
+    const d = await r.json();
+    if (d.saved) {
+      $('monitorSaveMsg').textContent = '已保存！重启采集服务后生效。';
+      $('monitorSaveMsg').style.color = 'var(--green)';
+      $('monitorSaveMsg').classList.add('show');
+      await loadMonitorInfo();
+    }
+  } catch {
+    $('monitorSaveMsg').textContent = '保存失败，请检查 Web 服务。';
+    $('monitorSaveMsg').style.color = 'var(--red)';
+    $('monitorSaveMsg').classList.add('show');
+  }
+}
+
+function closeMonitorModal() {
+  $('monitorModal').classList.remove('open');
+}
+
+/* Tab switching */
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', b.textContent.includes(
+    name === 'recent' ? '实时' : name === 'timeline' ? '时间线' : '查询'
+  )));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  $(`panel-${name}`).classList.add('active');
+  if (name === 'recent') loadRecent();
+  if (name === 'timeline') { loadDaily(currentDate); loadSessions(currentDate); }
+}
+
+/* Auto-refresh */
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    if ($('autoRefresh').checked && $('panel-recent').classList.contains('active')) {
+      loadRecent();
+      loadStats(currentDate);
+    }
+  }, 5000);
+}
+function toggleAutoRefresh() {
+  $('pulseDot').style.display = $('autoRefresh').checked ? '' : 'none';
+}
+
+function changeDate(delta) {
+  const d = new Date(currentDate); d.setDate(d.getDate() + delta);
+  currentDate = d.toISOString().split('T')[0];
+  $('datePicker').value = currentDate;
+  loadDate(currentDate);
+}
+
+async function loadDate(date) {
+  currentDate = date;
+  $('queryResult')?.classList.remove('open');
+  await loadStats(date);
+  if ($('panel-timeline').classList.contains('active')) {
+    await Promise.all([loadDaily(date), loadSessions(date)]);
+  }
+}
+
+async function loadStats(date) {
+  try {
+    const r = await fetch(`/api/stats/${date}`); const d = await r.json();
+    $('statCaptures').textContent = d.total_captures;
+    $('statMoments').textContent = d.total_moments;
+    $('statSessions').textContent = d.total_sessions;
+    $('statApps').textContent = Object.keys(d.app_counts).length;
+  } catch {}
+}
+
+/* ── Recent captures + OCR panel ── */
+async function loadRecent() {
+  const el = $('recentList');
+  try {
+    const r = await fetch('/api/recent/20'); const items = await r.json();
+    if (!items.length) {
+      el.innerHTML = '<div class="empty-state"><div class="icon">&#128247;</div><p>暂无截图<br>采集服务运行后将自动出现</p></div>';
+      return;
+    }
+    el.innerHTML = items.map(c => `
+      <div class="recent-item">
+        <div class="thumb" data-url="${esc(c.screenshot_url)}" data-zone="${esc(c.zone_map_text||'')}" onclick="showCaptureEl(this)">
+          <img src="${c.screenshot_url}" loading="lazy" alt="" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:var(--text2);font-size:13px\\'>图片加载失败</div>'">
+        </div>
+        <div class="detail">
+          <div class="top">
+            <span class="ts">${fmtTime(c.timestamp)}</span>
+            <span class="app-name">${esc(c.process_name)}</span>
+            <span class="tag ${c.ocr_status === 'done' ? 'ocr-done' : c.ocr_status === 'failed' ? 'ocr-failed' : 'ocr-pending'}">${
+              c.ocr_status === 'done' ? 'OCR 完成' : c.ocr_status === 'failed' ? 'OCR 失败' : c.ocr_status === 'processing' ? 'OCR 处理中...' : 'OCR 等待中'
+            }</span>
+            ${c.change_score ? `<span class="tag">变化 ${(c.change_score*100).toFixed(1)}%</span>` : ''}
+          </div>
+          <div style="font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.window_title||'')}</div>
+          ${c.zone_map_text
+            ? `<div class="zone-text">${esc(c.zone_map_text)}</div>`
+            : `<div class="no-ocr">${c.ocr_status === 'done' ? '(未识别到文本)' : '(等待 OCR 处理...)'}</div>`
+          }
+        </div>
+      </div>
+    `).join('');
+  } catch { el.innerHTML = '<div class="empty-state"><p>加载失败</p></div>'; }
+}
+
+/* ── Timeline panel ── */
+async function loadDaily(date) {
+  const el = $('dailySummary');
+  try {
+    const r = await fetch(`/api/daily/${date}`); const d = await r.json();
+    if (!d.summary) { el.innerHTML = ''; return; }
+    el.innerHTML = `
+      <div class="card">
+        <div class="card-header" onclick="this.parentElement.querySelector('.card-body').classList.toggle('open');this.querySelector('.chevron').classList.toggle('open')">
+          <span class="level-badge l3">L3</span><span class="time">${date}</span>
+          <span class="summary">${esc(d.summary).substring(0,100)}...</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="card-body">
+          <p style="font-size:14px;line-height:1.9">${esc(d.summary)}</p>
+          ${d.app_usage_stats ? `<div style="margin-top:14px;font-size:12px;color:var(--text2)">应用统计: ${Object.entries(d.app_usage_stats).map(([k,v])=>`<span class="tag app">${esc(k)}: ${v}</span>`).join(' ')}</div>` : ''}
+        </div>
+      </div>`;
+  } catch { el.innerHTML = ''; }
+}
+
+async function loadSessions(date) {
+  const el = $('sessionList');
+  try {
+    const r = await fetch(`/api/sessions/${date}`); const sessions = await r.json();
+    if (!sessions.length) {
+      el.innerHTML = '<div class="empty-state"><div class="icon">&#128065;</div><p>当天暂无蒸馏数据<br>采集5分钟后将自动生成时刻描述</p></div>';
+      return;
+    }
+    el.innerHTML = sessions.slice().reverse().map(s => `
+      <div class="card" id="session-${s.id}">
+        <div class="card-header" onclick="toggleSession(${s.id})">
+          <span class="level-badge l2">L2</span>
+          <span class="time">${fmtTime(s.time_start)} - ${fmtTime(s.time_end)}</span>
+          <span class="summary">${esc(s.summary)}</span>
+          <span class="meta">${(s.app_names||[]).map(a=>`<span class="tag app">${esc(a)}</span>`).join('')}</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="card-body" id="session-body-${s.id}"></div>
+      </div>`).join('');
+  } catch { el.innerHTML = ''; }
+}
+
+async function toggleSession(sessionId) {
+  const body = $(`session-body-${sessionId}`);
+  const chevron = $(`session-${sessionId}`).querySelector('.chevron');
+  if (body.classList.contains('open')) { body.classList.remove('open'); chevron.classList.remove('open'); return; }
+  chevron.classList.add('open'); body.innerHTML = '<div class="loading">加载时刻描述</div>'; body.classList.add('open');
+  try {
+    const r = await fetch(`/api/session/${sessionId}/moments`); const moments = await r.json();
+    body.innerHTML = moments.slice().reverse().map(m => `
+      <div class="card" style="margin-top:10px" id="moment-${m.id}">
+        <div class="card-header" onclick="toggleMoment(${m.id})">
+          <span class="level-badge l1">L1</span>
+          <span class="time">${fmtTime(m.time_start)} - ${fmtTime(m.time_end)}</span>
+          <span class="summary">${esc(m.summary)}</span>
+          <span class="tag">${m.capture_count} 张截图</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="card-body" id="moment-body-${m.id}"></div>
+      </div>`).join('');
+  } catch { body.innerHTML = '<div class="empty-state"><p>加载失败</p></div>'; }
+}
+
+async function toggleMoment(momentId) {
+  const body = $(`moment-body-${momentId}`);
+  const chevron = $(`moment-${momentId}`).querySelector('.chevron');
+  if (body.classList.contains('open')) { body.classList.remove('open'); chevron.classList.remove('open'); return; }
+  chevron.classList.add('open'); body.innerHTML = '<div class="loading">加载截图</div>'; body.classList.add('open');
+  try {
+    const r = await fetch(`/api/moment/${momentId}/captures`); const captures = await r.json();
+    body.innerHTML = `<div class="capture-grid">${captures.map(c => `
+      <div class="capture-item" data-url="${esc(c.screenshot_url)}" data-zone="${esc(c.zone_map_text||'')}" onclick="showCaptureEl(this)">
+        <img src="${c.screenshot_url}" loading="lazy" alt="" onerror="this.parentElement.style.display='none'">
+        <div class="info">
+          <div class="ts">${fmtTime(c.timestamp)}</div>
+          <div class="app">${esc(c.process_name)} ${c.change_score ? '| 变化: '+(c.change_score*100).toFixed(1)+'%' : ''}</div>
+        </div>
+      </div>`).join('')}</div>`;
+  } catch { body.innerHTML = '<div class="empty-state"><p>加载失败</p></div>'; }
+}
+
+/* ── Query panel ── */
+async function doQuery() {
+  const q = $('queryInput').value.trim(); if (!q) return;
+  const resultEl = $('queryResult');
+  const timeMatch = q.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (timeMatch) {
+    const h = timeMatch[1].padStart(2,'0'), m = timeMatch[2], s = timeMatch[3]||'00';
+    const ts = `${currentDate}T${h}:${m}:${s}`;
+    try {
+      const r = await fetch(`/api/query/time/${ts}`); const d = await r.json();
+      $('queryTitle').textContent = `时间查询: ${h}:${m}:${s}`;
+      let html = '';
+      if (d.moment) {
+        html += `<p><span class="level-badge l1">L1</span> <strong>${d.moment.time_start} ~ ${d.moment.time_end}</strong></p>`;
+        html += `<p style="margin:8px 0">${esc(d.moment.summary)}</p>`;
+      }
+      if (d.session) {
+        html += `<p style="margin-top:12px"><span class="level-badge l2">L2</span> <strong>${d.session.time_start} ~ ${d.session.time_end}</strong></p>`;
+        html += `<p style="margin:8px 0">${esc(d.session.summary)}</p>`;
+      }
+      if (d.captures?.length) {
+        html += `<div class="capture-grid" style="margin-top:14px">${d.captures.map(c => `
+          <div class="capture-item" data-url="${esc(c.screenshot_url)}" data-zone="${esc(c.zone_map_text||'')}" onclick="showCaptureEl(this)">
+            <img src="${c.screenshot_url}" loading="lazy" alt="" onerror="this.parentElement.style.display='none'">
+            <div class="info"><div class="ts">${fmtTime(c.timestamp)}</div><div class="app">${esc(c.process_name)}</div></div>
+          </div>`).join('')}</div>`;
+      }
+      if (!d.moment && !d.session) html = '<p style="color:var(--text2)">该时间段暂无数据</p>';
+      $('queryText').innerHTML = html; resultEl.classList.add('open');
+    } catch {}
+  } else {
+    try {
+      const r = await fetch(`/api/query/app/${encodeURIComponent(q)}?date=${currentDate}`); const moments = await r.json();
+      $('queryTitle').textContent = `应用查询: ${q}`;
+      if (!moments.length) { $('queryText').innerHTML = '<p style="color:var(--text2)">未找到相关记录</p>'; }
+      else { $('queryText').innerHTML = moments.map(m => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <span class="level-badge l1">L1</span>
+          <span style="color:var(--accent2);font-size:13px">${m.time_start} ~ ${m.time_end}</span>
+          <p style="margin-top:4px;font-size:14px">${esc(m.summary)}</p>
+        </div>`).join(''); }
+      resultEl.classList.add('open');
+    } catch {}
+  }
+}
+
+/* ── Shared ── */
+function showCapture(imgUrl, zoneMapText) {
+  $('modalImg').src = imgUrl;
+  $('modalZoneMap').textContent = zoneMapText || '(无 OCR 数据)';
+  $('modal').classList.add('open');
+}
+function showCaptureEl(el) {
+  showCapture(el.dataset.url, el.dataset.zone || '');
+}
+function closeModal() { $('modal').classList.remove('open'); }
+function fmtTime(s) { if (!s) return ''; const t = s.split('T')[1]; return t ? t.substring(0,8) : s; }
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+init();
+</script>
+</body>
+</html>

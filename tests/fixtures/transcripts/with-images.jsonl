@@ -1,0 +1,2 @@
+{"type":"user","message":{"content":[{"type":"text","text":"What is in this screenshot?"},{"type":"image","source":{"type":"base64","media_type":"image/png","data":"iVBOR..."}}]}}
+{"type":"assistant","message":{"content":[{"type":"text","text":"The screenshot shows a TypeError: cannot read property 'length' of undefined at line 42 of index.ts."}]}}

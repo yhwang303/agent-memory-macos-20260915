@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent-Memory · 让 AI 编程助手拥有长期记忆</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+  :root {
+    --bg:#0a0e12; --bg-s:#0e1419; --bg-c:#111920; --bg-ch:#151f2a;
+    --ac:#00d4aa; --ac-dim:rgba(0,212,170,0.12); --ac-glow:rgba(0,212,170,0.25);
+    --ac2:#0088ff; --warn:#d4a017; --red:#ff5f57;
+    --t:#b0c0d0; --tb:#e4ecf4; --td:#556677;
+    --bdr:rgba(0,212,170,0.10); --bdr-h:rgba(0,212,170,0.35);
+    --mono:'JetBrains Mono','Fira Code','Consolas',monospace;
+    --sans:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+    --r:10px; --glow:0 0 20px rgba(0,212,170,0.06);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--t);font-family:var(--sans);line-height:1.75;overflow-x:hidden}
+  body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,212,170,0.012) 2px,rgba(0,212,170,0.012) 4px);pointer-events:none;z-index:9999}
+  .w{max-width:1060px;margin:0 auto;padding:0 28px}
+
+  /* ── Top bar ── */
+  .topbar{background:var(--bg-s);border-bottom:1px solid var(--bdr);padding:10px 28px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+  .topbar .d{width:10px;height:10px;border-radius:50%}.d-r{background:#ff5f57}.d-y{background:#febc2e}.d-g{background:#28c840}
+  .topbar .tt{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ac);letter-spacing:2px;text-transform:uppercase;margin-left:8px}
+
+  /* ── Hero ── */
+  .hero{text-align:center;padding:80px 0 56px;position:relative}
+  .hero::before{content:'';position:absolute;top:-160px;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,var(--ac-glow) 0%,transparent 65%);opacity:0.12;pointer-events:none}
+  .hero-tag{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--ac);background:var(--ac-dim);border:1px solid var(--bdr);border-radius:4px;padding:4px 16px;margin-bottom:20px}
+  .hero h1{font-family:var(--mono);font-size:46px;font-weight:700;color:var(--tb);letter-spacing:-1px;margin-bottom:14px}
+  .hero h1 .hl{color:var(--ac)}
+  .hero .sub{font-size:19px;color:var(--td);max-width:620px;margin:0 auto 12px;line-height:1.6}
+  .hero .sub strong{color:var(--t)}
+  .hero .sub2{font-size:14px;color:var(--td);max-width:540px;margin:0 auto 32px;line-height:1.6;opacity:0.7}
+  .bdg-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .bdg{font-family:var(--mono);font-size:12px;font-weight:600;padding:5px 14px;border-radius:4px;border:1px solid var(--bdr);background:var(--bg-c);color:var(--t);display:inline-flex;align-items:center;gap:6px}
+  .bdg .v{color:var(--ac);font-weight:700}
+
+  /* ── Sections ── */
+  .sec{padding:56px 0 40px}
+  .sec-l{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--ac);margin-bottom:6px}
+  .sec-t{font-size:26px;font-weight:700;color:var(--tb);margin-bottom:10px}
+  .sec-d{color:var(--td);font-size:14px;margin-bottom:32px;max-width:660px;line-height:1.7}
+  .sec-d strong{color:var(--t)}
+  .sep{height:1px;background:linear-gradient(90deg,transparent,var(--bdr-h),transparent)}
+
+  /* ── Cards ── */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+  .card{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--r);padding:22px;transition:all 0.25s}
+  .card:hover{background:var(--bg-ch);border-color:var(--bdr-h);box-shadow:var(--glow)}
+  .card h3{font-size:15px;font-weight:600;color:var(--tb);margin-bottom:6px}
+  .card p{font-size:13px;color:var(--t);line-height:1.65}
+  .card code{font-family:var(--mono);font-size:11px;color:var(--ac);background:var(--ac-dim);padding:1px 5px;border-radius:3px}
+  .tag{display:inline-block;margin-top:10px;padding:2px 8px;border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:600;background:var(--ac-dim);color:var(--ac);letter-spacing:0.5px}
+
+  /* ── Compare ── */
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .cmp .card.bf{border-left:3px solid var(--red)}
+  .cmp .card.af{border-left:3px solid var(--ac)}
+
+  /* ── Flow ── */
+  .flow{display:flex;align-items:stretch;justify-content:center;gap:0;flex-wrap:wrap;margin:32px 0 8px}
+  .fstep{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--r);padding:18px 20px;text-align:center;min-width:155px;flex:1}
+  .fstep .fi{font-size:28px;margin-bottom:6px}
+  .fstep .ft{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--tb);letter-spacing:1px;text-transform:uppercase}
+  .fstep .fd{font-size:11px;color:var(--td);margin-top:4px;line-height:1.5}
+  .farr{font-family:var(--mono);font-size:20px;color:var(--ac);display:flex;align-items:center;padding:0 4px}
+
+  /* ── Screenshot ── */
+  .sframe{background:var(--bg-s);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;margin:24px 0;box-shadow:0 4px 32px rgba(0,0,0,0.4),var(--glow)}
+  .sframe .sbar{background:var(--bg-c);border-bottom:1px solid var(--bdr);padding:8px 14px;display:flex;align-items:center;gap:7px}
+  .sframe .sbar .sd{width:8px;height:8px;border-radius:50%}
+  .sframe .sbar .sd-r{background:#ff5f57}.sframe .sbar .sd-y{background:#febc2e}.sframe .sbar .sd-g{background:#28c840}
+  .sframe .sbar .sl{font-family:var(--mono);font-size:10px;color:var(--td);margin-left:6px;letter-spacing:1px}
+  .sframe img{width:100%;display:block}
+  .sframe-sm img{max-width:85%;display:block;margin:0 auto}
+  .scap{font-size:13px;color:var(--t);padding:14px 0 4px;line-height:1.6}
+  .scap strong{color:var(--tb)}
+  .scap-sub{font-size:12px;color:var(--td);margin-top:4px}
+
+  /* ── Product items ── */
+  .prod-item{margin-bottom:40px}
+  .prod-item:last-child{margin-bottom:0}
+  .prod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+  .prod-num{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ac);background:var(--ac-dim);border:1px solid var(--bdr);width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .prod-title{font-size:18px;font-weight:700;color:var(--tb);margin:0 0 2px}
+  .prod-sub{font-size:13px;color:var(--td);margin:0}
+  .prod-desc{font-size:15px;color:var(--t);line-height:1.7;margin-top:12px}
+
+  /* ── Highlight box ── */
+  .hbox{background:var(--ac-dim);border:1px solid var(--bdr-h);border-radius:var(--r);padding:20px 24px;margin:20px 0}
+  .hbox p{font-size:13px;color:var(--t);line-height:1.7}
+  .hbox strong{color:var(--ac)}
+
+  /* ── Platform grid ── */
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+  .pitem{background:var(--bg-c);border:1px solid var(--bdr);border-radius:6px;padding:9px 14px;font-family:var(--mono);font-size:12px;color:var(--tb);display:flex;align-items:center;gap:8px;transition:border-color 0.2s}
+  .pitem:hover{border-color:var(--bdr-h)}
+  .pitem .dot{width:6px;height:6px;border-radius:50%;background:var(--ac);flex-shrink:0;box-shadow:0 0 6px var(--ac-glow)}
+
+  /* ── Stats ── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:28px}
+  .st{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--r);padding:18px;text-align:center}
+  .st .sn{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--ac);line-height:1;margin-bottom:4px}
+  .st .sl{font-size:10px;color:var(--td);font-family:var(--mono);letter-spacing:0.5px;text-transform:uppercase}
+
+  /* ── Hooks table ── */
+  .htable{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px}
+  .htable th{text-align:left;font-family:var(--mono);font-size:11px;color:var(--ac);padding:8px 12px;border-bottom:1px solid var(--bdr-h);letter-spacing:0.5px;text-transform:uppercase}
+  .htable td{padding:8px 12px;border-bottom:1px solid var(--bdr);color:var(--t)}
+  .htable td:first-child{font-family:var(--mono);font-size:12px;color:var(--tb)}
+  .htable tr:hover td{background:var(--ac-dim)}
+
+  /* ── Side nav ── */
+  .sidenav{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:90;display:flex;flex-direction:column;gap:2px}
+  .sidenav a{display:block;padding:5px 12px;font-size:12px;color:var(--td);text-decoration:none;border-right:2px solid transparent;text-align:right;transition:all 0.2s;border-radius:4px 0 0 4px;white-space:nowrap}
+  .sidenav a:hover{color:var(--t);background:rgba(0,212,170,0.04)}
+  .sidenav a.active{color:var(--ac);border-right-color:var(--ac);background:var(--ac-dim)}
+  @media(max-width:1280px){.sidenav{display:none}}
+
+  /* ── Footer ── */
+  .footer{text-align:center;padding:48px 0 28px;font-family:var(--mono);font-size:11px;color:var(--td);letter-spacing:1px}
+  @media(max-width:640px){.hero h1{font-size:28px}.cmp,.cards{grid-template-columns:1fr}.flow{flex-direction:column}.farr{transform:rotate(90deg)}.pgrid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="d d-r"></span><span class="d d-y"></span><span class="d d-g"></span>
+  <span class="tt">agent-mem // showcase</span>
+</div>
+
+<!-- ══════ HERO ══════ -->
+<div class="hero">
+  <div class="w">
+    <div class="hero-tag">open source · local first · privacy safe</div>
+    <h1>Agent-<span class="hl">Memory</span></h1>
+    <p class="sub">为 AI 编程助手提供<strong>跨会话持久化记忆</strong>能力的插件系统</p>
+    <p class="sub2">Cursor、CodeBuddy、Claude Code 等 16 种 AI 编程工具每次开新窗口都会"失忆"。<br>Agent-Memory 让它们拥有长期记忆，开口就能干活。</p>
+    <div class="bdg-row">
+      <span class="bdg"><span class="v">16</span> 平台</span>
+      <span class="bdg"><span class="v">276</span> 测试用例</span>
+      <span class="bdg"><span class="v">v2.0.5</span></span>
+      <span class="bdg"><span class="v">11</span> 版本迭代</span>
+      <span class="bdg"><span class="v">AGPL-3.0</span></span>
+    </div>
+  </div>
+</div>
+
+<div class="w">
+
+<!-- ══════ 痛点 ══════ -->
+<div class="sec" id="sec-problem">
+  <div class="sec-l">// the problem</div>
+  <div class="sec-t">解决什么问题</div>
+  <p class="sec-d">
+    AI 编程助手的上下文窗口是<strong>有限且易逝</strong>的。每次新开窗口、切换项目、重启 IDE，之前所有的对话上下文全部丢失。开发者不得不反复向 AI 解释"我们项目是干什么的""上次改了哪里""那个 Bug 是怎么修的"。据社区反馈，这个问题导致的<strong>重复沟通成本高达总编码时间的 20-30%</strong>。
+  </p>
+  <div class="cmp">
+    <div class="card bf">
+      <h3>Before — 没有记忆</h3>
+      <p>每次开新窗口，AI 对项目一无所知。反复解释背景、改动历史、踩过的坑。用 10 分钟聊天，3 分钟在给 AI 补课。</p>
+    </div>
+    <div class="card af">
+      <h3>After — 有了 Agent-Memory</h3>
+      <p>AI "记住"了之前所有会话的关键操作和知识。新会话自动注入相关历史记忆，直接开口就是"上次你修了 X，现在继续 Y"。</p>
+    </div>
+  </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- ══════ 工作原理 ══════ -->
+<div class="sec" id="sec-how">
+  <div class="sec-l">// how it works</div>
+  <div class="sec-t">工作原理 — 全自动四阶段闭环</div>
+  <p class="sec-d">
+    从 Hook 捕获 → AI 智能压缩 → 本地持久化 → 上下文注入，全过程<strong>零手动操作</strong>。开发者只需正常编码，记忆系统在后台默默工作。
+  </p>
+
+  <div class="flow">
+    <div class="fstep">
+      <div class="fi">📝</div>
+      <div class="ft">capture</div>
+      <div class="fd">Hook 自动拦截<br><strong>11 种</strong>生命周期事件<br>Shell / 文件 / MCP / 响应</div>
+    </div>
+    <div class="farr">→</div>
+    <div class="fstep">
+      <div class="fi">🤖</div>
+      <div class="ft">compress</div>
+      <div class="fd">LLM 提取为结构化<br><strong>Observation</strong> 记忆<br>含元意图 / 事实 / 叙事</div>
+    </div>
+    <div class="farr">→</div>
+    <div class="fstep">
+      <div class="fi">💾</div>
+      <div class="ft">persist</div>
+      <div class="fd"><strong>SQLite + FTS5</strong><br>全文索引 + Chroma<br>向量语义搜索</div>
+    </div>
+    <div class="farr">→</div>
+    <div class="fstep">
+      <div class="fi">💉</div>
+      <div class="ft">inject</div>
+      <div class="fd">新会话<strong>自动注入</strong><br>最近 5 条总结<br>+ 10 条观察</div>
+    </div>
+  </div>
+
+  <div class="hbox">
+    <p><strong>关键设计：不是存日志，是 AI 提炼记忆。</strong>每一条操作都经过 LLM 处理，提取为含有<strong>元意图</strong>（用户为什么做这件事）、<strong>可验证事实</strong>、<strong>叙事</strong>的结构化 Observation。这意味着注入的上下文是高密度的"知识"而非低效的"日志"。</p>
+  </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- ══════ 11 种 Hook ══════ -->
+<div class="sec" id="sec-hooks">
+  <div class="sec-l">// hooks</div>
+  <div class="sec-t">11 种 Agent 生命周期 Hook</div>
+  <p class="sec-d">覆盖 AI 编程助手的完整工作流程 —— 从用户输入、工具调用到 Agent 响应，不遗漏任何关键操作。</p>
+
+  <table class="htable">
+    <tr><th>Hook</th><th>类型</th><th>作用</th></tr>
+    <tr><td>sessionStart</td><td>生命周期</td><td>创建会话记录</td></tr>
+    <tr><td>beforeSubmitPrompt</td><td>控制型</td><td>初始化 + 注入历史上下文到 Prompt</td></tr>
+    <tr><td>beforeShellExecution</td><td>控制型</td><td>Shell 命令隐私过滤（自动脱敏 API Key / 密码）</td></tr>
+    <tr><td>beforeMCPExecution</td><td>控制型</td><td>MCP 工具调用隐私检查</td></tr>
+    <tr><td>afterShellExecution</td><td>监控型</td><td>记录 Shell 命令执行结果</td></tr>
+    <tr><td>afterMCPExecution</td><td>监控型</td><td>记录 MCP 工具调用结果</td></tr>
+    <tr><td>afterFileEdit</td><td>监控型</td><td>记录文件编辑操作</td></tr>
+    <tr><td>afterSearchReplaceFileEdit</td><td>监控型</td><td>记录搜索替换操作</td></tr>
+    <tr><td>afterAgentResponse</td><td>监控型</td><td>捕获 Agent 完整回复</td></tr>
+    <tr><td>afterAgentThought</td><td>监控型</td><td>捕获 Agent 思考推理过程</td></tr>
+    <tr><td>stop</td><td>生命周期</td><td>会话结束 → 触发 Summary 总结生成</td></tr>
+  </table>
+</div>
+
+<div class="sep"></div>
+
+<!-- ══════ 核心功能 ══════ -->
+<div class="sec" id="sec-features">
+  <div class="sec-l">// core features</div>
+  <div class="sec-t">核心功能</div>
+  <p class="sec-d">从自动记录到智能检索，完整覆盖记忆的<strong>采集 → 存储 → 检索 → 注入</strong>全生命周期。</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3>自动记录 · 零配置</h3>
+      <p>11 种 Hook 全自动拦截 Shell 命令、文件编辑、MCP 调用、Agent 响应等全部操作类型。开发者<strong>无需任何手动操作</strong>，正常编码即可。</p>
+      <span class="tag">AUTO</span>
+    </div>
+    <div class="card">
+      <h3>AI 智能压缩 · 结构化 Observation</h3>
+      <p>调用 LLM 将原始操作提取为含 <code>type</code> / <code>title</code> / <code>meta_intent</code> / <code>facts</code> / <code>narrative</code> 的结构化记忆。9 种分类类型（discovery、bugfix、feature、refactor 等），全中文输出。</p>
+      <span class="tag">AI DRIVEN</span>
+    </div>
+    <div class="card">
+      <h3>会话总结 · 端到端生成</h3>
+      <p>会话结束时聚合所有 Observation，自动生成含"做了什么 / 学到什么 / 关键发现 / 下一步建议"的会话 Summary。支持图片语义保留——截图中的信息不会在总结中丢失。</p>
+      <span class="tag">END-TO-END</span>
+    </div>
+    <div class="card">
+      <h3>上下文注入 · 无缝衔接</h3>
+      <p>新会话自动查询最近 5 条 Summary + 10 条 Observation，格式化为 <code>&lt;memory_context&gt;</code> XML 注入 Prompt。4000 Token 上限 + 渐进式裁剪策略，确保不超限。</p>
+      <span class="tag">CORE</span>
+    </div>
+    <div class="card">
+      <h3>RAG 混合搜索</h3>
+      <p>FTS5 全文搜索 + Chroma 向量语义搜索 + <strong>RRF 融合排序</strong>。支持中文语义理解，hybrid 模式自动降级——Chroma 不可用时无缝回退到 SQLite。</p>
+      <span class="tag">MILESTONE 2</span>
+    </div>
+    <div class="card">
+      <h3>MCP 主动搜索 · 9 个工具</h3>
+      <p>AI 可通过 MCP 协议主动查询：<code>search</code> / <code>search_like</code> / <code>timeline</code> / <code>get_observations</code> / <code>get_summaries</code> / <code>get_stats</code> / <code>list_projects</code> / <code>list_sessions</code> / <code>get_context</code>。推荐 3 层渐进式查询，节省 <strong>10x Token</strong>。</p>
+      <span class="tag">9 TOOLS</span>
+    </div>
+    <div class="card">
+      <h3>图片语义保留</h3>
+      <p>用户发送截图后，自动检测 <code>[Image]</code> 标记 + 词汇信号（图片/截图/diagram），将 assistant 对图片内容的描述写入 Summary 的 <code>media_context</code> 字段，确保视觉内容不丢失。</p>
+      <span class="tag">MILESTONE 1</span>
+    </div>
+    <div class="card">
+      <h3>远程同步 + 个人服务端</h3>
+      <p>本地记忆可同步到远程服务器。<strong>SyncQueue 持久化队列</strong> + 指数退避重试 + 优先级调度（realtime/backfill）。支持 <code>cmem://</code> 邀请链接一键连接，多设备记忆聚合查看。</p>
+      <span class="tag">MULTI-DEVICE</span>
+    </div>
+    <div class="card">
+      <h3>OpenClaw 网关插件</h3>
+      <p>支持 Telegram / Discord / Slack 聊天网关场景，SSE 实时推送 + 指数退避重连。Setup Wizard 一键安装，自动写入 <code>openclaw.plugin.json</code> + 合并配置。</p>
+      <span class="tag">MILESTONE 4</span>
+    </div>
+  </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- ══════ 产品界面 ══════ -->
+<div class="sec" id="sec-product">
+  <div class="sec-l">// product</div>
+  <div class="sec-t">产品界面 — 不是命令行工具，是完整的桌面应用</div>
+  <p class="sec-d">Electron 桌面端 + Web Viewer + Server 后台，覆盖从本地使用到团队协作的全场景。</p>
+
+  <!-- Viewer -->
+  <div class="prod-item">
+    <div class="prod-head">
+      <span class="prod-num">01</span>
+      <div>
+        <h3 class="prod-title">Memory Viewer · 记忆浏览器</h3>
+        <p class="prod-sub">查看所有历史会话总结、观察记录、会话列表</p>
+      </div>
+    </div>
+    <div class="sframe sframe-sm">
+      <div class="sbar"><span class="sd sd-r"></span><span class="sd sd-y"></span><span class="sd sd-g"></span><span class="sl">agentmem // viewer</span></div>
+      <img src="docs/pictures/浏览器页面.png" alt="Memory Viewer">
+    </div>
+    <p class="prod-desc">三个 Tab（Summaries / Observations / Sessions）+ 项目筛选 + 数据源切换（本地 / 远程聚合）+ Markdown 一键导出。既可以嵌入桌面端窗口，也可以在浏览器中独立打开。</p>
+  </div>
+
+  <!-- QuickPanel -->
+  <div class="prod-item">
+    <div class="prod-head">
+      <span class="prod-num">02</span>
+      <div>
+        <h3 class="prod-title">QuickPanel · 快速搜索</h3>
+        <p class="prod-sub">全局快捷键 Ctrl+Shift+M 随时唤起</p>
+      </div>
+    </div>
+    <div class="sframe sframe-sm">
+      <div class="sbar"><span class="sd sd-r"></span><span class="sd sd-y"></span><span class="sd sd-g"></span><span class="sl">memory search // quickpanel</span></div>
+      <img src="docs/pictures/浏览器小窗quickpanel.png" alt="QuickPanel">
+    </div>
+    <p class="prod-desc">类似 macOS Spotlight 的体验。半透明毛玻璃窗口，支持按类型 / 项目筛选，结果卡片可点击跳转到 Viewer 详情。不打断当前工作流。</p>
+  </div>
+
+  <!-- Settings -->
+  <div class="prod-item">
+    <div class="prod-head">
+      <span class="prod-num">03</span>
+      <div>
+        <h3 class="prod-title">Settings · IDE 关联管理</h3>
+        <p class="prod-sub">自动检测 16 种 IDE，一键关联或断开</p>
+      </div>
+    </div>
+    <div class="sframe sframe-sm">
+      <div class="sbar"><span class="sd sd-r"></span><span class="sd sd-y"></span><span class="sd sd-g"></span><span class="sl">settings // ide association</span></div>
+      <img src="docs/pictures/IDE关联设置面板.png" alt="Settings">
+    </div>
+    <p class="prod-desc">通用设置（端口号 / 开机自启 / 全局快捷键）+ IDE 关联管理。截图中可见 CodeBuddy 插件版、Cursor、CodeBuddy IDE、Claude Code、Claude Internal 已全部关联。</p>
+  </div>
+
+  <!-- Server -->
+  <div class="prod-item">
+    <div class="prod-head">
+      <span class="prod-num">04</span>
+      <div>
+        <h3 class="prod-title">Server · 个人服务端后台</h3>
+        <p class="prod-sub">可选部署，支持多设备记忆同步</p>
+      </div>
+    </div>
+    <div class="sframe sframe-sm">
+      <div class="sbar"><span class="sd sd-r"></span><span class="sd sd-y"></span><span class="sd sd-g"></span><span class="sl">agent-mem // server</span></div>
+      <img src="docs/pictures/个人服务端页面.png" alt="Server">
+    </div>
+    <p class="prod-desc">多 Tab（概览 / 账号 / 记忆 / 设置）。截图是实际生产数据：<strong>4,439 个会话、17,826 次操作、1,077 条总结</strong>，3 台设备持续同步中。</p>
+  </div>
+
+  <!-- Website -->
+  <div class="prod-item">
+    <div class="prod-head">
+      <span class="prod-num">05</span>
+      <div>
+        <h3 class="prod-title">官网 · 友好的发布与分发</h3>
+        <p class="prod-sub">自动识别平台，一键下载对应安装包</p>
+      </div>
+    </div>
+    <div class="sframe sframe-sm">
+      <div class="sbar"><span class="sd sd-r"></span><span class="sd sd-y"></span><span class="sd sd-g"></span><span class="sl">agent-memory // website</span></div>
+      <img src="docs/pictures/官网截图.png" alt="Agent-Memory 官网">
+    </div>
+    <p class="prod-desc">
+      我们搭建了独立的产品官网（<a href="http://21.214.82.219:3850/" style="color:var(--ac);text-decoration:none">21.214.82.219:3850</a>），让用户可以方便地了解产品和获取安装包。官网会<strong>自动识别访问者的操作系统</strong>，直接展示对应平台的下载按钮。我们发布了 <strong>Windows、macOS、Linux</strong> 三个版本，用户无需在多个链接之间寻找——打开页面就是自己要的那个。
+    </p>
+  </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- ══════ 平台 ══════ -->
+<div class="sec" id="sec-platform">
+  <div class="sec-l">// compatibility</div>
+  <div class="sec-t">16 平台全覆盖</div>
+  <p class="sec-d">
+    通过 <strong>IDE Adapter Registry</strong> 架构，每个 IDE 只需一个适配器文件（约 50-200 行）即可接入。当前已实现 9 个独立适配器，覆盖 16 种 IDE / Agent 平台。
+  </p>
+  <div class="pgrid">
+    <div class="pitem"><span class="dot"></span>Cursor</div>
+    <div class="pitem"><span class="dot"></span>CodeBuddy 插件版</div>
+    <div class="pitem"><span class="dot"></span>CodeBuddy IDE</div>
+    <div class="pitem"><span class="dot"></span>Claude Code</div>
+    <div class="pitem"><span class="dot"></span>Claude Internal</div>
+    <div class="pitem"><span class="dot"></span>Windsurf</div>
+    <div class="pitem"><span class="dot"></span>Gemini CLI</div>
+    <div class="pitem"><span class="dot"></span>OpenCode</div>
+    <div class="pitem"><span class="dot"></span>Codex CLI</div>
+    <div class="pitem"><span class="dot"></span>Copilot CLI</div>
+    <div class="pitem"><span class="dot"></span>Antigravity</div>
+    <div class="pitem"><span class="dot"></span>Goose</div>
+    <div class="pitem"><span class="dot"></span>Crush</div>
+    <div class="pitem"><span class="dot"></span>Roo Code</div>
+    <div class="pitem"><span class="dot"></span>Warp</div>
+    <div class="pitem"><span class="dot"></span>OpenClaw</div>
+  </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- ══════ 体验优化 ══════ -->
+<div class="sec" id="sec-ux">
+  <div class="sec-l">// ux polish</div>
+  <div class="sec-t">用户体验优化 · 降低使用摩擦</div>
+  <p class="sec-d">我们在<strong>每个可能产生摩擦的环节</strong>都做了优化设计。目标是让用户几乎感知不到记忆系统的存在，但又能时刻受益。</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3>一键安装 · 开箱即用</h3>
+      <p><code>install.bat</code> / <code>install.sh</code> 一键完成全部流程（检查环境 → 安装依赖 → 编译 → 配置向导）。<strong>内置默认 API Key</strong>，安装后无需任何额外配置即可使用。桌面端也提供 NSIS 安装包 / macOS DMG 一键安装。</p>
+    </div>
+    <div class="card">
+      <h3>系统托盘守护</h3>
+      <p>Electron 桌面端常驻系统托盘，<strong>4 种状态色像素机器人图标</strong>（绿/橙/红/灰）直观显示服务状态。Worker 崩溃自动重启（最多 3 次），支持开机自启动。</p>
+    </div>
+    <div class="card">
+      <h3>首次引导 · Setup Wizard</h3>
+      <p>首次启动自动弹出 IDE 关联向导。自动扫描系统中已安装的所有 IDE，<strong>一键勾选完成关联</strong>，零命令行操作。支持 Cursor / CodeBuddy / Claude Code / OpenClaw 等全平台。</p>
+    </div>
+    <div class="card">
+      <h3>Hooks 自动守护</h3>
+      <p><strong>60 秒轮询</strong>检测 hooks.json 完整性。外部程序（如 IDE 更新、Cursor 自动升级）修改或覆盖 hooks 配置后，系统自动恢复注册。新安装 IDE 也会被自动检测并关联。</p>
+    </div>
+    <div class="card">
+      <h3>Hook 失败绝不阻塞</h3>
+      <p>记忆系统出错<strong>绝不影响正常编码</strong>。架构上采用"HTTP 立即返回 200 + 异步后台处理"模式，10 秒超时硬限制。即使 Worker 完全不可用，AI 编程助手也完全不受影响。</p>
+    </div>
+    <div class="card">
+      <h3>Windows 深度兼容</h3>
+      <p>PowerShell 管道 <code>ExpressionsMustBeFirstInPipeline</code> 问题、空格路径、UTF-8 BOM、GBK 乱码、非管理员权限 EPERM……每一个 Windows 编码/路径/权限陷阱都有<strong>专项修复和回归测试</strong>。</p>
+    </div>
+    <div class="card">
+      <h3>ShadowFolk 深空主题</h3>
+      <p>全部窗口（Viewer / QuickPanel / Settings / Setup Wizard / Server）统一采用 <code>#0a1014</code> 暗色底 + <code>#00d4aa</code> 青绿强调的 HUD 风格。像素字体标题 + 扫描线 + 发光边框，视觉一致且辨识度高。</p>
+    </div>
+    <div class="card">
+      <h3>自动数据库迁移</h3>
+      <p>版本升级时自动检测缺失列（<code>EXPECTED_COLUMNS</code> 字典驱动），执行 <code>ALTER TABLE ADD COLUMN</code> 补全。有列变更时自动重建 FTS 索引 + 回填数据。<strong>用户完全无感</strong>。</p>
+    </div>
+    <div class="card">
+      <h3>cmem:// 协议 + 邀请链接</h3>
+      <p>注册自定义 URL 协议 <code>cmem://</code>，支持邀请链接一键连接远程服务器。点击链接自动唤起桌面端、解析连接参数、填入配置。团队共享记忆服务器零门槛。</p>
+    </div>
+    <div class="card">
+      <h3>内置 Node.js 运行时</h3>
+      <p>桌面端打包时内置 <code>node.exe</code>（Windows）/ <code>node</code>（macOS）。Hooks 执行使用内置 Node 而非系统 Node，<strong>彻底消除"用户没装 Node"导致的静默失败</strong>。</p>
+    </div>
+    <div class="card">
+      <h3>敏感信息自动过滤</h3>
+      <p>所有 Prompt 模板内置敏感信息规则：自动检测 API Key、密码、Token、密钥、证书等模式，<strong>强制要求 LLM 用 [REDACTED] 替换</strong>。记忆数据库中不会存储任何明文密码。</p>
+    </div>
+    <div class="card">
+      <h3>全局快捷键搜索</h3>
+      <p><code>Ctrl+Shift+M</code>（macOS 下 <code>Cmd+Shift+M</code>）唤起 Spotlight 风格透明搜索面板。不打断当前工作流，随时快速检索历史记忆。</p>
+    </div>
+  </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- ══════ 工程质量 ══════ -->
+<div class="sec" id="sec-eng">
+  <div class="sec-l">// engineering</div>
+  <div class="sec-t">工程质量</div>
+
+  <div class="stats">
+    <div class="st"><div class="sn">v2.0.5</div><div class="sl">当前版本</div></div>
+    <div class="st"><div class="sn">11</div><div class="sl">版本发布</div></div>
+    <div class="st"><div class="sn">276</div><div class="sl">测试用例</div></div>
+    <div class="st"><div class="sn">0</div><div class="sl">类型错误</div></div>
+    <div class="st"><div class="sn">16</div><div class="sl">适配平台</div></div>
+    <div class="st"><div class="sn">9</div><div class="sl">IDE 适配器</div></div>
+    <div class="st"><div class="sn">55+</div><div class="sl">技术文档</div></div>
+    <div class="st"><div class="sn">40+</div><div class="sl">测试文件</div></div>
+  </div>
+
+  <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+    <div class="card">
+      <h3>完整的发版流程</h3>
+      <p>CHANGELOG 逐版记录 · RELEASING.md 规范 · <code>release:preflight</code> 预检 · <code>release:build:all</code> 三平台自动打包（Win NSIS / macOS DMG x64+arm64）· 安装包命名规范化 <code>AgentMemory-Setup-2.0.5.exe</code></p>
+    </div>
+    <div class="card">
+      <h3>丰富的技术文档</h3>
+      <p>架构文档（ARCHITECTURE.md）· 多平台适配策略（32KB）· 会话/观察数据模型 · 记忆系统演进设计 · Claude Code 方案 · <strong>15 个业界记忆项目的第一性原理对比分析</strong> · 完整 PRD + 设计文档体系</p>
+    </div>
+    <div class="card">
+      <h3>测试覆盖</h3>
+      <p>276 个测试用例覆盖：适配器测试（Cursor/Windsurf/Gemini/OpenCode/Codex）· 搜索策略测试（SQLite/Chroma/Hybrid）· Worker 端点测试 · 同步测试 · 转录解析测试 · E2E 回归 · Prompt 媒体上下文测试</p>
+    </div>
+    <div class="card">
+      <h3>生产验证</h3>
+      <p>日常自用数据：<strong>4,439 个会话 · 17,826 次操作记录 · 1,077 条总结</strong>。多设备（3台）同步运行，远程 Server 7x24 稳定服务。不是 Demo 项目，是真正在生产中使用的工具。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Footer ══════ -->
+<div class="footer">
+  <p>AGENT-MEMORY v2.0.5 · AGPL-3.0</p>
+  <p style="margin-top:6px;opacity:0.6">local first · privacy safe · offline ready · zero config</p>
+</div>
+
+</div>
+
+<!-- ── Side Navigation ── -->
+<div class="sidenav" id="sidenav">
+  <a href="#sec-problem" data-s="sec-problem">解决什么问题</a>
+  <a href="#sec-how" data-s="sec-how">工作原理</a>
+  <a href="#sec-hooks" data-s="sec-hooks">11 种 Hook</a>
+  <a href="#sec-features" data-s="sec-features">核心功能</a>
+  <a href="#sec-product" data-s="sec-product">产品界面</a>
+  <a href="#sec-platform" data-s="sec-platform">平台支持</a>
+  <a href="#sec-ux" data-s="sec-ux">体验优化</a>
+  <a href="#sec-eng" data-s="sec-eng">工程质量</a>
+</div>
+
+<script>
+!function(){
+  var links=document.querySelectorAll('.sidenav a');
+  var secs=[];
+  links.forEach(function(a){var el=document.getElementById(a.dataset.s);if(el)secs.push(el)});
+  function update(){
+    var cur=0,off=window.innerHeight*0.35;
+    for(var i=secs.length-1;i>=0;i--){if(secs[i].getBoundingClientRect().top<=off){cur=i;break}}
+    links.forEach(function(a,i){a.classList.toggle('active',i===cur)});
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  update();
+  links.forEach(function(a){
+    a.addEventListener('click',function(e){
+      e.preventDefault();
+      var t=document.getElementById(a.dataset.s);
+      if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  });
+}();
+</script>
+
+</body>
+</html>

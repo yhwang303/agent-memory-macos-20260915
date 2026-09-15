@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShadwMonitor Bridge · 安装效果预览</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep-space: #0a1014;
+      --bg-void: #060a0c;
+      --bg-page-light: #eef1f4;
+      --bg-light: #f7f8fa;
+      --bg-card-light: #ffffff;
+      --text-dark: #1a1a2e;
+      --text-mid: #4a4a6a;
+      --text-dim: #8d8da8;
+      --border-light: #e2e4ea;
+
+      --accent-primary: #00d4aa;
+      --accent-glow: rgba(0, 212, 170, 0.4);
+      --accent-dim: rgba(0, 212, 170, 0.15);
+      --accent-active: #00ff88;
+      --accent-alert: #ff4466;
+      --accent-amber: #ffaa33;
+      --accent-amber-glow: rgba(255, 170, 51, 0.4);
+      --accent-amber-dim: rgba(255, 170, 51, 0.12);
+      --accent-purple: #a78bfa;
+      --accent-blue: #60a5fa;
+
+      --hud-border: rgba(0, 212, 170, 0.35);
+      --hud-border-bright: rgba(0, 212, 170, 0.7);
+      --hud-bg: rgba(8, 20, 28, 0.88);
+      --hud-glow: rgba(0, 212, 170, 0.12);
+
+      --text-primary: #d0e8e4;
+      --text-secondary: rgba(208, 232, 228, 0.6);
+      --text-muted: #4a6670;
+
+      --font-pixel: 'Press Start 2P', cursive;
+      --font-heading: 'Orbitron', sans-serif;
+      --font-body: 'JetBrains Mono', monospace;
+      --font-cn: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-cn);
+      background: var(--bg-page-light);
+      color: var(--text-dark);
+      line-height: 1.5;
+      padding: 32px 24px 80px;
+    }
+
+    /* ───── doc header ───── */
+    .doc-header {
+      max-width: 1180px; margin: 0 auto 28px;
+      padding: 18px 22px;
+      background: linear-gradient(135deg, #0a1014, #102028);
+      border-radius: 14px; color: var(--text-primary);
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 8px 24px rgba(10,16,20,0.18);
+    }
+    .doc-header h1 {
+      font-family: var(--font-heading); font-size: 18px;
+      letter-spacing: 0.18em; color: var(--accent-amber);
+      text-shadow: 0 0 12px var(--accent-amber-glow);
+    }
+    .doc-header p {
+      font-size: 12px; color: var(--text-secondary);
+      margin-top: 4px; letter-spacing: 0.04em;
+    }
+    .doc-header .badge {
+      font-family: var(--font-pixel); font-size: 10px;
+      padding: 6px 12px; border: 1px solid rgba(255,170,51,0.35);
+      border-radius: 4px; color: var(--accent-amber);
+      letter-spacing: 0.12em;
+    }
+
+    /* ───── stage label ───── */
+    .stage { max-width: 1180px; margin: 0 auto 36px; }
+    .stage-label {
+      display: flex; align-items: center; gap: 14px;
+      font-family: var(--font-heading); font-size: 12px;
+      letter-spacing: 0.24em; color: var(--text-mid);
+      margin-bottom: 14px;
+    }
+    .stage-label::before {
+      content: ''; width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-amber), #ffc966);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-pixel); font-size: 10px; color: #1a1a2e;
+      box-shadow: 0 0 12px var(--accent-amber-glow);
+    }
+    .stage-label.s1::before { content: '1'; }
+    .stage-label.s2::before { content: '2'; }
+    .stage-label.s3::before { content: '3'; }
+    .stage-label.s4::before { content: '4'; }
+    .stage-label.s5::before { content: '5'; }
+    .stage-label .where {
+      color: var(--text-dim); font-family: var(--font-body);
+      font-size: 11px; letter-spacing: 0.04em;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       STAGE 1 · 桌面端 Settings → Plugins (浅色)
+    ═══════════════════════════════════════════════════════ */
+    .settings-frame {
+      background: var(--bg-light); border-radius: 14px;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 4px 16px rgba(20,30,50,0.06); overflow: hidden;
+    }
+    .settings-titlebar {
+      padding: 10px 18px; background: #fff;
+      border-bottom: 1px solid var(--border-light);
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; color: var(--text-mid);
+    }
+    .settings-titlebar .dots { display: flex; gap: 6px; }
+    .settings-titlebar .dots span {
+      width: 11px; height: 11px; border-radius: 50%; background: #ddd;
+    }
+    .settings-titlebar .dots span:nth-child(1) { background: #ff5f56; }
+    .settings-titlebar .dots span:nth-child(2) { background: #ffbd2e; }
+    .settings-titlebar .dots span:nth-child(3) { background: #27c93f; }
+    .settings-titlebar .title { font-weight: 600; color: var(--text-dark); }
+
+    .settings-tabs {
+      display: flex; gap: 6px; padding: 12px 16px; background: #fff;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .st-tab { padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--text-dim); cursor: default; }
+    .st-tab.active {
+      color: #0a1014;
+      background: linear-gradient(135deg, rgba(255,170,51,0.18), rgba(255,200,90,0.22));
+      box-shadow: inset 0 0 0 1px rgba(255,170,51,0.32);
+    }
+    .settings-body { padding: 20px; }
+    .section-title {
+      font-size: 13px; font-weight: 700; color: var(--text-dark);
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::before {
+      content: ''; width: 3px; height: 14px;
+      background: var(--accent-amber); border-radius: 2px;
+    }
+
+    .plugin-card {
+      background: #fff; border: 1px solid var(--border-light);
+      border-radius: 12px; padding: 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .plugin-card-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; margin-bottom: 14px;
+    }
+    .plugin-card-title {
+      font-size: 15px; font-weight: 700; color: var(--text-dark);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .plugin-card-title .icon {
+      width: 24px; height: 24px;
+      background: linear-gradient(135deg, var(--accent-amber), #ffc966);
+      border-radius: 6px; display: inline-flex;
+      align-items: center; justify-content: center;
+      font-size: 13px; color: #1a1a2e;
+    }
+    .plugin-card-subtitle {
+      font-size: 12px; color: var(--text-mid);
+      margin-top: 6px; max-width: 600px;
+    }
+    .switch { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-mid); }
+    .switch-track {
+      width: 38px; height: 22px; background: var(--accent-amber);
+      border-radius: 11px; position: relative;
+      box-shadow: inset 0 0 0 1px rgba(220,150,30,0.5), 0 0 8px var(--accent-amber-glow);
+    }
+    .switch-track::after {
+      content: ''; position: absolute; top: 2px; right: 2px;
+      width: 18px; height: 18px; border-radius: 50%; background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .form-row {
+      display: grid; grid-template-columns: 160px 1fr; gap: 14px;
+      padding: 11px 0; border-bottom: 1px solid #f0f1f5; align-items: center;
+    }
+    .form-row:last-child { border-bottom: none; }
+    .form-label { font-size: 12px; color: var(--text-mid); font-weight: 500; }
+    .form-label small { display: block; color: var(--text-dim); font-size: 11px; font-weight: 400; margin-top: 2px; }
+    .form-input {
+      padding: 7px 11px; border: 1px solid var(--border-light);
+      border-radius: 6px; font-family: var(--font-body); font-size: 12px;
+      background: #fafbfc; color: var(--text-dark);
+    }
+    .form-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; background: var(--accent-amber-dim);
+      border: 1px solid rgba(255,170,51,0.32); color: #a86a00;
+      border-radius: 999px; font-size: 11px;
+      font-family: var(--font-body); font-weight: 500;
+    }
+    .form-pill.off { background: #f3f5f9; color: var(--text-dim); border-color: #dde0e6; }
+    .form-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-amber); box-shadow: 0 0 6px var(--accent-amber-glow); }
+    .form-pill.off .dot { background: #cfd2da; box-shadow: none; }
+
+    .health-row {
+      margin-top: 18px; padding-top: 16px;
+      border-top: 1px dashed #d8dce5;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    }
+    .health-metric {
+      background: linear-gradient(180deg, #fafbfc, #f1f3f7);
+      border: 1px solid var(--border-light); border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .health-metric .label {
+      font-size: 11px; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;
+    }
+    .health-metric .value {
+      font-family: var(--font-body); font-size: 20px; font-weight: 700;
+      color: var(--text-dark);
+    }
+    .health-metric .value small {
+      font-size: 12px; color: var(--text-dim); font-weight: 400; margin-left: 4px;
+    }
+    .health-metric .value.alive {
+      color: var(--accent-amber);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent-amber);
+      box-shadow: 0 0 10px var(--accent-amber);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:0.5;transform:scale(0.85);} 50%{opacity:1;transform:scale(1.1);} }
+
+    .actions-row { margin-top: 14px; display: flex; gap: 8px; }
+    .btn {
+      padding: 7px 14px; border-radius: 7px; font-size: 12px;
+      font-weight: 600; cursor: default; border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-amber), #ffc966);
+      color: #1a1a2e; box-shadow: 0 2px 8px var(--accent-amber-glow);
+    }
+    .btn-secondary {
+      background: #fff; border-color: var(--border-light); color: var(--text-mid);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       STAGE 2 · Web Viewer · ShadwMonitor 独立 Tab（深色 HUD）
+    ═══════════════════════════════════════════════════════ */
+    .viewer-frame {
+      background: var(--bg-deep-space); border-radius: 14px;
+      padding: 22px; position: relative; overflow: hidden;
+      color: var(--text-primary);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+    }
+    .viewer-frame::before {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(to bottom, transparent 0, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 6px);
+      pointer-events: none;
+    }
+    .viewer-inner { position: relative; z-index: 1; }
+
+    .viewer-header {
+      padding-bottom: 14px; margin-bottom: 16px;
+      border-bottom: 1px solid var(--hud-border);
+      display: flex; align-items: flex-end; justify-content: space-between;
+    }
+    .viewer-brand {
+      font-family: var(--font-pixel); font-size: 11px;
+      color: var(--accent-primary); letter-spacing: 0.14em;
+      text-shadow: 0 0 10px var(--accent-glow);
+    }
+    .viewer-brand small {
+      display: block; margin-top: 6px;
+      font-family: var(--font-heading); font-size: 10px;
+      letter-spacing: 0.32em; color: var(--text-secondary); text-shadow: none;
+    }
+    .viewer-meta {
+      font-family: var(--font-body); font-size: 10px;
+      color: var(--text-muted); text-align: right;
+    }
+    .viewer-meta .live-dot {
+      display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-active); box-shadow: 0 0 6px var(--accent-active);
+      margin-right: 6px;
+    }
+
+    .viewer-stats { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .viewer-stats span {
+      background: var(--accent-dim); border: 1px solid rgba(0,212,170,0.2);
+      padding: 3px 11px; border-radius: 4px; font-size: 10px;
+      font-family: var(--font-body); color: var(--accent-primary);
+    }
+
+    /* ── main tabs ── */
+    .main-tabs {
+      display: flex; gap: 6px; margin-bottom: 18px;
+    }
+    .main-tab {
+      padding: 9px 20px;
+      background: var(--hud-bg); border: 1px solid var(--hud-border);
+      border-radius: 6px; cursor: default; font-size: 11px;
+      font-family: var(--font-heading); font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted); position: relative;
+    }
+    .main-tab.active {
+      background: var(--accent-dim); border-color: var(--hud-border-bright);
+      color: var(--accent-primary);
+      box-shadow: 0 0 12px var(--hud-glow);
+      text-shadow: 0 0 6px var(--accent-glow);
+    }
+    .main-tab.shadw-tab.active {
+      background: rgba(255,170,51,0.12);
+      border-color: rgba(255,170,51,0.55);
+      color: var(--accent-amber);
+      box-shadow: 0 0 14px rgba(255,170,51,0.22);
+      text-shadow: 0 0 8px rgba(255,170,51,0.5);
+    }
+    .main-tab .tab-badge {
+      position: absolute; top: -6px; right: -6px;
+      background: var(--accent-amber); color: #000;
+      font-family: var(--font-body); font-size: 9px; font-weight: 700;
+      min-width: 18px; height: 16px; padding: 0 4px;
+      border-radius: 8px; display: flex;
+      align-items: center; justify-content: center;
+    }
+
+    /* ── plugin header（琥珀色调） ── */
+    .plugin-header {
+      background: rgba(255,170,51,0.07);
+      border: 1px solid rgba(255,170,51,0.25);
+      border-radius: 10px; padding: 14px 20px;
+      margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .plugin-header-left { display: flex; align-items: center; gap: 14px; }
+    .plugin-icon-big {
+      width: 36px; height: 36px;
+      background: rgba(255,170,51,0.18);
+      border: 1px solid rgba(255,170,51,0.45);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0; color: var(--accent-amber);
+    }
+    .plugin-name-big {
+      font-family: var(--font-heading); font-size: 13px;
+      letter-spacing: 0.08em; color: var(--accent-amber);
+      text-shadow: 0 0 8px rgba(255,170,51,0.4);
+    }
+    .plugin-desc-sm {
+      font-family: var(--font-cn); font-size: 11px;
+      color: var(--text-muted); margin-top: 2px;
+    }
+    .plugin-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .plugin-tag {
+      font-size: 10px; padding: 3px 10px;
+      border-radius: 3px; border: 1px solid;
+      font-family: var(--font-body);
+    }
+    .pt-on { background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.25); color: var(--accent-active); }
+    .pt-mode { background: rgba(255,170,51,0.08); border-color: rgba(255,170,51,0.28); color: var(--accent-amber); }
+    .pt-plat { background: rgba(0,212,170,0.08); border-color: rgba(0,212,170,0.2); color: var(--text-secondary); }
+
+    /* ── sub tabs（琥珀色） ── */
+    .sub-tabs {
+      display: flex; gap: 0; margin-bottom: 16px;
+      border: 1px solid rgba(255,170,51,0.22);
+      border-radius: 8px; overflow: hidden;
+      background: var(--bg-void);
+    }
+    .sub-tab {
+      flex: 1; padding: 9px 0; text-align: center;
+      font-family: var(--font-heading); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); cursor: default;
+      border-right: 1px solid rgba(255,170,51,0.15);
+    }
+    .sub-tab:last-child { border-right: none; }
+    .sub-tab.active {
+      background: rgba(255,170,51,0.14);
+      color: var(--accent-amber);
+      text-shadow: 0 0 6px rgba(255,170,51,0.5);
+    }
+
+    /* ── date selector ── */
+    .date-selector {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; padding: 10px 14px;
+      background: rgba(255,170,51,0.05);
+      border: 1px solid rgba(255,170,51,0.2);
+      border-radius: 8px;
+    }
+    .date-selector label {
+      font-size: 10px; font-family: var(--font-heading);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); white-space: nowrap;
+    }
+    .date-selector select {
+      flex: 0 0 auto; padding: 6px 10px;
+      background: var(--bg-void);
+      border: 1px solid rgba(255,170,51,0.32);
+      border-radius: 5px; color: var(--accent-amber);
+      font-family: var(--font-body); font-size: 12px;
+    }
+    .date-selector .quick {
+      display: flex; gap: 4px; margin-left: 8px;
+    }
+    .date-selector .quick a {
+      font-size: 10px; font-family: var(--font-body);
+      padding: 3px 9px; border-radius: 4px;
+      color: var(--text-muted);
+      border: 1px solid rgba(208,232,228,0.12);
+      cursor: default;
+    }
+    .date-selector .quick a.on {
+      color: var(--accent-amber); border-color: rgba(255,170,51,0.4);
+      background: rgba(255,170,51,0.08);
+    }
+    .date-selector .scope-note {
+      margin-left: auto; font-size: 10px;
+      color: var(--text-muted); font-family: var(--font-body);
+    }
+    .date-selector .scope-note strong { color: var(--accent-amber); }
+
+    /* ── stat grid ── */
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 10px; margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--hud-bg); border: 1px solid rgba(0,212,170,0.1);
+      border-radius: 8px; padding: 14px 16px;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    }
+    .stat-card.sc-l1::before { background: var(--accent-amber); }
+    .stat-card.sc-cap::before { background: var(--accent-primary); }
+    .stat-card.sc-hrs::before { background: var(--accent-purple); }
+    .stat-card.sc-bridge::before { background: var(--accent-active); }
+    .stat-value {
+      font-family: var(--font-heading); font-size: 32px; font-weight: 700;
+      line-height: 1; margin-bottom: 4px;
+    }
+    .stat-card.sc-l1  .stat-value { color: var(--accent-amber); text-shadow: 0 0 18px rgba(255,170,51,0.4); }
+    .stat-card.sc-cap .stat-value { color: var(--accent-primary); text-shadow: 0 0 18px rgba(0,212,170,0.4); }
+    .stat-card.sc-hrs .stat-value { color: var(--accent-purple); }
+    .stat-card.sc-bridge .stat-value { color: var(--accent-active); text-shadow: 0 0 18px rgba(0,255,136,0.4); }
+    .stat-label {
+      font-size: 10px; font-family: var(--font-heading);
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);
+    }
+    .stat-delta {
+      margin-top: 8px; font-size: 11px;
+      font-family: var(--font-body); color: var(--text-muted);
+    }
+    .stat-delta .up { color: var(--accent-active); }
+    .stat-delta .warn { color: var(--accent-amber); }
+
+    /* ── overview bottom: timeline + apps ── */
+    .overview-bottom {
+      display: grid; grid-template-columns: 1fr 280px; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .section-block {
+      background: var(--hud-bg); border: 1px solid rgba(0,212,170,0.1);
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .section-block-title {
+      font-family: var(--font-heading); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .section-block-title::before { content: '//'; color: var(--accent-amber); opacity: 0.6; }
+
+    /* timeline */
+    .timeline-axis {
+      position: relative; height: 56px;
+      background: var(--bg-void);
+      border: 1px solid rgba(255,170,51,0.12);
+      border-radius: 6px; padding: 8px 6px 22px;
+    }
+    .timeline-axis .hour {
+      position: absolute; bottom: 4px;
+      transform: translateX(-50%);
+      font-size: 9px; color: var(--text-muted);
+      font-family: var(--font-body);
+    }
+    .timeline-bar {
+      position: absolute; top: 8px; height: 22px;
+      border-radius: 3px; cursor: default;
+    }
+    .timeline-bar.app-vscode { background: rgba(0,212,170,0.35); border: 1px solid rgba(0,212,170,0.55); }
+    .timeline-bar.app-chrome { background: rgba(96,165,250,0.32); border: 1px solid rgba(96,165,250,0.5); }
+    .timeline-bar.app-wechat { background: rgba(0,255,136,0.28); border: 1px solid rgba(0,255,136,0.45); }
+    .timeline-bar.app-terminal { background: rgba(167,139,250,0.3); border: 1px solid rgba(167,139,250,0.5); }
+    .timeline-bar.app-figma { background: rgba(244,114,182,0.3); border: 1px solid rgba(244,114,182,0.5); }
+    .timeline-bar.gap { background: repeating-linear-gradient(45deg, transparent 0 4px, rgba(255,170,51,0.05) 4px 5px); top: 18px; height: 4px; border-radius: 0; }
+    .timeline-legend {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      margin-top: 8px; font-size: 10px;
+      font-family: var(--font-body); color: var(--text-muted);
+    }
+    .timeline-legend .lg { display: inline-flex; align-items: center; gap: 5px; }
+    .timeline-legend .sw { width: 10px; height: 10px; border-radius: 2px; border: 1px solid; }
+    .lg-vscode .sw { background: rgba(0,212,170,0.35); border-color: rgba(0,212,170,0.55); }
+    .lg-chrome .sw { background: rgba(96,165,250,0.32); border-color: rgba(96,165,250,0.5); }
+    .lg-wechat .sw { background: rgba(0,255,136,0.28); border-color: rgba(0,255,136,0.45); }
+    .lg-terminal .sw { background: rgba(167,139,250,0.3); border-color: rgba(167,139,250,0.5); }
+    .lg-figma .sw { background: rgba(244,114,182,0.3); border-color: rgba(244,114,182,0.5); }
+
+    /* app usage bars */
+    .cat-rows { display: flex; flex-direction: column; gap: 9px; }
+    .cat-row { display: flex; align-items: center; gap: 10px; }
+    .cat-name { font-family: var(--font-cn); font-size: 11px; color: var(--text-secondary); width: 90px; flex-shrink: 0; }
+    .cat-bar-wrap { flex: 1; height: 6px; background: rgba(0,212,170,0.07); border-radius: 3px; overflow: hidden; }
+    .cat-bar-fill { height: 100%; border-radius: 3px; }
+    .cat-count { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); width: 56px; text-align: right; flex-shrink: 0; }
+
+    /* ── today moments list ── */
+    .section-label {
+      font-family: var(--font-heading); font-size: 9px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 5px 0; margin-bottom: 8px;
+      border-bottom: 1px solid rgba(0,212,170,0.07);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .section-label::before { content: '//'; color: var(--accent-amber); opacity: 0.5; }
+
+    .card-list { display: flex; flex-direction: column; gap: 7px; }
+    .moment-card {
+      background: var(--hud-bg);
+      border: 1px solid rgba(255,170,51,0.12);
+      border-radius: 8px; border-left: 3px solid var(--accent-amber);
+      padding: 13px 16px;
+    }
+    .moment-card.expanded { border-color: rgba(255,170,51,0.35); }
+    .moment-card .head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 5px;
+    }
+    .moment-card .head-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+    .moment-card .time-badge {
+      font-family: var(--font-body); font-size: 10px;
+      color: var(--accent-amber);
+      background: rgba(255,170,51,0.08);
+      border: 1px solid rgba(255,170,51,0.25);
+      padding: 2px 7px; border-radius: 3px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .moment-card .obs-title {
+      font-family: var(--font-cn); font-size: 13px;
+      font-weight: 500; color: var(--text-primary);
+      line-height: 1.4;
+    }
+    .moment-card .head-right {
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+      font-family: var(--font-body); font-size: 10px;
+      color: var(--text-muted);
+    }
+    .moment-card .narrative {
+      font-family: var(--font-cn); font-size: 11px;
+      color: var(--text-secondary); line-height: 1.6;
+      margin-top: 8px;
+    }
+    .moment-card .narrative mark {
+      background: rgba(255,170,51,0.18);
+      color: var(--accent-amber);
+      padding: 0 3px; border-radius: 2px;
+    }
+    .moment-card .foot {
+      margin-top: 10px;
+      display: flex; align-items: center; gap: 8px;
+      flex-wrap: wrap;
+      font-family: var(--font-body); font-size: 10px;
+      color: var(--text-muted);
+    }
+    .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; border: 1px solid; font-family: var(--font-body); white-space: nowrap; }
+    .t-app-vscode { background: rgba(0,212,170,0.09); border-color: rgba(0,212,170,0.28); color: var(--accent-primary); }
+    .t-app-chrome { background: rgba(96,165,250,0.09); border-color: rgba(96,165,250,0.28); color: var(--accent-blue); }
+    .t-app-wechat { background: rgba(0,255,136,0.09); border-color: rgba(0,255,136,0.28); color: var(--accent-active); }
+    .t-app-terminal { background: rgba(167,139,250,0.09); border-color: rgba(167,139,250,0.28); color: var(--accent-purple); }
+    .t-app-figma { background: rgba(244,114,182,0.09); border-color: rgba(244,114,182,0.28); color: #f472b6; }
+    .t-mirrored { background: rgba(0,212,170,0.07); border-color: rgba(0,212,170,0.22); color: var(--accent-primary); }
+    .t-mirrored::before { content: '↗ '; opacity: 0.7; }
+    .t-pending-bridge { background: rgba(255,170,51,0.07); border-color: rgba(255,170,51,0.3); color: var(--accent-amber); }
+    .t-pending-bridge::before { content: '◔ '; }
+
+    .screenshot-thumb {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 4px 10px;
+      background: rgba(255,170,51,0.08);
+      border: 1px dashed rgba(255,170,51,0.4);
+      border-radius: 4px; color: var(--accent-amber);
+      cursor: default;
+    }
+    .screenshot-thumb .preview {
+      width: 32px; height: 20px;
+      background: linear-gradient(135deg, #2a3038 0%, #0a1014 30%, #102028 60%, #1a3040 100%);
+      border: 1px solid rgba(255,170,51,0.3);
+      border-radius: 2px; position: relative; overflow: hidden;
+    }
+    .screenshot-thumb .preview::after {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(90deg, transparent 0, transparent 4px, rgba(255,170,51,0.1) 4px, rgba(255,170,51,0.1) 5px);
+    }
+
+    .zone-map-preview {
+      margin-top: 10px; padding: 10px 13px;
+      background: var(--bg-void);
+      border: 1px solid rgba(255,170,51,0.12);
+      border-radius: 6px;
+      font-family: var(--font-body); font-size: 10px;
+      color: var(--text-muted); line-height: 1.7;
+      white-space: pre-wrap;
+    }
+    .zone-map-preview .zone-label { color: var(--accent-amber); font-weight: 600; }
+    .zone-map-preview .highlight { color: var(--accent-active); }
+
+    /* ═══════════════════════════════════════════════════════
+       STAGE 3 · 全局搜索结果（深色，复用 viewer-frame）
+    ═══════════════════════════════════════════════════════ */
+    .search-box {
+      background: var(--hud-bg); border: 1px solid var(--hud-border);
+      border-radius: 8px; padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 18px rgba(0,212,170,0.06) inset;
+    }
+    .search-box .prompt {
+      font-family: var(--font-pixel); font-size: 10px;
+      color: var(--accent-primary);
+    }
+    .search-box .query {
+      flex: 1; font-family: var(--font-body); font-size: 14px;
+      color: var(--accent-active); letter-spacing: 0.04em;
+    }
+    .search-box .caret {
+      width: 8px; height: 16px; background: var(--accent-active);
+      box-shadow: 0 0 6px var(--accent-active);
+      animation: blink 1s steps(2) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .search-stats {
+      font-family: var(--font-body); font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 12px; letter-spacing: 0.06em;
+    }
+    .search-stats .accent { color: var(--accent-primary); }
+    .search-stats .amber { color: var(--accent-amber); }
+
+    .obs-row {
+      background: var(--hud-bg);
+      border: 1px solid rgba(0,212,170,0.18);
+      border-left: 3px solid var(--accent-primary);
+      border-radius: 6px; padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .obs-row.screen {
+      border-left-color: var(--accent-amber);
+      background: linear-gradient(90deg, rgba(255,170,51,0.05), var(--hud-bg) 70%);
+    }
+    .obs-row .head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+      font-family: var(--font-body); font-size: 11px;
+    }
+    .obs-row .obs-type {
+      font-family: var(--font-pixel); font-size: 9px;
+      padding: 3px 7px; border-radius: 3px; letter-spacing: 0.06em;
+    }
+    .obs-row.code .obs-type { background: rgba(0,212,170,0.15); color: var(--accent-primary); }
+    .obs-row.screen .obs-type { background: rgba(255,170,51,0.2); color: var(--accent-amber); }
+    .obs-row .obs-time { color: var(--text-secondary); }
+    .obs-row .obs-title {
+      font-family: var(--font-cn); font-size: 13px;
+      color: var(--text-primary); margin-bottom: 4px; font-weight: 500;
+    }
+    .obs-row .obs-narrative {
+      font-family: var(--font-cn); font-size: 12px;
+      color: var(--text-secondary); line-height: 1.6;
+    }
+    .obs-row .obs-narrative mark {
+      background: rgba(0,255,136,0.18); color: var(--accent-active);
+      padding: 0 3px; border-radius: 2px;
+    }
+    .obs-row.screen .obs-narrative mark {
+      background: rgba(255,170,51,0.2); color: var(--accent-amber);
+    }
+    .obs-row .obs-foot {
+      margin-top: 10px;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      font-family: var(--font-body); font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       STAGE 4 · Claude 对话（浅色）
+    ═══════════════════════════════════════════════════════ */
+    .chat-frame {
+      background: #fff; border: 1px solid var(--border-light);
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(20,30,50,0.06);
+    }
+    .chat-titlebar {
+      padding: 10px 16px; background: #fafbfc;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 12px; color: var(--text-mid);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .chat-titlebar .icon-app {
+      width: 18px; height: 18px;
+      background: #d97757; border-radius: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 10px; font-weight: 700;
+    }
+    .chat-body { padding: 22px; max-height: 540px; overflow-y: auto; }
+    .msg { display: flex; gap: 12px; margin-bottom: 22px; }
+    .msg-avatar {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      font-size: 12px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center; color: #fff;
+    }
+    .msg.user .msg-avatar { background: #5865f2; }
+    .msg.assistant .msg-avatar { background: #d97757; }
+    .msg-content { flex: 1; min-width: 0; }
+    .msg-name { font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+    .msg-body { font-size: 14px; color: var(--text-dark); line-height: 1.7; }
+    .tool-call {
+      margin-top: 10px;
+      background: linear-gradient(180deg, #fafbfc, #f3f5f9);
+      border: 1px solid #e2e6ee; border-radius: 10px;
+      padding: 12px 14px;
+      font-family: var(--font-body); font-size: 12px;
+    }
+    .tool-call .tool-head {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px; color: var(--text-mid);
+    }
+    .tool-call .tool-head .name { color: var(--accent-amber); font-weight: 700; }
+    .tool-call .tag-mcp {
+      background: var(--accent-amber-dim); color: #a86a00;
+      border: 1px solid rgba(255,170,51,0.3);
+      padding: 2px 7px; border-radius: 999px; font-size: 10px;
+    }
+    .tool-call pre {
+      font-size: 11px; color: var(--text-mid);
+      margin: 0; white-space: pre-wrap; word-break: break-all;
+    }
+    .tool-call .response {
+      margin-top: 8px; padding-top: 8px;
+      border-top: 1px dashed #d8dce5; color: var(--text-dark);
+    }
+    .tool-call .response strong { color: var(--accent-amber); font-weight: 600; }
+
+    /* ═══════════════════════════════════════════════════════
+       STAGE 5 · 托盘
+    ═══════════════════════════════════════════════════════ */
+    .tray-wrap { display: flex; gap: 18px; align-items: flex-start; }
+    .tray-frame {
+      background: #1a1f24; border-radius: 10px; padding: 14px;
+      width: 320px; color: #d0d8dd;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+      font-family: var(--font-cn); border: 1px solid #2a3038;
+    }
+    .tray-line {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; padding: 6px 0;
+    }
+    .tray-line.section {
+      font-size: 10px; color: #6b7178;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding-top: 10px; border-top: 1px solid #2a3038; margin-top: 6px;
+    }
+    .tray-line .tray-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    .tray-line .tray-dot.on { background: var(--accent-active); box-shadow: 0 0 8px var(--accent-active); }
+    .tray-line .tray-dot.amber { background: var(--accent-amber); box-shadow: 0 0 6px var(--accent-amber); }
+    .tray-line .tray-dot.off { background: #6b7178; }
+    .tray-line .lbl { flex: 1; color: #d0d8dd; }
+    .tray-line .val {
+      font-family: var(--font-body); font-size: 11px; color: #8a929a;
+    }
+    .tray-line .val.amber { color: var(--accent-amber); }
+    .tray-caption {
+      flex: 1; padding: 16px 18px; background: #fff;
+      border: 1px solid var(--border-light); border-radius: 10px;
+      font-size: 13px; color: var(--text-mid); line-height: 1.7;
+    }
+    .tray-caption h3 { font-size: 13px; color: var(--text-dark); margin-bottom: 10px; font-weight: 700; }
+    .tray-caption code {
+      font-family: var(--font-body); font-size: 11px;
+      background: #f3f5f9; padding: 1px 6px; border-radius: 3px;
+      color: #c0392b;
+    }
+
+    /* footer */
+    .footer-note {
+      max-width: 1180px; margin: 48px auto 0;
+      padding: 18px 22px; background: #fff;
+      border: 1px dashed var(--border-light);
+      border-radius: 12px; font-size: 12px;
+      color: var(--text-mid); line-height: 1.8;
+    }
+    .footer-note strong { color: var(--text-dark); }
+    .footer-note .legend {
+      display: inline-flex; align-items: center; gap: 6px; margin-right: 14px;
+    }
+    .footer-note .legend .swatch {
+      width: 12px; height: 12px; border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ Doc Header ============ -->
+  <div class="doc-header">
+    <div>
+      <h1>SHADWMONITOR · INSTALL PREVIEW</h1>
+      <p>桥接插件装好后, agent-mem 的 5 个真实位置长什么样</p>
+    </div>
+    <div class="badge">MOCKUP · v2</div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       STAGE 1 · 桌面端 Settings → Plugins
+  ════════════════════════════════════════════════════ -->
+  <div class="stage">
+    <div class="stage-label s1">桌面端 Settings · Plugins 标签页 <span class="where">desktop/src/windows/settings.html</span></div>
+    <div class="settings-frame">
+      <div class="settings-titlebar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="title">设置 · AgentMemory</div>
+        <div></div>
+      </div>
+      <div class="settings-tabs">
+        <div class="st-tab">General</div>
+        <div class="st-tab">IDE / Hooks</div>
+        <div class="st-tab">Sync</div>
+        <div class="st-tab active">Plugins</div>
+        <div class="st-tab">About</div>
+      </div>
+      <div class="settings-body">
+        <div class="section-title">ShadwMonitor 桥接 · 屏幕活动记忆同步</div>
+
+        <div class="plugin-card">
+          <div class="plugin-card-header">
+            <div>
+              <div class="plugin-card-title">
+                <span class="icon">▦</span>
+                ShadwMonitor Bridge
+              </div>
+              <div class="plugin-card-subtitle">
+                把 ShadwMonitor 产生的 L1 时刻摘要镜像到 agent-mem 全局记忆, 让 IDE 搜索能命中屏幕活动。原始截图不复制, 仍留在 ShadwMonitor 本地存储。
+              </div>
+            </div>
+            <div class="switch">
+              <span>启用</span>
+              <span class="switch-track"></span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">ShadwMonitor 路径 <small>插件本体所在目录</small></div>
+            <div><input class="form-input" style="width:100%;" value="D:\UGIT\ShadwMonitor" readonly /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">agent-mem Endpoint <small>本机 Worker 地址</small></div>
+            <div><input class="form-input" style="width:100%;" value="http://127.0.0.1:3847" readonly /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Project 标签 <small>observation.project 字段</small></div>
+            <div><input class="form-input" style="width:200px;" value="desktop-monitor" readonly /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">镜像粒度 <small>哪几层摘要写入 agent-mem</small></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <span class="form-pill"><span class="dot"></span> L1 时刻摘要 · 5min</span>
+              <span class="form-pill off"><span class="dot"></span> L2 时段摘要</span>
+              <span class="form-pill off"><span class="dot"></span> L3 日摘要</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">MCP Server <small>暴露给 Claude / Cursor</small></div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="form-pill">stdio · screen_*</span>
+              <span style="font-size:11px;color:var(--text-dim);font-family:var(--font-body);">5 个工具已注册</span>
+            </div>
+          </div>
+
+          <div class="health-row">
+            <div class="health-metric">
+              <div class="label">桥接进程</div>
+              <div class="value alive"><span class="pulse-dot"></span>Online</div>
+            </div>
+            <div class="health-metric">
+              <div class="label">今日镜像 L1</div>
+              <div class="value">38 <small>条</small></div>
+            </div>
+            <div class="health-metric">
+              <div class="label">重试队列</div>
+              <div class="value" style="color:var(--accent-amber);">0 <small>待发</small></div>
+            </div>
+            <div class="health-metric">
+              <div class="label">上次同步</div>
+              <div class="value" style="font-size:14px;line-height:1.7;">23 秒前 <small>14:30:17</small></div>
+            </div>
+          </div>
+
+          <div class="actions-row">
+            <button class="btn btn-primary">立即同步一次</button>
+            <button class="btn btn-secondary">查看日志</button>
+            <button class="btn btn-secondary">回放离线队列</button>
+            <button class="btn btn-secondary">打开 ShadwMonitor Web</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       STAGE 2 · Web Viewer · ShadwMonitor 独立 Tab
+  ════════════════════════════════════════════════════ -->
+  <div class="stage">
+    <div class="stage-label s2">Web 记忆查看器 · ShadwMonitor 插件独立页 <span class="where">http://localhost:3847/viewer.html#shadwmonitor</span></div>
+    <div class="viewer-frame">
+      <div class="viewer-inner">
+
+        <!-- viewer header -->
+        <div class="viewer-header">
+          <div>
+            <div class="viewer-brand">CODEBUDDY · MEMORY<small>VIEWER v2.0.3</small></div>
+            <div class="viewer-stats">
+              <span>■ 12 Summaries</span>
+              <span>◆ 142 Observations</span>
+              <span>⊙ 8 Sessions</span>
+              <span style="color:var(--accent-amber);background:rgba(255,170,51,0.1);border-color:rgba(255,170,51,0.3);">▦ 38 Screen Moments · today</span>
+            </div>
+          </div>
+          <div class="viewer-meta"><span class="live-dot"></span>CONNECTED · 3847 · 2026-05-23 14:30:40</div>
+        </div>
+
+        <!-- main tabs（ShadwMonitor 是第 4 个独立 Tab） -->
+        <div class="main-tabs">
+          <div class="main-tab">Summaries</div>
+          <div class="main-tab">Observations</div>
+          <div class="main-tab">Sessions</div>
+          <div class="main-tab shadw-tab active">
+            ShadwMonitor
+            <span class="tab-badge">38</span>
+          </div>
+        </div>
+
+        <!-- plugin header -->
+        <div class="plugin-header">
+          <div class="plugin-header-left">
+            <div class="plugin-icon-big">▦</div>
+            <div>
+              <div class="plugin-name-big">SHADWMONITOR</div>
+              <div class="plugin-desc-sm">屏幕活动感知 · 把 L1 时刻摘要镜像到 agent-mem 全局记忆</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+            <div class="plugin-meta">
+              <span class="plugin-tag pt-on">● ENABLED</span>
+              <span class="plugin-tag pt-mode">MIRROR: L1 ONLY</span>
+              <span class="plugin-tag pt-plat">stdio MCP · 5 tools</span>
+            </div>
+            <div class="plugin-meta" style="justify-content:flex-end;">
+              <span style="font-size:10px;color:var(--text-muted);">
+                进程: <span style="color:var(--accent-active);">Online</span> &nbsp;·&nbsp;
+                镜像率: <span style="color:var(--accent-amber);">100%</span> &nbsp;·&nbsp;
+                上次同步: 23 秒前
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- sub tabs -->
+        <div class="sub-tabs">
+          <div class="sub-tab active">Overview</div>
+          <div class="sub-tab">Today · 38</div>
+          <div class="sub-tab">All Moments</div>
+          <div class="sub-tab">Captures</div>
+        </div>
+
+        <!-- date selector -->
+        <div class="date-selector">
+          <label>日期</label>
+          <select>
+            <option>2026-05-23 · 今天</option>
+            <option>2026-05-22 · 昨天</option>
+            <option>2026-05-21</option>
+          </select>
+          <div class="quick">
+            <a class="on">今日</a>
+            <a>本周</a>
+            <a>本月</a>
+            <a>全部</a>
+          </div>
+          <span class="scope-note">memory_session_id = <strong>desktop-monitor-2026-05-23</strong></span>
+        </div>
+
+        <!-- stat grid -->
+        <div class="stat-grid">
+          <div class="stat-card sc-l1">
+            <div class="stat-value">38</div>
+            <div class="stat-label">L1 Moments · Today</div>
+            <div class="stat-delta"><span class="up">▲ 6</span> 较昨日 · 5min 粒度</div>
+          </div>
+          <div class="stat-card sc-cap">
+            <div class="stat-value">421</div>
+            <div class="stat-label">Captures · Today</div>
+            <div class="stat-delta">变化触发 387 · 强制 34</div>
+          </div>
+          <div class="stat-card sc-hrs">
+            <div class="stat-value">6.4<span style="font-size:18px;">h</span></div>
+            <div class="stat-label">Active Hours</div>
+            <div class="stat-delta">9:12 起算 · 含 3 段空闲</div>
+          </div>
+          <div class="stat-card sc-bridge">
+            <div class="stat-value">38<span style="font-size:16px;color:var(--text-muted);">/38</span></div>
+            <div class="stat-label">Mirrored → agent-mem</div>
+            <div class="stat-delta"><span class="up">▲ 100%</span> 镜像率 · retry 0</div>
+          </div>
+        </div>
+
+        <!-- overview bottom: timeline + apps -->
+        <div class="overview-bottom">
+          <!-- 今日时间线 -->
+          <div class="section-block">
+            <div class="section-block-title">今日活动时间线 · 09:00 → 16:00</div>
+            <div class="timeline-axis">
+              <!-- 7 个小时刻度 -->
+              <span class="hour" style="left:0%;">09</span>
+              <span class="hour" style="left:14.28%;">10</span>
+              <span class="hour" style="left:28.57%;">11</span>
+              <span class="hour" style="left:42.85%;">12</span>
+              <span class="hour" style="left:57.14%;">13</span>
+              <span class="hour" style="left:71.42%;">14</span>
+              <span class="hour" style="left:85.71%;">15</span>
+              <span class="hour" style="left:100%;">16</span>
+              <!-- 活动段 -->
+              <div class="timeline-bar app-vscode" style="left:1.5%;width:18%;" title="VS Code 09:12-10:30"></div>
+              <div class="timeline-bar app-chrome" style="left:20%;width:11%;" title="Chrome 10:30-11:18"></div>
+              <div class="timeline-bar app-wechat" style="left:31.5%;width:8%;" title="WeChat 11:18-11:50"></div>
+              <div class="timeline-bar gap" style="left:40%;width:14%;" title="午休"></div>
+              <div class="timeline-bar app-vscode" style="left:54.5%;width:20%;" title="VS Code 13:30-14:50"></div>
+              <div class="timeline-bar app-terminal" style="left:75%;width:4%;" title="Terminal 14:50-15:05"></div>
+              <div class="timeline-bar app-vscode" style="left:79.5%;width:7%;" title="VS Code 15:05-15:30"></div>
+              <div class="timeline-bar app-figma" style="left:87%;width:9%;" title="Figma 15:30-16:00"></div>
+            </div>
+            <div class="timeline-legend">
+              <span class="lg lg-vscode"><span class="sw"></span>VS Code · 3.1h</span>
+              <span class="lg lg-chrome"><span class="sw"></span>Chrome · 0.8h</span>
+              <span class="lg lg-wechat"><span class="sw"></span>WeChat · 0.5h</span>
+              <span class="lg lg-terminal"><span class="sw"></span>Terminal · 0.3h</span>
+              <span class="lg lg-figma"><span class="sw"></span>Figma · 0.5h</span>
+              <span style="color:var(--accent-amber);opacity:0.7;">▦ 斜纹 = 空闲段</span>
+            </div>
+          </div>
+          <!-- 应用使用排行 -->
+          <div class="section-block">
+            <div class="section-block-title">应用使用排行</div>
+            <div class="cat-rows">
+              <div class="cat-row">
+                <span class="cat-name">VS Code</span>
+                <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:62%;background:var(--accent-primary);"></div></div>
+                <span class="cat-count">3.1h <span style="color:var(--accent-amber);">19</span></span>
+              </div>
+              <div class="cat-row">
+                <span class="cat-name">Chrome</span>
+                <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:25%;background:var(--accent-blue);"></div></div>
+                <span class="cat-count">0.8h <span style="color:var(--accent-amber);">7</span></span>
+              </div>
+              <div class="cat-row">
+                <span class="cat-name">Figma</span>
+                <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:16%;background:#f472b6;"></div></div>
+                <span class="cat-count">0.5h <span style="color:var(--accent-amber);">5</span></span>
+              </div>
+              <div class="cat-row">
+                <span class="cat-name">WeChat</span>
+                <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:16%;background:var(--accent-active);"></div></div>
+                <span class="cat-count">0.5h <span style="color:var(--accent-amber);">4</span></span>
+              </div>
+              <div class="cat-row">
+                <span class="cat-name">Terminal</span>
+                <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:9%;background:var(--accent-purple);"></div></div>
+                <span class="cat-count">0.3h <span style="color:var(--accent-amber);">3</span></span>
+              </div>
+            </div>
+            <div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(0,212,170,0.07);font-size:10px;color:var(--text-muted);font-family:var(--font-body);">
+              右侧数字 <span style="color:var(--accent-amber);">N</span> = 当前应用产生的 L1 时刻数
+            </div>
+          </div>
+        </div>
+
+        <!-- TODAY: 今日 L1 时刻列表（这就是用户问的"今天有哪些记录"） -->
+        <div class="section-label">今日 L1 时刻 · 按时间倒序 · 5 / 38 条</div>
+        <div class="card-list">
+
+          <!-- moment 1 -->
+          <div class="moment-card expanded">
+            <div class="head">
+              <div class="head-left">
+                <span class="time-badge">15:30–15:35</span>
+                <div class="obs-title">在 Figma 反复对比 ShadwMonitor 主页与 self-evolve 设计稿</div>
+              </div>
+              <div class="head-right">
+                <span>5 张截图</span>
+                <span>·</span>
+                <span>23 秒前</span>
+              </div>
+            </div>
+            <div class="narrative">
+              前台为 <mark>Figma</mark>, 桌面上同屏打开了 self-evolve 的 ui-design.html(浏览器)和 ShadwMonitor mockup 设计稿(Figma)。
+              5 分钟窗口内主要在两个面板间切换并标注差异, 无键盘输入活动。
+            </div>
+            <div class="foot">
+              <span class="tag t-app-figma">Figma</span>
+              <span class="tag t-app-chrome">Chrome</span>
+              <span class="tag t-mirrored">已镜像 agent-mem</span>
+              <span class="screenshot-thumb"><span class="preview"></span>15-30-12.png</span>
+              <span class="screenshot-thumb"><span class="preview"></span>15-32-44.png</span>
+              <span style="color:var(--text-muted);">+ 3 张</span>
+            </div>
+          </div>
+
+          <!-- moment 2 -->
+          <div class="moment-card expanded">
+            <div class="head">
+              <div class="head-left">
+                <span class="time-badge">14:25–14:30</span>
+                <div class="obs-title">在 VS Code 反复查看 TypeScript 编译错误面板</div>
+              </div>
+              <div class="head-right">
+                <span>6 张截图</span>
+                <span>·</span>
+                <span>1 小时前</span>
+              </div>
+            </div>
+            <div class="narrative">
+              前台应用为 <mark>Code.exe</mark>, 主区域显示报错 <mark>TS2304: Cannot find name 'eventBus'</mark>,
+              位于 src/services/worker/WorkerService.ts:128。底部 Terminal 显示 npm run typecheck 的红色输出。
+            </div>
+            <div class="zone-map-preview"><span class="zone-label">@1920x1080 [Code.exe: WorkerService.ts]</span>
+<span class="zone-label">[TL]</span> Explorer | src/services/worker | WorkerService.ts | client.ts
+<span class="zone-label">[MC]</span> private eventBus: EventEmitter;  <span class="highlight">// ← TS2304: Cannot find name 'eventBus'</span>
+<span class="zone-label">[BC]</span> $ npm run typecheck → src/services/worker/WorkerService.ts:128:23 error TS2304</div>
+            <div class="foot">
+              <span class="tag t-app-vscode">VS Code</span>
+              <span class="tag t-app-terminal">Terminal</span>
+              <span class="tag t-mirrored">已镜像 agent-mem</span>
+              <span class="screenshot-thumb"><span class="preview"></span>14-25-13.png</span>
+              <span class="screenshot-thumb"><span class="preview"></span>14-27-44.png</span>
+              <span style="color:var(--text-muted);">+ 4 张</span>
+            </div>
+          </div>
+
+          <!-- moment 3 -->
+          <div class="moment-card">
+            <div class="head">
+              <div class="head-left">
+                <span class="time-badge">13:30–13:35</span>
+                <div class="obs-title">编辑 WorkerService.ts, 补充 EventEmitter 的 import 语句</div>
+              </div>
+              <div class="head-right">
+                <span>4 张截图</span>
+                <span>·</span>
+                <span>1.5 小时前</span>
+              </div>
+            </div>
+            <div class="foot">
+              <span class="tag t-app-vscode">VS Code</span>
+              <span class="tag t-mirrored">已镜像 agent-mem</span>
+              <span style="font-family:var(--font-body);font-size:10px;color:var(--text-muted);">files_modified: WorkerService.ts</span>
+            </div>
+          </div>
+
+          <!-- moment 4 -->
+          <div class="moment-card">
+            <div class="head">
+              <div class="head-left">
+                <span class="time-badge">11:18–11:23</span>
+                <div class="obs-title">微信与同事确认明天的需求评审会议时间</div>
+              </div>
+              <div class="head-right">
+                <span>3 张截图</span>
+                <span>·</span>
+                <span>3.2 小时前</span>
+              </div>
+            </div>
+            <div class="foot">
+              <span class="tag t-app-wechat">WeChat</span>
+              <span class="tag t-mirrored">已镜像 agent-mem</span>
+            </div>
+          </div>
+
+          <!-- moment 5: pending bridge -->
+          <div class="moment-card">
+            <div class="head">
+              <div class="head-left">
+                <span class="time-badge">15:35–15:40</span>
+                <div class="obs-title">浏览 Figma 中的次级面板, 截图变动小</div>
+              </div>
+              <div class="head-right">
+                <span>2 张截图</span>
+                <span>·</span>
+                <span>刚刚</span>
+              </div>
+            </div>
+            <div class="foot">
+              <span class="tag t-app-figma">Figma</span>
+              <span class="tag t-pending-bridge">待镜像 · 队列 #1</span>
+              <span style="font-family:var(--font-body);font-size:10px;color:var(--text-muted);">将在 LLM 蒸馏完成后镜像</span>
+            </div>
+          </div>
+
+          <!-- view more -->
+          <div style="text-align:center;margin-top:8px;padding:10px 0;font-family:var(--font-body);font-size:11px;color:var(--text-muted);border:1px dashed rgba(255,170,51,0.18);border-radius:6px;">
+            ↓ 还有 33 条今日时刻 · <span style="color:var(--accent-amber);">点击展开全部</span> · 或跳转到 Today 子标签查看完整时间轴
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       STAGE 3 · 全局搜索结果（跨 Tab）
+  ════════════════════════════════════════════════════ -->
+  <div class="stage">
+    <div class="stage-label s3">Web 记忆查看器 · 全局搜索 <span class="where">搜索框跨所有 Tab · 含 ShadwMonitor 镜像数据</span></div>
+    <div class="viewer-frame">
+      <div class="viewer-inner">
+
+        <div class="viewer-header">
+          <div>
+            <div class="viewer-brand">SEARCH · GLOBAL</div>
+          </div>
+          <div class="viewer-meta"><span class="live-dot"></span>FTS5 + Chroma · 0.043s</div>
+        </div>
+
+        <div class="search-box">
+          <span class="prompt">SEARCH&gt;</span>
+          <span class="query">TS2304</span>
+          <span class="caret"></span>
+        </div>
+
+        <div class="search-stats">
+          找到 <span class="accent">3</span> 条记忆 · 含 <span class="amber">1</span> 条来自 ShadwMonitor 镜像 · 排序: 相关度 + 时间
+        </div>
+
+        <div class="obs-row code">
+          <div class="head">
+            <span class="obs-type">DEBUGGING</span>
+            <span class="obs-time">2026-05-23 · 16:42 · agent-memory</span>
+          </div>
+          <div class="obs-title">修复 WorkerService 中的 TS2304: Cannot find name 'eventBus'</div>
+          <div class="obs-narrative">
+            在 <mark>src/services/worker/WorkerService.ts:128</mark> 引用了未导入的 eventBus, 导致编译失败 <mark>TS2304</mark>。补充 import 后通过。
+          </div>
+          <div class="obs-foot">
+            <span style="background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);color:var(--accent-primary);padding:2px 7px;border-radius:3px;">TypeScript</span>
+            <span style="background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);color:var(--accent-primary);padding:2px 7px;border-radius:3px;">compile-error</span>
+            <span>files: WorkerService.ts</span>
+          </div>
+        </div>
+
+        <div class="obs-row screen">
+          <div class="head">
+            <span class="obs-type">SCREEN_MOMENT</span>
+            <span class="obs-time">2026-05-23 · 14:25–14:30 · desktop-monitor</span>
+          </div>
+          <div class="obs-title">用户在 VS Code 反复查看 TypeScript 编译错误面板</div>
+          <div class="obs-narrative">
+            前台应用为 <mark>Code.exe</mark>, 主区域显示报错 <mark>TS2304: Cannot find name 'eventBus'</mark>,
+            底部 Terminal 面板显示红色输出; 5 分钟窗口内截图 6 张, 无窗口切换。
+          </div>
+          <div class="obs-foot">
+            <span class="screenshot-thumb"><span class="preview"></span>14-25-13.png</span>
+            <span class="screenshot-thumb"><span class="preview"></span>14-27-44.png</span>
+            <span style="color:var(--text-muted);">+4 张</span>
+            <span class="tag t-app-vscode">VS Code</span>
+            <span style="background:rgba(255,170,51,0.07);border:1px solid rgba(255,170,51,0.22);color:var(--accent-amber);padding:2px 7px;border-radius:3px;font-family:var(--font-body);font-size:10px;">→ 跳转 ShadwMonitor Tab</span>
+          </div>
+        </div>
+
+        <div class="obs-row code">
+          <div class="head">
+            <span class="obs-type">DISCOVERY</span>
+            <span class="obs-time">2026-05-21 · 11:20 · agent-memory</span>
+          </div>
+          <div class="obs-title">梳理 WorkerService 的 eventBus 注册时序</div>
+          <div class="obs-narrative">
+            <mark>WorkerService.initChroma()</mark> 中 fire-and-forget 启动 Chroma; observation 事件总线在 WorkerService 构造时即初始化。
+          </div>
+          <div class="obs-foot">
+            <span style="background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);color:var(--accent-primary);padding:2px 7px;border-radius:3px;">architecture</span>
+            <span>files: WorkerService.ts, eventBus.ts</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       STAGE 4 · Claude / Cursor 对话
+  ════════════════════════════════════════════════════ -->
+  <div class="stage">
+    <div class="stage-label s4">Claude / Cursor 对话 · MCP 工具调用 <span class="where">用户同时配 agent-mem 与 ShadwMonitor 两个 MCP</span></div>
+    <div class="chat-frame">
+      <div class="chat-titlebar">
+        <span class="icon-app">C</span>
+        Claude Desktop · 当前会话已连接 2 个 MCP server
+      </div>
+      <div class="chat-body">
+
+        <div class="msg user">
+          <div class="msg-avatar">U</div>
+          <div class="msg-content">
+            <div class="msg-name">你</div>
+            <div class="msg-body">我昨天下午在 VS Code 里看的那个 TypeScript 编译错误大概是啥? 我记不清是哪个文件了</div>
+          </div>
+        </div>
+
+        <div class="msg assistant">
+          <div class="msg-avatar">C</div>
+          <div class="msg-content">
+            <div class="msg-name">Claude</div>
+            <div class="msg-body">让我查一下昨天下午的屏幕活动记录。</div>
+            <div class="tool-call">
+              <div class="tool-head">
+                <span class="tag-mcp">MCP</span>
+                <span style="color:var(--text-dim);">→</span>
+                <span class="name">screen_query_by_time</span>
+                <span style="color:var(--text-dim);font-size:11px;">(shadwmonitor)</span>
+              </div>
+<pre>{ "timestamp": "2026-05-22T14:30:00", "window_minutes": 60 }</pre>
+              <div class="response">
+                <strong>返回</strong> · 1 个 L2 时段, 命中 3 个 L1 时刻<br>
+                · <strong>14:25–14:30</strong> 用户在 VS Code 反复查看 TS 编译错误面板(TS2304)<br>
+                · <strong>14:30–14:35</strong> 用户在 src/services/worker/WorkerService.ts 编辑代码<br>
+                · <strong>14:35–14:40</strong> 用户切到 Terminal 跑 npm run typecheck, 结果通过
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg assistant">
+          <div class="msg-avatar">C</div>
+          <div class="msg-content">
+            <div class="msg-name">Claude</div>
+            <div class="msg-body">报错信息看起来比较具体, 让我拉一张截图确认细节:</div>
+            <div class="tool-call">
+              <div class="tool-head">
+                <span class="tag-mcp">MCP</span>
+                <span style="color:var(--text-dim);">→</span>
+                <span class="name">screen_get_capture</span>
+                <span style="color:var(--text-dim);font-size:11px;">(shadwmonitor)</span>
+              </div>
+<pre>{ "capture_id": 17283 }</pre>
+              <div class="response">
+                <strong>截图路径</strong>: data/screenshots/2026-05-22/14-25-13.png<br>
+                <strong>Zone-Map</strong>:<br>
+                <span style="font-family:var(--font-body);font-size:11px;color:var(--text-mid);display:block;margin-top:4px;line-height:1.7;">
+                  @1920x1080 [Code.exe: WorkerService.ts] 14:25:13<br>
+                  [TL] Explorer | src/services/worker | WorkerService.ts<br>
+                  [MC] private eventBus: EventEmitter; <strong>// ← TS2304: Cannot find name 'eventBus'</strong><br>
+                  [BC] $ npm run typecheck → WorkerService.ts:128:23 error TS2304
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg assistant">
+          <div class="msg-avatar">C</div>
+          <div class="msg-content">
+            <div class="msg-name">Claude</div>
+            <div class="msg-body">
+              找到了。你昨天下午看的报错是:<br><br>
+              <strong>TS2304: Cannot find name 'eventBus'</strong><br>
+              位置: <code style="background:#f3f5f9;padding:2px 6px;border-radius:3px;font-family:var(--font-body);">src/services/worker/WorkerService.ts:128</code><br><br>
+              你大约在 14:25–14:30 反复查看这个报错, 14:30 之后开始编辑 WorkerService.ts, 14:35 跑 typecheck 通过——所以这个 bug 应该已经修了。如果需要回看截图: <code style="background:#f3f5f9;padding:2px 6px;border-radius:3px;font-family:var(--font-body);">data/screenshots/2026-05-22/14-25-13.png</code>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       STAGE 5 · 桌面端托盘 / 快速面板
+  ════════════════════════════════════════════════════ -->
+  <div class="stage">
+    <div class="stage-label s5">桌面端托盘 · 快速面板 <span class="where">右键托盘图标</span></div>
+    <div class="tray-wrap">
+      <div class="tray-frame">
+        <div class="tray-line">
+          <span class="tray-dot on"></span>
+          <span class="lbl"><strong>AgentMemory</strong></span>
+          <span class="val amber">3847</span>
+        </div>
+        <div class="tray-line">
+          <span class="tray-dot on"></span>
+          <span class="lbl">Worker · 在线</span>
+          <span class="val">v2.0.3</span>
+        </div>
+
+        <div class="tray-line section">Plugins</div>
+        <div class="tray-line">
+          <span class="tray-dot on"></span>
+          <span class="lbl">ShadowFolk Upload</span>
+          <span class="val">23:30 ↑</span>
+        </div>
+        <div class="tray-line">
+          <span class="tray-dot amber"></span>
+          <span class="lbl">ShadwMonitor Bridge</span>
+          <span class="val amber">38 today</span>
+        </div>
+
+        <div class="tray-line section">Today's Memory</div>
+        <div class="tray-line">
+          <span class="tray-dot on"></span>
+          <span class="lbl">Observations</span>
+          <span class="val">142</span>
+        </div>
+        <div class="tray-line">
+          <span class="tray-dot amber"></span>
+          <span class="lbl">Screen Moments</span>
+          <span class="val amber">38</span>
+        </div>
+        <div class="tray-line">
+          <span class="tray-dot on"></span>
+          <span class="lbl">Active Sessions</span>
+          <span class="val">2</span>
+        </div>
+      </div>
+
+      <div class="tray-caption">
+        <h3>识别要点</h3>
+        ShadwMonitor Bridge 在 Plugins 段出现, 用 <strong style="color:#a86a00;">琥珀色点</strong> 区分于其他青绿色插件 — 这是 ShadwMonitor 的主题色,
+        跟 viewer 里的独立 Tab、Stage 1 的设置卡保持一致。<br><br>
+        右侧数字 <code>38 today</code> 表示当天已镜像的 L1 moment 数, 点击该行直接跳到上面 Stage 2 的 ShadwMonitor 独立 Tab。
+        若进程离线则变红色 + 异常计数(如 <code>retry 5</code>), 系统通知中弹出 toast。
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       Footer
+  ════════════════════════════════════════════════════ -->
+  <div class="footer-note">
+    <strong>本 mockup 不是设计稿, 是预览。</strong>
+    每个 Stage 对应 PRD/design 里说过会发生的真实位置, 颜色来自项目已有的 ShadowFolk Design Tokens。<br>
+    <span class="legend"><span class="swatch" style="background:#00d4aa;"></span>青绿</span> = agent-mem 主色 ·
+    <span class="legend"><span class="swatch" style="background:#ffaa33;"></span>琥珀</span> = ShadwMonitor 插件标识色(贯穿 5 个视图) ·
+    <span class="legend"><span class="swatch" style="background:#a78bfa;"></span>紫</span> = self-evolve 插件标识色(姊妹插件) ·
+    <span class="legend"><span class="swatch" style="background:#ff4466;"></span>红</span> = 异常态。<br>
+    数字(38 条 L1、421 截图、142 observation 等)为示例值。
+  </div>
+
+</body>
+</html>

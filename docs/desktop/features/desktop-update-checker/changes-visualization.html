@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>检查更新功能 - 改动可视化</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0f0f23;
+  color: #e0e0e0;
+  padding: 40px 20px;
+  line-height: 1.6;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.subtitle { text-align: center; color: #888; margin-bottom: 40px; }
+
+/* Flow diagram */
+.flow-section {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 40px;
+  border: 1px solid #2a2a4a;
+}
+.flow-section h2 {
+  color: #667eea;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+}
+.flow-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 20px 0;
+}
+.flow-step {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 10px;
+  padding: 14px 18px;
+  text-align: center;
+  min-width: 140px;
+  font-size: 0.85rem;
+}
+.flow-step.highlight {
+  border-color: #667eea;
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+}
+.flow-step .icon { font-size: 1.5rem; margin-bottom: 6px; }
+.flow-step .label { color: #ccc; }
+.flow-arrow { color: #667eea; font-size: 1.5rem; font-weight: bold; }
+
+/* Two columns */
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+@media (max-width: 800px) { .columns { grid-template-columns: 1fr; } }
+
+.column {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #2a2a4a;
+}
+.column h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.column h2 .badge {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: normal;
+}
+.server-badge { background: #1b4332; color: #95d5b2; }
+.client-badge { background: #312244; color: #c77dff; }
+
+/* File cards */
+.file-card {
+  background: #16213e;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  border: 1px solid #0f3460;
+}
+.file-card:last-child { margin-bottom: 0; }
+.file-header {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #0f3460;
+  font-size: 0.8rem;
+}
+.file-header .tag {
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.tag-new { background: #064e3b; color: #6ee7b7; }
+.tag-modified { background: #78350f; color: #fbbf24; }
+.file-header .path { color: #93c5fd; font-family: 'Fira Code', monospace; }
+.file-body { padding: 12px 14px; }
+.file-body ul { padding-left: 18px; }
+.file-body li {
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: #bbb;
+}
+.file-body li code {
+  background: #0d1b2a;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  color: #7dd3fc;
+}
+
+/* API section */
+.api-section {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 40px;
+  border: 1px solid #2a2a4a;
+}
+.api-section h2 { color: #fbbf24; margin-bottom: 16px; }
+.api-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.api-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: #16213e;
+  color: #93c5fd;
+  border-bottom: 1px solid #0f3460;
+}
+.api-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #1e293b;
+}
+.api-table tr:last-child td { border-bottom: none; }
+.method {
+  font-family: 'Fira Code', monospace;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+}
+.method-get { background: #064e3b; color: #6ee7b7; }
+.method-post { background: #1e3a5f; color: #93c5fd; }
+.method-delete { background: #4c1d1d; color: #fca5a5; }
+.auth-public { color: #6ee7b7; }
+.auth-admin { color: #fbbf24; }
+
+/* DB schema */
+.schema-section {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 40px;
+  border: 1px solid #2a2a4a;
+}
+.schema-section h2 { color: #a78bfa; margin-bottom: 16px; }
+.schema-block {
+  background: #0d1b2a;
+  border-radius: 8px;
+  padding: 16px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.8;
+  overflow-x: auto;
+  color: #c9d1d9;
+}
+.schema-block .keyword { color: #ff79c6; }
+.schema-block .type { color: #8be9fd; }
+.schema-block .name { color: #50fa7b; }
+.schema-block .comment { color: #6272a4; }
+
+/* Tray menu mockup */
+.tray-section {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 40px;
+  border: 1px solid #2a2a4a;
+}
+.tray-section h2 { color: #c77dff; margin-bottom: 16px; }
+.tray-mockup {
+  background: #2d2d2d;
+  border-radius: 8px;
+  width: 260px;
+  margin: 0 auto;
+  padding: 6px 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  font-size: 0.82rem;
+}
+.tray-item {
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tray-item:hover { background: #3a3a5a; }
+.tray-item.disabled { color: #666; }
+.tray-item.separator { border-top: 1px solid #444; margin: 4px 8px; padding: 0; }
+.tray-item.new-item {
+  background: rgba(102, 126, 234, 0.15);
+  border-left: 3px solid #667eea;
+  font-weight: 600;
+  color: #93c5fd;
+}
+.tray-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-green { background: #4ade80; }
+.new-badge {
+  margin-left: auto;
+  font-size: 0.6rem;
+  background: #667eea;
+  color: white;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Summary */
+.summary {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  padding: 30px;
+  border: 1px solid #2a2a4a;
+  text-align: center;
+}
+.summary h2 { color: #6ee7b7; margin-bottom: 16px; }
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.stat-item .number {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat-item .label { font-size: 0.8rem; color: #888; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>检查更新功能 - 代码改动可视化</h1>
+<p class="subtitle">AgentMemory v2.0.11 &rarr; 新增自动更新检测能力</p>
+
+<!-- Flow Diagram -->
+<div class="flow-section">
+  <h2>&#128640; 整体工作流程</h2>
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="icon">&#128736;</div>
+      <div class="label">管理员发布版本</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step highlight">
+      <div class="icon">&#128451;</div>
+      <div class="label">官网发布服务器<br><small>21.214.82.219:3850</small></div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step highlight">
+      <div class="icon">&#128225;</div>
+      <div class="label">客户端轮询检查<br><small>每24h / 手动</small></div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">
+      <div class="icon">&#128276;</div>
+      <div class="label">弹出系统通知</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">
+      <div class="icon">&#127760;</div>
+      <div class="label">跳转下载页面</div>
+    </div>
+  </div>
+</div>
+
+<!-- Two columns: Server & Client -->
+<div class="columns">
+  <!-- Server Column -->
+  <div class="column">
+    <h2>
+      <span>&#128421; 服务端</span>
+      <span class="badge server-badge">agent-memory-website (无需改动)</span>
+    </h2>
+
+    <div class="file-card">
+      <div class="file-header">
+        <span class="tag" style="background:#1e3a5f;color:#93c5fd;">EXISTING</span>
+        <span class="path">server.js</span>
+      </div>
+      <div class="file-body">
+        <ul>
+          <li>已有 <code>GET /api/latest/:platform</code> 接口</li>
+          <li>已有 <code>GET /api/download/:filename</code> 文件下载</li>
+          <li>已有 admin 上传 + 构建流水线</li>
+          <li>客户端直接对接, <strong>无需任何代码改动</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-header">
+        <span class="tag" style="background:#1e3a5f;color:#93c5fd;">INFO</span>
+        <span class="path">发布流程</span>
+      </div>
+      <div class="file-body">
+        <ul>
+          <li>打包生成安装包 (AgentMemory-Setup-x.x.x.exe)</li>
+          <li>上传到 admin 面板 或 触发构建流水线</li>
+          <li>文件落入 <code>releases/</code> 目录</li>
+          <li>客户端自动检测到新版本</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+
+  <!-- Client Column -->
+  <div class="column">
+    <h2>
+      <span>&#128187; 客户端改动</span>
+      <span class="badge client-badge">desktop (Electron)</span>
+    </h2>
+
+    <div class="file-card">
+      <div class="file-header">
+        <span class="tag tag-modified">REWRITE</span>
+        <span class="path">desktop/src/services/UpdateChecker.ts</span>
+      </div>
+      <div class="file-body">
+        <ul>
+          <li>写死官网发布服务器地址 <code>http://21.214.82.219:3850</code></li>
+          <li>新增 <code>checkNow()</code> 方法 - 手动触发检查</li>
+          <li>新增 <code>resolveDownloadUrl()</code> - 按平台选择下载链接 (win32/darwin-arm64/darwin-x64)</li>
+          <li>请求增加 <code>X-Client-Platform</code> header</li>
+          <li>未配置远端服务器时静默跳过</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-header">
+        <span class="tag tag-modified">MODIFIED</span>
+        <span class="path">desktop/src/tray/TrayManager.ts</span>
+      </div>
+      <div class="file-body">
+        <ul>
+          <li>新增 <code>onCheckUpdate</code> 回调属性</li>
+          <li>菜单新增 "检查更新" 项 (有更新时显示版本号)</li>
+          <li>新增 <code>setCheckUpdateHandler()</code> 方法</li>
+          <li>点击已知更新 &rarr; 直接打开下载页</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="file-card">
+      <div class="file-header">
+        <span class="tag tag-modified">MODIFIED</span>
+        <span class="path">desktop/src/main.ts</span>
+      </div>
+      <div class="file-body">
+        <ul>
+          <li>导入并实例化 <code>UpdateChecker</code></li>
+          <li>监听 <code>update-available</code> 事件, 同步到托盘</li>
+          <li>注册手动检查回调(无更新时通知用户)</li>
+          <li>调用 <code>updateChecker.start()</code> 启动定时检查</li>
+          <li>退出时调用 <code>updateChecker.destroy()</code> 清理</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- API Endpoints -->
+<div class="api-section">
+  <h2>&#128279; 对接的 API (官网已有, 无需新增)</h2>
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th>方法</th>
+        <th>路径</th>
+        <th>说明</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="method method-get">GET</span></td>
+        <td><code>/api/latest/:platform</code></td>
+        <td>客户端检查更新用 (win / mac-arm64 / mac-x64)</td>
+      </tr>
+      <tr>
+        <td><span class="method method-get">GET</span></td>
+        <td><code>/api/download/:filename</code></td>
+        <td>下载安装包文件</td>
+      </tr>
+      <tr>
+        <td><span class="method method-get">GET</span></td>
+        <td><code>/api/releases</code></td>
+        <td>所有版本列表</td>
+      </tr>
+      <tr>
+        <td><span class="method method-post">POST</span></td>
+        <td><code>/api/admin/upload</code></td>
+        <td>管理员上传新版本安装包</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Response Format -->
+<div class="schema-section">
+  <h2>&#128451; API 响应格式示例</h2>
+  <div class="schema-block">
+<span class="comment">// GET http://21.214.82.219:3850/api/latest/win</span><br>
+<br>
+{<br>
+&nbsp;&nbsp;<span class="name">"success"</span>: <span class="keyword">true</span>,<br>
+&nbsp;&nbsp;<span class="name">"release"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="name">"filename"</span>: <span class="type">"AgentMemory-Setup-2.0.12.exe"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="name">"version"</span>: <span class="type">"2.0.12"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="name">"platform"</span>: <span class="type">"win"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="name">"platformLabel"</span>: <span class="type">"Windows"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="name">"size"</span>: <span class="type">"85.3 MB"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="name">"date"</span>: <span class="type">"2026-05-25"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="name">"downloadUrl"</span>: <span class="type">"/api/download/AgentMemory-Setup-2.0.12.exe"</span><br>
+&nbsp;&nbsp;}<br>
+}
+  </div>
+</div>
+
+<!-- Tray Menu Mockup -->
+<div class="tray-section">
+  <h2>&#128421; 托盘菜单变化 (右键菜单)</h2>
+  <div class="tray-mockup">
+    <div class="tray-item disabled">AgentMemory v2.0.12</div>
+    <div class="tray-item disabled"><span class="dot dot-green"></span> 服务运行中 (2h 15m)</div>
+    <div class="tray-item separator"></div>
+    <div class="tray-item">快速搜索 &nbsp;Ctrl+Shift+M</div>
+    <div class="tray-item">打开记忆浏览器</div>
+    <div class="tray-item">ShadwMonitor 插件 &nbsp;&nbsp;&blacktriangleright;</div>
+    <div class="tray-item separator"></div>
+    <div class="tray-item">启动服务</div>
+    <div class="tray-item">停止服务</div>
+    <div class="tray-item">重启服务</div>
+    <div class="tray-item separator"></div>
+    <div class="tray-item new-item">
+      &#128276; 检查更新
+      <span class="new-badge">NEW</span>
+    </div>
+    <div class="tray-item">设置...</div>
+    <div class="tray-item separator"></div>
+    <div class="tray-item">打开日志目录</div>
+    <div class="tray-item">退出</div>
+  </div>
+  <p style="text-align:center; margin-top:14px; font-size:0.8rem; color:#888;">
+    发现新版本后, 菜单项变为: <code style="color:#fbbf24;">&#128276; 新版本 v2.0.13 可用</code> , 点击直接跳转下载
+  </p>
+</div>
+
+<!-- Summary -->
+<div class="summary">
+  <h2>改动统计</h2>
+  <div class="stats">
+    <div class="stat-item">
+      <div class="number">3</div>
+      <div class="label">客户端文件改动</div>
+    </div>
+    <div class="stat-item">
+      <div class="number">0</div>
+      <div class="label">服务端改动</div>
+    </div>
+    <div class="stat-item">
+      <div class="number">1</div>
+      <div class="label">复用已有 API</div>
+    </div>
+    <div class="stat-item">
+      <div class="number">0</div>
+      <div class="label">用户需配置项</div>
+    </div>
+    <div class="stat-item">
+      <div class="number">0</div>
+      <div class="label">破坏性变更</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

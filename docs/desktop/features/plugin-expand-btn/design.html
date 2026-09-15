@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>插件卡片展开按钮 - 设计对比</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f4f8;
+  padding: 40px 20px;
+  color: #333;
+}
+.container { max-width: 900px; margin: 0 auto; }
+h1 { text-align: center; margin-bottom: 8px; color: #1a1a2e; }
+.subtitle { text-align: center; color: #666; margin-bottom: 40px; font-size: 14px; }
+
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+@media (max-width: 700px) { .comparison { grid-template-columns: 1fr; } }
+
+.side {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.side h2 {
+  font-size: 14px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.side h2 .tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.tag-before { background: #fee2e2; color: #dc2626; }
+.tag-after { background: #dcfce7; color: #16a34a; }
+
+/* ===== Plugin card mock (matches real settings.html styles) ===== */
+.plugin-card {
+  border: 1px solid #d0f0e7;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f3fffb, #ffffff);
+  padding: 14px;
+}
+.plugin-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.plugin-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #183d37;
+}
+.plugin-subtitle {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #6b6b8d;
+  line-height: 1.5;
+}
+.switch-mock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #3a3a55;
+  flex-shrink: 0;
+}
+.switch-track {
+  width: 34px;
+  height: 18px;
+  background: #4ade80;
+  border-radius: 9px;
+  position: relative;
+}
+.switch-track::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  right: 2px;
+}
+.arrow-icon {
+  flex-shrink: 0;
+  color: #7b7ba3;
+  transition: transform .2s;
+}
+
+/* BEFORE: arrow in header row */
+.before-arrow {
+  margin-right: 4px;
+}
+
+/* AFTER: arrow below, centered */
+.plugin-expand-btn {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.plugin-expand-btn:hover {
+  opacity: 1;
+}
+
+.config-body {
+  margin-top: 10px;
+  padding: 12px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid #e0f3ee;
+  border-radius: 7px;
+  font-size: 12px;
+  color: #6b6b8d;
+}
+.config-body.hidden { display: none; }
+
+/* Highlight annotation */
+.annotation {
+  position: relative;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #fef3c7;
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #92400e;
+}
+
+/* Second example: Self-Evolve style */
+.plugin-card-purple {
+  border-color: rgba(167,139,250,0.25);
+  background: linear-gradient(135deg, #faf5ff, #ffffff);
+}
+.plugin-card-purple .plugin-title { color: #7c3aed; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>插件卡片展开按钮位置调整</h1>
+<p class="subtitle">将展开/收起箭头从标题行右侧移到卡片正下方居中</p>
+
+<!-- ===== Comparison 1: Server Sync ===== -->
+<div class="comparison">
+  <div class="side">
+    <h2><span class="tag tag-before">BEFORE</span> 箭头在右侧行内</h2>
+    <div class="plugin-card">
+      <div class="plugin-header">
+        <div style="flex:1;">
+          <div class="plugin-title">Server Sync</div>
+          <div class="plugin-subtitle">让多台电脑共享一份记忆，实时把本机记忆上传到共享服务器。</div>
+        </div>
+        <svg class="arrow-icon before-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+        <div class="switch-mock">
+          <div class="switch-track"></div>
+          <span>启用</span>
+        </div>
+      </div>
+    </div>
+    <div class="annotation">
+      ⚠️ 箭头夹在标题和开关之间，容易被忽略，且视觉上与"启用"开关混淆
+    </div>
+  </div>
+
+  <div class="side">
+    <h2><span class="tag tag-after">AFTER</span> 箭头居中在下方</h2>
+    <div class="plugin-card">
+      <div class="plugin-header">
+        <div style="flex:1;">
+          <div class="plugin-title">Server Sync</div>
+          <div class="plugin-subtitle">让多台电脑共享一份记忆，实时把本机记忆上传到共享服务器。</div>
+        </div>
+        <div class="switch-mock">
+          <div class="switch-track"></div>
+          <span>启用</span>
+        </div>
+      </div>
+      <div class="plugin-expand-btn">
+        <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </div>
+    <div class="annotation" style="background:#dcfce7;border-color:#16a34a;color:#166534;">
+      ✅ 箭头独占一行居中，点击目标更大，含义更明确："向下展开详情"
+    </div>
+  </div>
+</div>
+
+<!-- ===== Comparison 2: Self-Evolve ===== -->
+<div class="comparison">
+  <div class="side">
+    <h2><span class="tag tag-before">BEFORE</span> Self-Evolve</h2>
+    <div class="plugin-card plugin-card-purple">
+      <div class="plugin-header">
+        <div style="flex:1;">
+          <div class="plugin-title">Self-Evolve</div>
+          <div class="plugin-subtitle">读取每次会话记忆，自动提炼 Rules / Skills，让 AI 越用越懂你。</div>
+        </div>
+        <svg class="arrow-icon before-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+        <div class="switch-mock">
+          <div class="switch-track"></div>
+          <span>启用</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="side">
+    <h2><span class="tag tag-after">AFTER</span> Self-Evolve</h2>
+    <div class="plugin-card plugin-card-purple">
+      <div class="plugin-header">
+        <div style="flex:1;">
+          <div class="plugin-title">Self-Evolve</div>
+          <div class="plugin-subtitle">读取每次会话记忆，自动提炼 Rules / Skills，让 AI 越用越懂你。</div>
+        </div>
+        <div class="switch-mock">
+          <div class="switch-track"></div>
+          <span>启用</span>
+        </div>
+      </div>
+      <div class="plugin-expand-btn">
+        <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Interactive Demo ===== -->
+<div style="background:white;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+  <h2 style="font-size:14px;margin-bottom:16px;">🖱️ 交互演示 (点击箭头展开)</h2>
+
+  <div class="plugin-card" style="margin-bottom:16px;">
+    <div class="plugin-header" onclick="toggleDemo('demo1')" style="cursor:pointer;">
+      <div style="flex:1;">
+        <div class="plugin-title">Server Sync</div>
+        <div class="plugin-subtitle">让多台电脑共享一份记忆，实时把本机记忆上传到共享服务器。</div>
+      </div>
+      <div class="switch-mock" onclick="event.stopPropagation();">
+        <div class="switch-track"></div>
+        <span>启用</span>
+      </div>
+    </div>
+    <div class="plugin-expand-btn" onclick="toggleDemo('demo1')">
+      <svg id="demo1Arrow" class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+    <div class="config-body hidden" id="demo1Body">
+      <p><strong>服务器地址:</strong> https://example.com:8848</p>
+      <p><strong>账号:</strong> default</p>
+      <p><strong>状态:</strong> <span style="color:#16a34a;">● 已连接</span></p>
+    </div>
+  </div>
+
+  <div class="plugin-card plugin-card-purple">
+    <div class="plugin-header" onclick="toggleDemo('demo2')" style="cursor:pointer;">
+      <div style="flex:1;">
+        <div class="plugin-title" style="color:#7c3aed;">Self-Evolve</div>
+        <div class="plugin-subtitle">读取每次会话记忆，自动提炼 Rules / Skills，让 AI 越用越懂你。</div>
+      </div>
+      <div class="switch-mock" onclick="event.stopPropagation();">
+        <div class="switch-track"></div>
+        <span>启用</span>
+      </div>
+    </div>
+    <div class="plugin-expand-btn" onclick="toggleDemo('demo2')">
+      <svg id="demo2Arrow" class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+    <div class="config-body hidden" id="demo2Body">
+      <p><strong>审核模式:</strong> 手动审核</p>
+      <p><strong>最大规则数:</strong> 20</p>
+      <p><strong>Critic:</strong> 已启用</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function toggleDemo(id) {
+  const body = document.getElementById(id + 'Body');
+  const arrow = document.getElementById(id + 'Arrow');
+  const isHidden = body.classList.contains('hidden');
+  body.classList.toggle('hidden');
+  arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+</script>
+</body>
+</html>

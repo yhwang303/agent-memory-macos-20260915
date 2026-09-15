@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI Design · Self-Evolve Plugin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep-space: #0a1014;
+      --bg-void: #060a0c;
+      --accent-primary: #00d4aa;
+      --accent-glow: rgba(0, 212, 170, 0.4);
+      --accent-dim: rgba(0, 212, 170, 0.15);
+      --accent-active: #00ff88;
+      --accent-alert: #ff4466;
+      --accent-warning: #ffaa33;
+      --accent-purple: #a78bfa;
+      --accent-blue: #60a5fa;
+      --hud-border: rgba(0, 212, 170, 0.35);
+      --hud-border-bright: rgba(0, 212, 170, 0.7);
+      --hud-bg: rgba(8, 20, 28, 0.88);
+      --hud-glow: rgba(0, 212, 170, 0.12);
+      --text-primary: #d0e8e4;
+      --text-secondary: rgba(208, 232, 228, 0.6);
+      --text-dim: rgba(208, 232, 228, 0.35);
+      --text-muted: #4a6670;
+      --font-pixel: 'Press Start 2P', cursive;
+      --font-heading: 'Orbitron', sans-serif;
+      --font-body: 'JetBrains Mono', 'Noto Sans SC', monospace;
+      --font-cn: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-deep-space);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 6px);
+      pointer-events: none; z-index: 9999;
+    }
+    body::-webkit-scrollbar { width: 8px; }
+    body::-webkit-scrollbar-track { background: rgba(0,212,170,0.05); }
+    body::-webkit-scrollbar-thumb { background: rgba(0,212,170,0.25); border-radius: 4px; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    /* ── BANNER ── */
+    .design-banner {
+      background: rgba(255,170,51,0.07);
+      border: 1px solid rgba(255,170,51,0.3);
+      border-radius: 8px;
+      padding: 9px 16px;
+      margin-bottom: 18px;
+      font-size: 11px;
+      color: var(--accent-warning);
+      display: flex; gap: 8px; align-items: center;
+    }
+    .design-banner strong { color: #ffd080; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--hud-bg);
+      border: 1px solid var(--hud-border);
+      padding: 18px 24px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      box-shadow: 0 0 30px var(--hud-glow);
+      position: relative; overflow: hidden;
+    }
+    header::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-primary), transparent); opacity: 0.6;
+    }
+    header h1 {
+      font-family: var(--font-pixel); font-size: 11px;
+      color: var(--accent-primary); letter-spacing: 0.1em;
+      text-shadow: 0 0 10px var(--accent-glow);
+      display: flex; align-items: center; gap: 12px;
+    }
+    header h1 .icon {
+      width: 28px; height: 28px;
+      border: 1px solid var(--hud-border-bright); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; background: var(--accent-dim);
+    }
+    .stats {
+      margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .stats span {
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,212,170,0.2);
+      padding: 3px 12px; border-radius: 4px;
+      font-size: 11px;
+    }
+
+    /* ── MAIN TABS ── */
+    .main-tabs {
+      display: flex; gap: 6px; margin-bottom: 18px;
+    }
+    .main-tab {
+      padding: 9px 20px;
+      background: var(--hud-bg);
+      border: 1px solid var(--hud-border); border-radius: 6px;
+      cursor: pointer; font-size: 11px;
+      font-family: var(--font-heading); font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted); transition: all 0.2s;
+      position: relative;
+    }
+    .main-tab:hover { color: var(--text-secondary); border-color: var(--hud-border-bright); }
+    .main-tab.active {
+      background: var(--accent-dim); border-color: var(--hud-border-bright);
+      color: var(--accent-primary);
+      box-shadow: 0 0 12px var(--hud-glow); text-shadow: 0 0 6px var(--accent-glow);
+    }
+    /* Self-Evolve tab — subtle purple tint when active */
+    .main-tab.evolve-tab.active {
+      background: rgba(167,139,250,0.12);
+      border-color: rgba(167,139,250,0.55);
+      color: var(--accent-purple);
+      box-shadow: 0 0 14px rgba(167,139,250,0.2);
+      text-shadow: 0 0 8px rgba(167,139,250,0.5);
+    }
+    .main-tab .badge {
+      position: absolute; top: -6px; right: -6px;
+      background: var(--accent-warning); color: #000;
+      font-family: var(--font-body); font-size: 9px; font-weight: 700;
+      width: 16px; height: 16px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── MAIN TAB PANELS ── */
+    .main-panel { display: none; }
+    .main-panel.active { display: block; }
+    .placeholder {
+      text-align: center; padding: 72px 20px;
+      color: var(--text-muted); font-family: var(--font-cn);
+      font-size: 13px;
+    }
+    .placeholder::before {
+      content: '[ ]'; font-family: var(--font-pixel); font-size: 22px;
+      display: block; margin-bottom: 14px; color: var(--text-dim);
+    }
+
+    /* ═══════════════════════════════════════════════
+       SELF-EVOLVE PLUGIN PANEL
+    ═══════════════════════════════════════════════ */
+
+    /* Plugin header — sits inside the Self-Evolve panel, not the main header */
+    .plugin-header {
+      background: rgba(167,139,250,0.07);
+      border: 1px solid rgba(167,139,250,0.25);
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .plugin-header-left {
+      display: flex; align-items: center; gap: 14px;
+    }
+    .plugin-icon {
+      width: 36px; height: 36px;
+      background: rgba(167,139,250,0.15);
+      border: 1px solid rgba(167,139,250,0.4);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .plugin-name {
+      font-family: var(--font-heading);
+      font-size: 13px; letter-spacing: 0.08em;
+      color: var(--accent-purple);
+      text-shadow: 0 0 8px rgba(167,139,250,0.4);
+    }
+    .plugin-desc {
+      font-family: var(--font-cn);
+      font-size: 11px; color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .plugin-meta {
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    }
+    .plugin-tag {
+      font-size: 10px; padding: 3px 10px;
+      border-radius: 3px; border: 1px solid;
+      font-family: var(--font-body);
+    }
+    .pt-on  { background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.25); color: var(--accent-active); }
+    .pt-mode { background: rgba(255,170,51,0.08); border-color: rgba(255,170,51,0.25); color: var(--accent-warning); }
+    .pt-plat { background: rgba(0,212,170,0.08); border-color: rgba(0,212,170,0.2); color: var(--text-secondary); }
+    .plugin-header-right { flex-shrink: 0; display: flex; gap: 8px; align-items: center; }
+
+    /* ── PLUGIN SUB-TABS ── */
+    .sub-tabs {
+      display: flex; gap: 0; margin-bottom: 16px;
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 8px; overflow: hidden;
+      background: var(--bg-void);
+    }
+    .sub-tab {
+      flex: 1; padding: 9px 0;
+      text-align: center;
+      font-family: var(--font-heading); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); cursor: pointer;
+      transition: all 0.18s;
+      border-right: 1px solid rgba(167,139,250,0.15);
+      position: relative;
+    }
+    .sub-tab:last-child { border-right: none; }
+    .sub-tab:hover { color: var(--accent-purple); background: rgba(167,139,250,0.05); }
+    .sub-tab.active {
+      background: rgba(167,139,250,0.12);
+      color: var(--accent-purple);
+      text-shadow: 0 0 6px rgba(167,139,250,0.4);
+    }
+    .sub-tab .badge {
+      display: inline-block;
+      background: var(--accent-warning); color: #000;
+      font-size: 9px; font-weight: 700;
+      width: 14px; height: 14px; border-radius: 50%;
+      line-height: 14px; text-align: center;
+      margin-left: 5px; vertical-align: middle;
+    }
+
+    /* ── SUB PANELS ── */
+    .sub-panel { display: none; }
+    .sub-panel.active { display: block; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display: flex; gap: 8px; margin-bottom: 14px;
+      flex-wrap: wrap; align-items: center;
+    }
+    .filter-bar select {
+      padding: 7px 11px;
+      border: 1px solid var(--hud-border); border-radius: 6px;
+      font-size: 11px; font-family: var(--font-cn);
+      background: var(--bg-void); color: var(--text-secondary);
+      cursor: pointer; outline: none; min-width: 140px;
+    }
+    .filter-bar select:focus { border-color: rgba(167,139,250,0.5); }
+    .filter-bar select option { background: var(--bg-deep-space); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 7px 14px; border-radius: 6px; cursor: pointer;
+      font-size: 10px; font-family: var(--font-body);
+      transition: all 0.18s; border: 1px solid; letter-spacing: 0.05em;
+    }
+    .btn-purple {
+      background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.4); color: var(--accent-purple);
+    }
+    .btn-purple:hover { background: rgba(167,139,250,0.2); box-shadow: 0 0 10px rgba(167,139,250,0.2); }
+    .btn-approve {
+      background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.35); color: var(--accent-active);
+      padding: 5px 12px;
+    }
+    .btn-approve:hover { background: rgba(0,255,136,0.18); }
+    .btn-reject {
+      background: rgba(255,68,102,0.08); border-color: rgba(255,68,102,0.35); color: var(--accent-alert);
+      padding: 5px 12px;
+    }
+    .btn-reject:hover { background: rgba(255,68,102,0.18); }
+    .btn-ghost {
+      background: transparent; border-color: rgba(208,232,228,0.12); color: var(--text-dim);
+      padding: 5px 12px;
+    }
+    .btn-ghost:hover { border-color: var(--hud-border); color: var(--text-secondary); }
+
+    /* ── PENDING ALERT ── */
+    .review-alert {
+      background: rgba(255,170,51,0.06);
+      border: 1px solid rgba(255,170,51,0.28);
+      border-radius: 7px; padding: 10px 16px;
+      margin-bottom: 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .review-alert .left {
+      display: flex; align-items: center; gap: 9px;
+      font-family: var(--font-cn); font-size: 12px; color: var(--accent-warning);
+    }
+    .blink-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent-warning); box-shadow: 0 0 6px var(--accent-warning);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-family: var(--font-heading); font-size: 9px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 5px 0; margin-bottom: 8px;
+      border-bottom: 1px solid rgba(0,212,170,0.07);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .section-label::before { content: '//'; color: var(--accent-purple); opacity: 0.45; }
+
+    /* ── CARDS ── */
+    .card-list { display: flex; flex-direction: column; gap: 7px; }
+
+    .card {
+      background: var(--hud-bg);
+      border: 1px solid rgba(0,212,170,0.09);
+      border-radius: 8px; border-left: 3px solid transparent;
+      position: relative; overflow: hidden; transition: all 0.18s;
+    }
+    .card:hover { border-color: rgba(0,212,170,0.22); box-shadow: 0 0 16px var(--hud-glow); }
+
+    .card.c-code     { border-left-color: var(--accent-primary); }
+    .card.c-user     { border-left-color: var(--accent-purple); }
+    .card.c-workflow { border-left-color: var(--accent-warning); }
+    .card.c-tech     { border-left-color: var(--accent-blue); }
+    .card.c-skill    { border-left-color: #f472b6; }
+    .card.c-ok       { border-left-color: var(--accent-active); }
+    .card.c-pending  { border-left-color: var(--accent-warning); }
+    .card.c-skip     { border-left-color: var(--text-muted); }
+
+    .card-collapsed { padding: 13px 16px; cursor: pointer; }
+    .card-collapsed:hover { background: rgba(167,139,250,0.03); }
+
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+    .card-left { display: flex; align-items: flex-start; gap: 9px; flex: 1; min-width: 0; }
+    .card-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 12px; }
+
+    .chevron { font-size: 9px; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; margin-top: 3px; }
+    .card.open .chevron { transform: rotate(90deg); }
+
+    .card-title { font-size: 13px; font-family: var(--font-cn); font-weight: 500; color: var(--text-primary); line-height: 1.4; }
+    .card-sub   { font-size: 11px; font-family: var(--font-cn); color: var(--text-secondary); margin-top: 3px; line-height: 1.5; }
+    .card-meta  { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; align-items: center; }
+    .card-date  { font-size: 10px; color: var(--text-muted); font-family: var(--font-body); white-space: nowrap; }
+
+    /* Tags */
+    .tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; border: 1px solid; font-family: var(--font-body); white-space: nowrap; }
+    .t-code     { background: rgba(0,212,170,0.09);   border-color: rgba(0,212,170,0.28);   color: var(--accent-primary); }
+    .t-user     { background: rgba(167,139,250,0.09); border-color: rgba(167,139,250,0.28); color: var(--accent-purple); }
+    .t-workflow { background: rgba(255,170,51,0.09);  border-color: rgba(255,170,51,0.28);  color: var(--accent-warning); }
+    .t-tech     { background: rgba(96,165,250,0.09);  border-color: rgba(96,165,250,0.28);  color: var(--accent-blue); }
+    .t-skill    { background: rgba(244,114,182,0.09); border-color: rgba(244,114,182,0.28); color: #f472b6; }
+    .t-clean    { background: rgba(0,255,136,0.07);   border-color: rgba(0,255,136,0.22);   color: var(--accent-active); }
+    .t-pending  { background: rgba(255,170,51,0.09);  border-color: rgba(255,170,51,0.38);  color: var(--accent-warning); font-weight: 600; }
+    .t-approved { background: rgba(0,212,170,0.09);   border-color: rgba(0,212,170,0.28);   color: var(--accent-primary); }
+    .t-rejected { background: rgba(255,68,102,0.07);  border-color: rgba(255,68,102,0.22);  color: var(--accent-alert); }
+    .t-auto     { background: rgba(208,232,228,0.04); border-color: rgba(208,232,228,0.1);  color: var(--text-muted); }
+
+    .q-score { font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; border: 1px solid; }
+    .q-hi  { background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.28); color: var(--accent-active); }
+    .q-mid { background: rgba(255,170,51,0.08); border-color: rgba(255,170,51,0.28); color: var(--accent-warning); }
+
+    /* ── EXPANDED BODY ── */
+    .card-expanded { display: none; }
+    .card.open .card-expanded { display: block; }
+    .card.open .card-collapsed { background: rgba(167,139,250,0.04); }
+
+    .expand-body { padding: 0 16px 14px; border-top: 1px solid rgba(0,212,170,0.07); }
+    .expand-sec { margin-top: 12px; }
+    .expand-lbl {
+      font-family: var(--font-heading); font-size: 9px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px;
+    }
+    .expand-box {
+      background: var(--bg-void); border: 1px solid rgba(0,212,170,0.09);
+      border-radius: 6px; padding: 10px 13px;
+      font-family: var(--font-cn); font-size: 12px; color: var(--text-secondary);
+      line-height: 1.75; white-space: pre-wrap;
+    }
+    .expand-box.code { font-family: var(--font-body); font-size: 11px; color: var(--accent-primary); }
+    .expand-mini {
+      display: flex; gap: 14px; margin-top: 6px;
+      font-size: 10px; color: var(--text-muted); font-family: var(--font-body);
+    }
+    .expand-mini a { color: var(--accent-purple); cursor: pointer; text-decoration: none; }
+    .expand-mini a:hover { text-shadow: 0 0 6px rgba(167,139,250,0.5); }
+    .expand-actions {
+      display: flex; gap: 7px; margin-top: 12px;
+      padding-top: 11px; border-top: 1px solid rgba(0,212,170,0.07);
+      flex-wrap: wrap; align-items: center;
+    }
+    .expand-actions .sp { flex: 1; }
+    .expand-actions .hint { font-size: 10px; color: var(--text-muted); }
+
+    /* Reject inline form */
+    .reject-form { display: none; margin-top: 9px; padding: 11px; background: rgba(255,68,102,0.05); border: 1px solid rgba(255,68,102,0.18); border-radius: 6px; }
+    .reject-form.show { display: block; }
+    .reject-form textarea {
+      width: 100%; padding: 7px; background: var(--bg-void);
+      border: 1px solid rgba(255,68,102,0.25); border-radius: 4px;
+      color: var(--text-primary); font-family: var(--font-cn); font-size: 12px;
+      resize: vertical; min-height: 56px; outline: none;
+    }
+    .reject-form textarea::placeholder { color: var(--text-muted); }
+    .reject-form-btns { display: flex; gap: 7px; margin-top: 7px; }
+
+    /* ── EVO LOG SPECIFICS ── */
+    .evo-counts { display: flex; gap: 12px; margin-top: 5px; }
+    .ec { font-family: var(--font-body); font-size: 11px; display: flex; align-items: center; gap: 3px; }
+    .ec .n { font-weight: 700; }
+    .ec.r { color: var(--accent-primary); }
+    .ec.s { color: #f472b6; }
+    .ec.d { color: var(--text-muted); }
+    .raw-out {
+      background: var(--bg-void); border: 1px solid rgba(0,212,170,0.09);
+      border-radius: 6px; padding: 10px 13px;
+      font-family: var(--font-body); font-size: 10px; color: var(--text-muted);
+      white-space: pre; overflow-x: auto; line-height: 1.6;
+      max-height: 180px; overflow-y: auto;
+    }
+
+    /* ── SKILL TRIGGER ── */
+    .skill-trigger {
+      font-family: var(--font-body); font-size: 10px; color: var(--text-muted);
+      margin-top: 3px; display: flex; align-items: center; gap: 5px;
+    }
+    .skill-trigger::before { content: '◎'; color: #f472b6; }
+
+    /* ── WORKSPACE TAG ── */
+    .t-workspace {
+      background: rgba(96,165,250,0.07);
+      border-color: rgba(96,165,250,0.22);
+      color: var(--accent-blue);
+      font-family: var(--font-body);
+      max-width: 200px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .t-workspace::before { content: '⊟ '; opacity: 0.7; }
+
+    /* ── TOAST ── */
+    .toast-wrap { position: fixed; bottom: 22px; right: 22px; display: flex; flex-direction: column; gap: 7px; z-index: 9000; }
+    .toast {
+      padding: 9px 16px; border-radius: 6px;
+      font-family: var(--font-cn); font-size: 12px; border: 1px solid;
+      backdrop-filter: blur(8px); animation: toastIn 0.25s ease;
+      max-width: 300px;
+    }
+    .toast.ok  { background: rgba(0,255,136,0.1);  border-color: rgba(0,255,136,0.35);  color: var(--accent-active); }
+    .toast.err { background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.35); color: var(--accent-alert); }
+    @keyframes toastIn { from{transform:translateX(14px);opacity:0} to{transform:none;opacity:1} }
+
+    /* ── OVERVIEW PANEL ── */
+    .ws-selector {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      background: rgba(167,139,250,0.05);
+      border: 1px solid rgba(167,139,250,0.18);
+      border-radius: 8px;
+    }
+    .ws-selector label { font-size: 10px; font-family: var(--font-heading); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+    .ws-selector select { flex: 1; padding: 6px 10px; background: var(--bg-void); border: 1px solid rgba(167,139,250,0.3); border-radius: 5px; color: var(--accent-purple); font-family: var(--font-body); font-size: 12px; outline: none; }
+    .ws-selector select option { background: var(--bg-deep-space); color: var(--text-primary); }
+    .ws-path { font-size: 10px; color: var(--text-muted); font-family: var(--font-body); }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card {
+      background: var(--hud-bg); border: 1px solid rgba(0,212,170,0.1);
+      border-radius: 8px; padding: 14px 16px;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .stat-card.sc-rules::before  { background: var(--accent-primary); }
+    .stat-card.sc-skills::before { background: #f472b6; }
+    .stat-card.sc-pending::before { background: var(--accent-warning); }
+    .stat-card.sc-archived::before { background: var(--text-muted); }
+
+    .stat-value { font-family: var(--font-heading); font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .stat-card.sc-rules  .stat-value { color: var(--accent-primary); text-shadow: 0 0 20px rgba(0,212,170,0.4); }
+    .stat-card.sc-skills .stat-value { color: #f472b6; text-shadow: 0 0 20px rgba(244,114,182,0.4); }
+    .stat-card.sc-pending .stat-value { color: var(--accent-warning); }
+    .stat-card.sc-archived .stat-value { color: var(--text-muted); }
+
+    .stat-label { font-size: 10px; font-family: var(--font-heading); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+    .stat-delta { margin-top: 8px; font-size: 11px; font-family: var(--font-body); color: var(--text-muted); }
+    .stat-delta .up   { color: var(--accent-active); }
+    .stat-delta .warn { color: var(--accent-warning); }
+
+    /* Category breakdown */
+    .section-block { background: var(--hud-bg); border: 1px solid rgba(0,212,170,0.1); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+    .section-block-title { font-family: var(--font-heading); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+    .section-block-title::before { content: '//'; color: var(--accent-purple); opacity: 0.5; }
+
+    .cat-rows { display: flex; flex-direction: column; gap: 9px; }
+    .cat-row { display: flex; align-items: center; gap: 10px; }
+    .cat-name { font-family: var(--font-cn); font-size: 12px; color: var(--text-secondary); width: 90px; flex-shrink: 0; }
+    .cat-bar-wrap { flex: 1; height: 6px; background: rgba(0,212,170,0.07); border-radius: 3px; overflow: hidden; }
+    .cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+    .cat-count { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); width: 28px; text-align: right; flex-shrink: 0; }
+    .cat-pending-note { font-size: 10px; color: var(--accent-warning); font-family: var(--font-body); }
+
+    /* Chart */
+    .chart-wrap { position: relative; }
+    .chart-svg { width: 100%; height: auto; display: block; }
+
+    /* Two-col layout for breakdown + chart */
+    .overview-bottom { display: grid; grid-template-columns: 260px 1fr; gap: 10px; }
+    @media (max-width: 700px) { .overview-bottom { grid-template-columns: 1fr; } .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<div class="container">
+
+  <!-- Design banner -->
+  <div class="design-banner">
+    ◈ <strong>UI Design Mockup</strong> · Self-Evolve 作为独立插件 Tab，不修改主 Tab 结构 · 静态演示，数据为模拟数据
+  </div>
+
+  <!-- Main header -->
+  <header>
+    <h1><span class="icon">◈</span>AgentMem-Viewer</h1>
+    <div class="stats">
+      <span>■ 12 Summaries</span>
+      <span>◆ 47 Observations</span>
+      <span>⊙ 8 Sessions</span>
+      <span>⊕ 1 Device</span>
+    </div>
+  </header>
+
+  <!-- ── MAIN TABS ── -->
+  <!-- 说明：原有三个 Tab 不动，Self-Evolve 作为第四个独立 Tab 加入 -->
+  <div class="main-tabs">
+    <button class="main-tab" data-mp="summaries"    onclick="switchMain('summaries')">Summaries</button>
+    <button class="main-tab" data-mp="observations" onclick="switchMain('observations')">Observations</button>
+    <button class="main-tab" data-mp="sessions"     onclick="switchMain('sessions')">Sessions</button>
+    <button class="main-tab evolve-tab active" data-mp="self-evolve" onclick="switchMain('self-evolve')">
+      Self-Evolve
+      <span class="badge">2</span>
+    </button>
+  </div>
+
+  <!-- Placeholder panels -->
+  <div class="main-panel" id="mp-summaries"><div class="placeholder">← 切换到 Self-Evolve Tab 查看新界面设计</div></div>
+  <div class="main-panel" id="mp-observations"><div class="placeholder">← 切换到 Self-Evolve Tab 查看新界面设计</div></div>
+  <div class="main-panel" id="mp-sessions"><div class="placeholder">← 切换到 Self-Evolve Tab 查看新界面设计</div></div>
+
+  <!-- ══════════════════════════════════════════
+       SELF-EVOLVE PLUGIN PANEL（全部自包含）
+  ══════════════════════════════════════════ -->
+  <div class="main-panel active" id="mp-self-evolve">
+
+    <!-- 插件专属 Header：设置状态、统计，不污染主 Header -->
+    <div class="plugin-header">
+      <div class="plugin-header-left">
+        <div class="plugin-icon">⚡</div>
+        <div>
+          <div class="plugin-name">SELF-EVOLVE</div>
+          <div class="plugin-desc">从会话历史自动提炼可复用规范与技能，写入 IDE 配置</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+        <div class="plugin-meta">
+          <span class="plugin-tag pt-on">● ENABLED</span>
+          <span class="plugin-tag pt-mode">REVIEW: MANUAL</span>
+          <span class="plugin-tag pt-plat">claudecode · cursor</span>
+        </div>
+        <div class="plugin-meta" style="justify-content:flex-end;">
+          <span style="font-size:10px;color:var(--text-muted);">2 工作区 &nbsp;·&nbsp; 6 Rules &nbsp;·&nbsp; 3 Skills &nbsp;·&nbsp; <span style="color:var(--accent-warning);">2 Pending</span></span>
+          <button class="btn btn-purple" onclick="toast('已触发手动进化，分析最近 5 条 observations...','ok')">⟳ 触发进化</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 插件内部子 Tab -->
+    <div class="sub-tabs">
+      <div class="sub-tab active" data-sp="overview" onclick="switchSub('overview')">Overview</div>
+      <div class="sub-tab" data-sp="rules" onclick="switchSub('rules')">
+        Rules <span class="badge">2</span>
+      </div>
+      <div class="sub-tab" data-sp="skills" onclick="switchSub('skills')">Skills</div>
+      <div class="sub-tab" data-sp="evo-log" onclick="switchSub('evo-log')">Evo Log</div>
+    </div>
+
+    <!-- ── SUB: OVERVIEW ── -->
+    <div class="sub-panel active" id="sp-overview">
+
+      <!-- 工作区选择器 -->
+      <div class="ws-selector">
+        <label>工作区</label>
+        <select onchange="switchWsOverview(this.value)">
+          <option value="agent-memory">agent-memory &nbsp;·&nbsp; D:\UGIT\agent-memory</option>
+          <option value="self-evolve">Self-Evolve &nbsp;·&nbsp; D:\UGIT\Self-Evolve</option>
+        </select>
+        <span class="ws-path" id="ws-last-evolved">最近进化：2026-05-23 14:35</span>
+      </div>
+
+      <!-- 四格统计卡 -->
+      <div class="stat-grid">
+        <div class="stat-card sc-rules">
+          <div class="stat-value" id="ov-rules">6</div>
+          <div class="stat-label">Active Rules</div>
+          <div class="stat-delta"><span class="up">▲ 5</span> 本月新增 &nbsp;·&nbsp; 共进化 4 次</div>
+        </div>
+        <div class="stat-card sc-skills">
+          <div class="stat-value" id="ov-skills">3</div>
+          <div class="stat-label">Active Skills</div>
+          <div class="stat-delta"><span class="up">▲ 2</span> 本月新增</div>
+        </div>
+        <div class="stat-card sc-pending">
+          <div class="stat-value" id="ov-pending">2</div>
+          <div class="stat-label">Pending Review</div>
+          <div class="stat-delta"><span class="warn">待批准后写入 IDE</span></div>
+        </div>
+        <div class="stat-card sc-archived">
+          <div class="stat-value" id="ov-archived">1</div>
+          <div class="stat-label">Archived</div>
+          <div class="stat-delta">已归档，不写入 IDE</div>
+        </div>
+      </div>
+
+      <!-- 底部两列：分类分布 + 增长趋势 -->
+      <div class="overview-bottom">
+
+        <!-- 左：Rules 分类分布 -->
+        <div class="section-block">
+          <div class="section-block-title">Rules 分类分布</div>
+          <div class="cat-rows">
+            <div class="cat-row">
+              <span class="cat-name">代码规范</span>
+              <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:50%;background:var(--accent-primary);"></div></div>
+              <span class="cat-count">3</span>
+            </div>
+            <div class="cat-row">
+              <span class="cat-name">工作流规范</span>
+              <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:33%;background:var(--accent-warning);"></div></div>
+              <span class="cat-count">2 <span class="cat-pending-note">1待审</span></span>
+            </div>
+            <div class="cat-row">
+              <span class="cat-name">用户偏好</span>
+              <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:17%;background:var(--accent-purple);"></div></div>
+              <span class="cat-count">1</span>
+            </div>
+            <div class="cat-row">
+              <span class="cat-name">技术栈偏好</span>
+              <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:17%;background:var(--accent-blue);"></div></div>
+              <span class="cat-count">1 <span class="cat-pending-note">待审</span></span>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;">
+            <div class="section-block-title" style="margin-bottom:10px;">Skills 分类分布</div>
+            <div class="cat-rows">
+              <div class="cat-row">
+                <span class="cat-name">排查 / 调试</span>
+                <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:67%;background:#f472b6;"></div></div>
+                <span class="cat-count">2</span>
+              </div>
+              <div class="cat-row">
+                <span class="cat-name">脚手架生成</span>
+                <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:33%;background:#f472b6;opacity:0.6;"></div></div>
+                <span class="cat-count">1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：增长趋势折线图 -->
+        <div class="section-block">
+          <div class="section-block-title">存量增长趋势（按会话）</div>
+          <div class="chart-wrap">
+            <svg class="chart-svg" viewBox="0 0 480 170" xmlns="http://www.w3.org/2000/svg">
+              <!-- 横向网格线 -->
+              <line x1="46" y1="20"  x2="470" y2="20"  stroke="rgba(0,212,170,0.07)" stroke-width="1"/>
+              <line x1="46" y1="52"  x2="470" y2="52"  stroke="rgba(0,212,170,0.07)" stroke-width="1"/>
+              <line x1="46" y1="84"  x2="470" y2="84"  stroke="rgba(0,212,170,0.07)" stroke-width="1"/>
+              <line x1="46" y1="116" x2="470" y2="116" stroke="rgba(0,212,170,0.07)" stroke-width="1"/>
+              <line x1="46" y1="148" x2="470" y2="148" stroke="rgba(0,212,170,0.15)" stroke-width="1"/>
+              <!-- Y轴刻度 -->
+              <text x="40" y="24"  text-anchor="end" fill="rgba(208,232,228,0.25)" font-size="9" font-family="JetBrains Mono,monospace">8</text>
+              <text x="40" y="56"  text-anchor="end" fill="rgba(208,232,228,0.25)" font-size="9" font-family="JetBrains Mono,monospace">6</text>
+              <text x="40" y="88"  text-anchor="end" fill="rgba(208,232,228,0.25)" font-size="9" font-family="JetBrains Mono,monospace">4</text>
+              <text x="40" y="120" text-anchor="end" fill="rgba(208,232,228,0.25)" font-size="9" font-family="JetBrains Mono,monospace">2</text>
+              <text x="40" y="152" text-anchor="end" fill="rgba(208,232,228,0.25)" font-size="9" font-family="JetBrains Mono,monospace">0</text>
+              <!-- X轴 -->
+              <line x1="46" y1="148" x2="470" y2="148" stroke="rgba(0,212,170,0.2)" stroke-width="1"/>
+              <!-- X轴标签 (5 sessions: #30 #33 #35 #38 #42) -->
+              <!-- X positions: 96, 192, 288, 384, 460 -->
+              <text x="96"  y="163" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono,monospace">#30</text>
+              <text x="192" y="163" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono,monospace">#33</text>
+              <text x="288" y="163" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono,monospace">#35</text>
+              <text x="384" y="163" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono,monospace">#38</text>
+              <text x="460" y="163" text-anchor="middle" fill="rgba(208,232,228,0.3)" font-size="9" font-family="JetBrains Mono,monospace">#42</text>
+              <!--
+                Y scale: 0→y=148, 8→y=20  →  1unit = (148-20)/8 = 16px
+                Rules 存量:  1, 1, 2, 3, 6  →  y = 148-val*16 → 132,132,116,100,52
+                Skills 存量: 1, 1, 1, 2, 3  →  y = 148-val*16 → 132,132,132,116,100
+              -->
+              <!-- Rules 面积填充 -->
+              <path d="M96,132 L192,132 L288,116 L384,100 L460,52 L460,148 L96,148 Z"
+                    fill="rgba(0,212,170,0.07)"/>
+              <!-- Rules 折线 -->
+              <polyline points="96,132 192,132 288,116 384,100 460,52"
+                        fill="none" stroke="#00d4aa" stroke-width="2" stroke-linejoin="round"/>
+              <!-- Rules 数据点 -->
+              <circle cx="96"  cy="132" r="3.5" fill="#00d4aa" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <circle cx="192" cy="132" r="3.5" fill="#00d4aa" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <circle cx="288" cy="116" r="3.5" fill="#00d4aa" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <circle cx="384" cy="100" r="3.5" fill="#00d4aa" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <circle cx="460" cy="52"  r="4"   fill="#00d4aa" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <!-- Rules 值标签 -->
+              <text x="96"  y="126" text-anchor="middle" fill="#00d4aa" font-size="9" font-family="JetBrains Mono,monospace">1</text>
+              <text x="192" y="126" text-anchor="middle" fill="#00d4aa" font-size="9" font-family="JetBrains Mono,monospace">1</text>
+              <text x="288" y="110" text-anchor="middle" fill="#00d4aa" font-size="9" font-family="JetBrains Mono,monospace">2</text>
+              <text x="384" y="94"  text-anchor="middle" fill="#00d4aa" font-size="9" font-family="JetBrains Mono,monospace">3</text>
+              <text x="460" y="46"  text-anchor="middle" fill="#00d4aa" font-size="9" font-family="JetBrains Mono,monospace">6</text>
+              <!-- Skills 面积填充 -->
+              <path d="M96,132 L192,132 L288,132 L384,116 L460,100 L460,148 L96,148 Z"
+                    fill="rgba(244,114,182,0.05)"/>
+              <!-- Skills 折线（虚线） -->
+              <polyline points="96,132 192,132 288,132 384,116 460,100"
+                        fill="none" stroke="#f472b6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="5,3"/>
+              <!-- Skills 数据点 -->
+              <circle cx="96"  cy="132" r="3" fill="#f472b6" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <circle cx="192" cy="132" r="3" fill="#f472b6" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <circle cx="288" cy="132" r="3" fill="#f472b6" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <circle cx="384" cy="116" r="3" fill="#f472b6" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <circle cx="460" cy="100" r="3.5" fill="#f472b6" stroke="var(--bg-void)" stroke-width="1.5"/>
+              <!-- Skills 值标签（偏下避免和 Rules 重叠） -->
+              <text x="96"  y="145" text-anchor="middle" fill="#f472b6" font-size="9" font-family="JetBrains Mono,monospace">1</text>
+              <text x="192" y="145" text-anchor="middle" fill="#f472b6" font-size="9" font-family="JetBrains Mono,monospace">1</text>
+              <text x="288" y="145" text-anchor="middle" fill="#f472b6" font-size="9" font-family="JetBrains Mono,monospace">1</text>
+              <text x="384" y="110" text-anchor="middle" fill="#f472b6" font-size="9" font-family="JetBrains Mono,monospace">2</text>
+              <text x="460" y="94"  text-anchor="middle" fill="#f472b6" font-size="9" font-family="JetBrains Mono,monospace">3</text>
+              <!-- 图例 -->
+              <rect x="46" y="6" width="16" height="3" fill="#00d4aa" rx="1.5"/>
+              <text x="66" y="11" fill="rgba(208,232,228,0.45)" font-size="9" font-family="JetBrains Mono,monospace">Rules</text>
+              <line x1="110" y1="8" x2="126" y2="8" stroke="#f472b6" stroke-width="2" stroke-dasharray="5,3"/>
+              <text x="130" y="11" fill="rgba(208,232,228,0.45)" font-size="9" font-family="JetBrains Mono,monospace">Skills</text>
+            </svg>
+          </div>
+          <!-- 最新一次进化 delta 说明 -->
+          <div style="margin-top:10px;display:flex;gap:16px;font-size:11px;font-family:var(--font-body);color:var(--text-muted);border-top:1px solid rgba(0,212,170,0.07);padding-top:10px;">
+            <span>最近一次进化（Session #42）</span>
+            <span style="color:var(--accent-primary);">Rules: 3 → 6 &nbsp;<span style="color:var(--accent-active)">▲+3</span></span>
+            <span style="color:#f472b6;">Skills: 2 → 3 &nbsp;<span style="color:var(--accent-active)">▲+1</span></span>
+          </div>
+        </div>
+
+      </div><!-- /overview-bottom -->
+    </div><!-- /sp-overview -->
+
+    <!-- ── SUB: RULES ── -->
+    <div class="sub-panel active" id="sp-rules">
+      <div class="filter-bar">
+        <select>
+          <option>所有分类</option><option>代码规范</option>
+          <option>用户偏好</option><option>工作流规范</option><option>技术栈偏好</option>
+        </select>
+        <select><option>所有状态</option><option>待审核</option><option>已批准</option><option>自动写入</option></select>
+        <select id="rules-ws-filter" onchange="filterByWs('rules', this.value)">
+          <option value="">所有工作区</option>
+          <option value="agent-memory">agent-memory</option>
+          <option value="self-evolve">Self-Evolve</option>
+        </select>
+      </div>
+
+      <div class="review-alert">
+        <div class="left"><div class="blink-dot"></div>2 条规则等待审核，批准后写入 CLAUDE.md 和 .cursor/rules/</div>
+        <button class="btn btn-ghost" style="font-size:10px;" onclick="toast('已过滤：仅显示待审核','ok')">只看待审核</button>
+      </div>
+
+      <div class="section-label">待审核 · Pending Review</div>
+      <div class="card-list" style="margin-bottom:18px;">
+
+        <!-- Rule 1 · 展开 -->
+        <div class="card c-workflow open" id="r1" data-ws="agent-memory">
+          <div class="card-collapsed" onclick="toggle('r1')">
+            <div class="card-header">
+              <div class="card-left">
+                <span class="chevron">▶</span>
+                <div class="card-title">修复 Bug 前先写失败单元测试复现问题</div>
+              </div>
+              <div class="card-right">
+                <span class="q-score q-mid">76</span>
+                <span class="card-date">2026-05-23 14:32</span>
+              </div>
+            </div>
+            <div class="card-meta">
+              <span class="tag t-workflow">工作流规范</span>
+              <span class="tag t-pending">⚑ 待审核</span>
+              <span class="tag t-clean">审计通过</span>
+              <span class="tag t-workspace">agent-memory</span>
+            </div>
+          </div>
+          <div class="card-expanded">
+            <div class="expand-body">
+              <div class="expand-sec">
+                <div class="expand-lbl">规则内容</div>
+                <div class="expand-box">在开始修复 Bug 之前，必须先编写能够复现该 Bug 的失败单元测试。
+只有当测试失败后，才允许进行代码修改。
+修复完成后，测试应当通过，确认问题已解决。
+
+此规范防止"修了又回来"，并为未来重构提供回归保护。</div>
+              </div>
+              <div class="expand-sec">
+                <div class="expand-lbl">支撑证据</div>
+                <div class="expand-box">会话中两次出现修复后问题再次出现的情况。用户修复 memory leak 时直接改代码，未写测试，3 小时后回滚。AI 建议写测试，用户后续采用。</div>
+              </div>
+              <div class="expand-mini">
+                <span>来源：<a onclick="toast('Session #42 · 2026-05-23 · memory-leak-debug','ok')">Session #42</a></span>
+                <span>质量：76/100</span>
+                <span>耗时：18.4s</span>
+              </div>
+              <div class="expand-actions">
+                <button class="btn btn-approve" onclick="approve('r1',this)">✓ 批准并写入</button>
+                <button class="btn btn-reject"  onclick="showReject('r1')">✗ 拒绝</button>
+                <button class="btn btn-ghost">归档</button>
+                <span class="sp"></span>
+                <span class="hint">批准后写入 CLAUDE.md 托管区</span>
+              </div>
+              <div class="reject-form" id="rf-r1">
+                <div style="font-size:11px;color:var(--accent-alert);margin-bottom:5px;">拒绝原因（可选）</div>
+                <textarea placeholder="例如：场景过于特殊，不适合作为通用规范..."></textarea>
+                <div class="reject-form-btns">
+                  <button class="btn btn-reject" onclick="doReject('r1',this)">确认拒绝</button>
+                  <button class="btn btn-ghost"  onclick="hideReject('r1')">取消</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rule 2 -->
+        <div class="card c-tech" id="r2" data-ws="agent-memory">
+          <div class="card-collapsed" onclick="toggle('r2')">
+            <div class="card-header">
+              <div class="card-left">
+                <span class="chevron">▶</span>
+                <div class="card-title">数据库查询操作必须设置超时限制防止慢查询阻塞</div>
+              </div>
+              <div class="card-right">
+                <span class="q-score q-mid">71</span>
+                <span class="card-date">2026-05-23 11:18</span>
+              </div>
+            </div>
+            <div class="card-meta">
+              <span class="tag t-tech">技术栈偏好</span>
+              <span class="tag t-pending">⚑ 待审核</span>
+              <span class="tag t-clean">审计通过</span>
+              <span class="tag t-workspace">agent-memory</span>
+            </div>
+          </div>
+          <div class="card-expanded">
+            <div class="expand-body">
+              <div class="expand-sec">
+                <div class="expand-lbl">规则内容</div>
+                <div class="expand-box">所有 SQLite 查询操作应设置超时限制（推荐 5000ms）。
+禁止在主进程中执行无超时限制的大批量查询，避免阻塞 Worker HTTP 响应。</div>
+              </div>
+              <div class="expand-mini">
+                <span>来源：<a onclick="toast('Session #38 · 数据库性能调优','ok')">Session #38</a></span>
+                <span>质量：71/100</span>
+              </div>
+              <div class="expand-actions">
+                <button class="btn btn-approve" onclick="approve('r2',this)">✓ 批准并写入</button>
+                <button class="btn btn-reject"  onclick="showReject('r2')">✗ 拒绝</button>
+                <button class="btn btn-ghost">归档</button>
+              </div>
+              <div class="reject-form" id="rf-r2">
+                <textarea placeholder="拒绝原因..."></textarea>
+                <div class="reject-form-btns">
+                  <button class="btn btn-reject" onclick="doReject('r2',this)">确认拒绝</button>
+                  <button class="btn btn-ghost"  onclick="hideReject('r2')">取消</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /pending -->
+
+      <div class="section-label">已生效 · Active Rules</div>
+      <div class="card-list">
+
+        <div class="card c-code" id="r3" data-ws="agent-memory">
+          <div class="card-collapsed" onclick="toggle('r3')">
+            <div class="card-header">
+              <div class="card-left"><span class="chevron">▶</span><div class="card-title">TypeScript 严格模式下所有函数参数必须显式声明类型</div></div>
+              <div class="card-right"><span class="q-score q-hi">92</span><span class="card-date">2026-05-22 09:11</span></div>
+            </div>
+            <div class="card-meta">
+              <span class="tag t-code">代码规范</span>
+              <span class="tag t-approved">✓ 已批准</span>
+              <span class="tag t-clean">审计通过</span>
+              <span class="tag t-workspace">agent-memory</span>
+            </div>
+          </div>
+          <div class="card-expanded">
+            <div class="expand-body">
+              <div class="expand-sec">
+                <div class="expand-lbl">规则内容</div>
+                <div class="expand-box">在 tsconfig.json strict: true 模式下，所有函数和方法的参数都必须有明确的类型标注。
+不允许使用隐式 any，包括回调函数参数。
+返回类型可通过推断省略，但复杂函数建议显式标注。</div>
+              </div>
+              <div class="expand-actions">
+                <button class="btn btn-ghost">归档</button>
+                <span class="sp"></span><span class="hint">已写入 CLAUDE.md + .cursor/rules/</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card c-code" id="r4" data-ws="agent-memory">
+          <div class="card-collapsed" onclick="toggle('r4')">
+            <div class="card-header">
+              <div class="card-left"><span class="chevron">▶</span><div class="card-title">禁止在业务逻辑层直接使用 console.log，统一通过 logger 工具</div></div>
+              <div class="card-right"><span class="q-score q-hi">80</span><span class="card-date">2026-05-22 09:11</span></div>
+            </div>
+            <div class="card-meta">
+              <span class="tag t-code">代码规范</span>
+              <span class="tag t-auto">自动写入</span>
+              <span class="tag t-clean">审计通过</span>
+              <span class="tag t-workspace">agent-memory</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card c-workflow" id="r5" data-ws="self-evolve">
+          <div class="card-collapsed" onclick="toggle('r5')">
+            <div class="card-header">
+              <div class="card-left"><span class="chevron">▶</span><div class="card-title">提交信息使用 Conventional Commits 格式</div></div>
+              <div class="card-right"><span class="q-score q-hi">85</span><span class="card-date">2026-05-20 16:44</span></div>
+            </div>
+            <div class="card-meta">
+              <span class="tag t-workflow">工作流规范</span>
+              <span class="tag t-approved">✓ 已批准</span>
+              <span class="tag t-clean">审计通过</span>
+              <span class="tag t-workspace">Self-Evolve</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card c-user" id="r6" data-ws="self-evolve">
+          <div class="card-collapsed" onclick="toggle('r6')">
+            <div class="card-header">
+              <div class="card-left"><span class="chevron">▶</span><div class="card-title">代码审查意见用中文表达，技术术语保持英文</div></div>
+              <div class="card-right"><span class="q-score q-hi">88</span><span class="card-date">2026-05-19 10:22</span></div>
+            </div>
+            <div class="card-meta">
+              <span class="tag t-user">用户偏好</span>
+              <span class="tag t-auto">自动写入</span>
+              <span class="tag t-clean">审计通过</span>
+              <span class="tag t-workspace">Self-Evolve</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /active rules -->
+    </div><!-- /sp-rules -->
+
+    <!-- ── SUB: SKILLS ── -->
+    <div class="sub-panel" id="sp-skills">
+      <div class="filter-bar">
+        <select><option>所有状态</option><option>待审核</option><option>已批准</option><option>自动写入</option></select>
+        <select id="skills-ws-filter" onchange="filterByWs('skills', this.value)">
+          <option value="">所有工作区</option>
+          <option value="agent-memory">agent-memory</option>
+          <option value="self-evolve">Self-Evolve</option>
+        </select>
+      </div>
+
+      <div class="card-list">
+
+        <div class="card c-skill open" id="sk1" data-ws="agent-memory">
+          <div class="card-collapsed" onclick="toggle('sk1')">
+            <div class="card-header">
+              <div class="card-left">
+                <span class="chevron">▶</span>
+                <div>
+                  <div class="card-title">内存泄漏排查流程</div>
+                  <div class="skill-trigger">触发场景：进程 RSS 持续增长、堆内存超预期</div>
+                </div>
+              </div>
+              <div class="card-right"><span class="q-score q-hi">85</span><span class="card-date">2026-05-23 14:38</span></div>
+            </div>
+            <div class="card-meta">
+              <span class="tag t-skill">markdown</span>
+              <span class="tag t-approved">✓ 已批准</span>
+              <span class="tag t-clean">审计通过</span>
+              <span class="tag t-workspace">agent-memory</span>
+            </div>
+          </div>
+          <div class="card-expanded">
+            <div class="expand-body">
+              <div class="expand-sec">
+                <div class="expand-lbl">SKILL.md</div>
+                <div class="expand-box" style="font-size:11px;line-height:1.8;color:var(--text-secondary);">
+<span style="color:var(--accent-purple);font-weight:600;"># 内存泄漏排查流程</span>
+
+<span style="color:var(--accent-warning);">## 适用场景</span>
+进程 RSS 持续增长、Node.js 堆内存超过预期、运行时出现 OOM。
+
+<span style="color:var(--accent-warning);">## 排查步骤</span>
+1. 使用 process.memoryUsage() 记录基线
+2. 使用 --inspect 启动，Chrome DevTools 拍 Heap Snapshot
+3. 对比两次 Snapshot，找 Retained Size 最大的对象
+4. 重点检查：全局 Map/Set、未清理的 EventListener、循环引用闭包
+
+<span style="color:var(--accent-warning);">## 常见根因</span>
+- setInterval 未 clearInterval
+- EventEmitter 未调用 removeListener</div>
+              </div>
+              <div class="expand-mini">
+                <span>slug: memory-leak-debug</span>
+                <span>来源：<a onclick="toast('Session #42','ok')">Session #42</a></span>
+              </div>
+              <div class="expand-actions">
+                <button class="btn btn-ghost">归档</button>
+                <span class="sp"></span><span class="hint">已写入 .claude/skills/memory-leak-debug/</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card c-skill" id="sk2" data-ws="agent-memory">
+          <div class="card-collapsed" onclick="toggle('sk2')">
+            <div class="card-header">
+              <div class="card-left">
+                <span class="chevron">▶</span>
+                <div>
+                  <div class="card-title">数据库 Schema 迁移安全检查清单</div>
+                  <div class="skill-trigger">触发场景：执行 SQLite / PostgreSQL 迁移时</div>
+                </div>
+              </div>
+              <div class="card-right"><span class="q-score q-mid">78</span><span class="card-date">2026-05-21 10:05</span></div>
+            </div>
+            <div class="card-meta">
+              <span class="tag t-skill">markdown</span>
+              <span class="tag t-pending">⚑ 待审核</span>
+              <span class="tag t-workspace">agent-memory</span>
+            </div>
+          </div>
+          <div class="card-expanded">
+            <div class="expand-body">
+              <div class="expand-sec">
+                <div class="expand-lbl">SKILL.md 预览</div>
+                <div class="expand-box"># 数据库迁移安全检查
+
+## 执行前
+- [ ] 备份当前数据库文件
+- [ ] 在测试库运行迁移脚本
+- [ ] 确认迁移是幂等的（CREATE IF NOT EXISTS）
+...</div>
+              </div>
+              <div class="expand-actions">
+                <button class="btn btn-approve" onclick="approve('sk2',this)">✓ 批准</button>
+                <button class="btn btn-reject"  onclick="showReject('sk2')">✗ 拒绝</button>
+              </div>
+              <div class="reject-form" id="rf-sk2">
+                <textarea placeholder="拒绝原因..."></textarea>
+                <div class="reject-form-btns">
+                  <button class="btn btn-reject" onclick="doReject('sk2',this)">确认</button>
+                  <button class="btn btn-ghost"  onclick="hideReject('sk2')">取消</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card c-skill" id="sk3" data-ws="self-evolve">
+          <div class="card-collapsed" onclick="toggle('sk3')">
+            <div class="card-header">
+              <div class="card-left">
+                <span class="chevron">▶</span>
+                <div>
+                  <div class="card-title">React TSX 组件脚手架生成</div>
+                  <div class="skill-trigger">触发场景：创建新的 React 函数组件时</div>
+                </div>
+              </div>
+              <div class="card-right"><span class="q-score q-hi">90</span><span class="card-date">2026-05-19 15:30</span></div>
+            </div>
+            <div class="card-meta">
+              <span class="tag t-skill">markdown</span>
+              <span class="tag t-auto">自动写入</span>
+              <span class="tag t-clean">审计通过</span>
+              <span class="tag t-workspace">Self-Evolve</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /sp-skills -->
+
+    <!-- ── SUB: EVO LOG ── -->
+    <div class="sub-panel" id="sp-evo-log">
+      <!-- 说明条 -->
+      <div style="background:rgba(0,212,170,0.05);border:1px solid rgba(0,212,170,0.12);border-radius:7px;padding:9px 14px;margin-bottom:12px;font-family:var(--font-cn);font-size:12px;color:var(--text-muted);line-height:1.6;">
+        ◎ <strong style="color:var(--text-secondary)">进化日志</strong> — 记录每次会话结束后 AI 提炼 Rules / Skills 的过程和结果，可追溯每条规则的来源。
+      </div>
+      <div class="filter-bar">
+        <select><option>所有状态</option><option>成功</option><option>待审核</option><option>跳过</option></select>
+        <select id="evo-ws-filter" onchange="filterByWs('evo-log', this.value)">
+          <option value="">所有工作区</option>
+          <option value="agent-memory">agent-memory</option>
+          <option value="self-evolve">Self-Evolve</option>
+        </select>
+      </div>
+      <div class="card-list">
+
+        <div class="card c-ok" id="e1" data-ws="agent-memory">
+          <div class="card-collapsed" onclick="toggle('e1')">
+            <div class="card-header">
+              <div class="card-left">
+                <span class="chevron">▶</span>
+                <div>
+                  <div class="card-title">Session #42 · memory-leak-debug</div>
+                  <div class="evo-counts">
+                    <span class="ec r"><span class="n">+2</span> Rules <span style="opacity:.5;font-weight:400;">→ 共 6</span></span>
+                    <span class="ec s"><span class="n">+1</span> Skill <span style="opacity:.5;font-weight:400;">→ 共 3</span></span>
+                    <span class="ec d">⏱ 18.4s</span>
+                    <span class="tag t-workspace" style="margin-left:4px;">agent-memory</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-right"><span class="tag t-clean">SUCCESS</span><span class="card-date">2026-05-23 14:35</span></div>
+            </div>
+          </div>
+          <div class="card-expanded">
+            <div class="expand-body">
+              <div class="expand-sec">
+                <div class="expand-lbl">进化详情</div>
+                <div class="expand-box">observations: 7 条
+summary: 排查 WorkerService RSS 泄漏，根因 setInterval 未 clearInterval，修复后内存稳定在 85MB。
+
+✓ 修复 Bug 前先写失败单元测试复现问题 (quality: 76)
+✓ 数据库查询操作必须设置超时限制 (quality: 71)
+✓ [skill] 内存泄漏排查流程 (quality: 85)
+✗ 跳过 2 条（过于项目特定 / 信息不足）</div>
+              </div>
+              <div class="expand-sec">
+                <div class="expand-lbl">AI 原始输出</div>
+                <div class="raw-out">{"new_rules":[{"title":"修复 Bug 前先写失败单元测试...","quality_score":76},{"title":"数据库查询操作...","quality_score":71}],"new_skills":[{"slug":"memory-leak-debug","quality_score":85}],"skipped":[{"reason":"过于项目特定"},{"reason":"信息不足"}]}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card c-pending" id="e2" data-ws="agent-memory">
+          <div class="card-collapsed" onclick="toggle('e2')">
+            <div class="card-header">
+              <div class="card-left">
+                <span class="chevron">▶</span>
+                <div>
+                  <div class="card-title">Session #38 · SQLite 性能优化</div>
+                  <div class="evo-counts">
+                    <span class="ec r"><span class="n">+1</span> Rule <span style="opacity:.5;font-weight:400;">→ 共 4</span></span>
+                    <span class="ec s"><span class="n">+1</span> Skill <span style="opacity:.5;font-weight:400;">→ 共 2</span></span>
+                    <span class="ec d">⏱ 22.1s</span>
+                    <span class="tag t-workspace" style="margin-left:4px;">agent-memory</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-right"><span class="tag t-pending">REVIEW PENDING</span><span class="card-date">2026-05-21 10:08</span></div>
+            </div>
+          </div>
+          <div class="card-expanded">
+            <div class="expand-body">
+              <div class="expand-sec">
+                <div class="expand-lbl">进化详情</div>
+                <div class="expand-box">observations: 5 条
+summary: 对 observations 表添加复合索引，FTS 查询从 240ms 降至 18ms。
+
+⚑ 数据库查询超时限制 (quality: 71) · 待审核
+⚑ [skill] 数据库迁移安全检查清单 (quality: 78) · 待审核</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card c-ok" id="e3" data-ws="self-evolve">
+          <div class="card-collapsed" onclick="toggle('e3')">
+            <div class="card-header">
+              <div class="card-left">
+                <span class="chevron">▶</span>
+                <div>
+                  <div class="card-title">Session #35 · 文档整理</div>
+                  <div class="evo-counts">
+                    <span class="ec r"><span class="n">+1</span> Rule <span style="opacity:.5;font-weight:400;">→ 共 3</span></span>
+                    <span class="ec d" style="color:var(--text-muted)"><span class="n">+0</span> Skill <span style="opacity:.5;font-weight:400;">→ 共 1</span></span>
+                    <span class="ec d">⏱ 12.0s</span>
+                    <span class="tag t-workspace" style="margin-left:4px;">Self-Evolve</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-right"><span class="tag t-clean">SUCCESS</span><span class="card-date">2026-05-20 16:47</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card c-skip" id="e4" data-ws="self-evolve">
+          <div class="card-collapsed" onclick="toggle('e4')">
+            <div class="card-header">
+              <div class="card-left">
+                <span class="chevron">▶</span>
+                <div>
+                  <div class="card-title">Session #33 · 简短问答</div>
+                  <div class="evo-counts">
+                    <span class="ec d">内容不足，跳过进化</span>
+                    <span class="ec d">⏱ 2.8s</span>
+                    <span class="tag t-workspace" style="margin-left:4px;">Self-Evolve</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-right"><span class="tag t-auto">SKIPPED</span><span class="card-date">2026-05-19 09:14</span></div>
+            </div>
+          </div>
+          <div class="card-expanded">
+            <div class="expand-body">
+              <div class="expand-sec">
+                <div class="expand-lbl">跳过原因</div>
+                <div class="expand-box">observations: 1 条（低于最小阈值 2 条）
+会话仅包含一条简短问答，无文件编辑或工具调用，不足以提炼可复用规范。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /sp-evo-log -->
+
+  </div><!-- /mp-self-evolve -->
+
+</div><!-- /container -->
+
+<script>
+  function switchMain(name) {
+    document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.main-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector(`[data-mp="${name}"]`).classList.add('active');
+    document.getElementById(`mp-${name}`).classList.add('active');
+  }
+
+  function switchSub(name) {
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector(`[data-sp="${name}"]`).classList.add('active');
+    document.getElementById(`sp-${name}`).classList.add('active');
+  }
+
+  function toggle(id) { document.getElementById(id).classList.toggle('open'); }
+
+  function approve(id, btn) {
+    const card = document.getElementById(id);
+    const pt = card.querySelector('.t-pending');
+    if (pt) { pt.className = 'tag t-approved'; pt.textContent = '✓ 已批准'; }
+    btn.disabled = true; btn.textContent = '✓ 已批准'; btn.style.opacity = '0.45';
+    updateBadge(-1);
+    toast('已批准并写入 CLAUDE.md 和 .cursor/rules/', 'ok');
+  }
+
+  function showReject(id) { document.getElementById(`rf-${id}`).classList.add('show'); }
+  function hideReject(id) { document.getElementById(`rf-${id}`).classList.remove('show'); }
+
+  function doReject(id, btn) {
+    const card = document.getElementById(id);
+    const pt = card.querySelector('.t-pending');
+    if (pt) { pt.className = 'tag t-rejected'; pt.textContent = '✗ 已拒绝'; }
+    hideReject(id);
+    updateBadge(-1);
+    toast('已拒绝，规则不会写入任何文件', 'err');
+  }
+
+  function updateBadge(delta) {
+    ['.main-tab.evolve-tab .badge', '.sub-tab[data-sp="rules"] .badge'].forEach(sel => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      const n = parseInt(el.textContent) + delta;
+      if (n <= 0) el.remove(); else el.textContent = n;
+    });
+    const infoEl = document.querySelector('.plugin-header span[style]');
+    if (infoEl) {
+      infoEl.innerHTML = infoEl.innerHTML.replace(/\d+ Pending/, n => {
+        const cur = parseInt(n) + delta;
+        return cur <= 0
+          ? `<span style="color:var(--accent-active)">0 Pending</span>`
+          : `<span style="color:var(--accent-warning)">${cur} Pending</span>`;
+      });
+    }
+  }
+
+  // Overview workspace switcher — swaps stat numbers for the selected workspace
+  const wsData = {
+    'agent-memory': { rules: 6, skills: 3, pending: 2, archived: 1, lastEvolved: '2026-05-23 14:35' },
+    'self-evolve':  { rules: 2, skills: 1, pending: 0, archived: 0, lastEvolved: '2026-05-20 16:47' },
+  };
+  function switchWsOverview(ws) {
+    const d = wsData[ws] || wsData['agent-memory'];
+    document.getElementById('ov-rules').textContent    = d.rules;
+    document.getElementById('ov-skills').textContent   = d.skills;
+    document.getElementById('ov-pending').textContent  = d.pending;
+    document.getElementById('ov-archived').textContent = d.archived;
+    document.getElementById('ws-last-evolved').textContent = '最近进化：' + d.lastEvolved;
+    toast('已切换工作区：' + ws, 'ok');
+  }
+
+  function filterByWs(panel, ws) {
+    const scopeMap = { rules: '#sp-rules', skills: '#sp-skills', 'evo-log': '#sp-evo-log' };
+    const scope = scopeMap[panel] || `#sp-${panel}`;
+    document.querySelectorAll(`${scope} .card`).forEach(card => {
+      const cardWs = (card.dataset.ws || '').toLowerCase();
+      const match  = ws === '' || cardWs.includes(ws.toLowerCase().split('/').pop().toLowerCase());
+      card.style.display = match ? '' : 'none';
+    });
+    if (ws) toast(`已筛选：${ws}`, 'ok');
+  }
+
+  function toast(msg, type) {
+    const wrap = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`; el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(() => { el.style.transition = 'opacity .35s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 350); }, 3200);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+node_modules/
+dist/
+*.log
+logs/
+.DS_Store
+
+# Local configuration files (put your API keys here)
+.env
+.env.local
+
+*.tmp
+*.temp
+*.tgz
+*.blockmap
+package-lock.json
+bun.lock
+
+# Data directory
+.agent-memory/
+
+# Editor config
+.cursor/*
+!.cursor/skills/
+.cursor/skills/*
+!.cursor/skills/release-agent-memory/
+!.cursor/skills/release-agent-memory/SKILL.md
+!.cursor/skills/add-feature-doc/
+!.cursor/skills/add-feature-doc/SKILL.md
+!.cursor/skills/add-bug-doc/
+!.cursor/skills/add-bug-doc/SKILL.md
+
+# Database
+memory.db
+
+# Git worktrees
+.worktrees/
+
+# Release artifacts
+release-artifacts/
+desktop/release5/
+pack-info.json
+
+# Reference repo (claude-mem, AGPL) — kept locally for porting reference, not tracked
+claude-mem/
+
+# ShadwMonitor plugin runtime / build artifacts (插件内部 .gitignore 也声明了一份, 主目录这里显式 mirror 一下)
+plugins/shadwmonitor/data/
+plugins/shadwmonitor/__pycache__/
+plugins/shadwmonitor/**/__pycache__/
+plugins/shadwmonitor/.venv/
+plugins/shadwmonitor/.env
+plugins/shadwmonitor/*.egg-info/
+
+# Hybrid retrieval — Spike scratch directory (M1 validation only, not part of release)
+spike/
+
+# Claude Code IDE local session/state — never tracked
+.claude/
+
+# OTel local capture — Claude Code OpenTelemetry body/extract dumps, never tracked
+.claude-otel-bodies/
+.claude-otel-extract/
+
+# Large build resources (>100MB GitHub limit) - user should download separately
+desktop/build-resources/node.exe
+desktop/build-resources/models/
+
+
+# Local runtime data, credentials, and packaging logs
+.env.*
+!.env*.example
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+build-log*.txt
+__pycache__/
+*.pyc
+.venv/
+
+# Preserved locally; uploaded as inactive templates until workflow authorization
+/.github/workflows/

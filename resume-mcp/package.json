@@ -1,0 +1,46 @@
+{
+  "name": "agentmem-resume-mcp",
+  "version": "0.2.0",
+  "description": "Cross-IDE project memory resumption MCP for AgentMemory. Pulls the most recent N session_summaries (each with originating-session metadata and key observations) for the current working directory's project so a fresh IDE/agent can resume work without re-reading the whole DB.",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "agentmem-resume-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "prepack": "npm run clean && npm run build",
+    "start": "node dist/server.js",
+    "dev": "tsx src/server.ts",
+    "handshake": "node scripts/handshake-test.mjs",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.1",
+    "better-sqlite3": "^11.5.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "codebuddy",
+    "memory",
+    "context-resume",
+    "cross-ide"
+  ],
+  "license": "MIT"
+}
