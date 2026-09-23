@@ -1,6 +1,6 @@
 {
   "name": "agent-memory-desktop",
-  "version": "2.0.34",
+  "version": "2.0.36",
   "description": "AgentMemory Desktop - System tray guardian for agent-memory worker",
   "main": "dist/main.js",
   "private": true,

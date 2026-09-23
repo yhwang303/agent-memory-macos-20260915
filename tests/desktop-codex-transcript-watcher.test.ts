@@ -21,6 +21,40 @@ function makeWatcher(): any {
   } as any) as any;
 }
 
+test('Codex watcher uses session_meta identity for suffixed and renamed rollout files', () => {
+  const file = writeJsonl([]);
+  const dir = path.dirname(file);
+  const sessionId = '019ec9e6-3233-7e30-9dfb-b3916f23aad1';
+  const metadata = JSON.stringify({ type: 'session_meta', payload: { id: sessionId } }) + '\n';
+  try {
+    for (const name of [
+      `rollout-2026-06-16T00-00-00-${sessionId}_other-thread.jsonl`,
+      'renamed-transcript.jsonl',
+      'rollout-2026-06-16T00-00-00-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.jsonl',
+    ]) {
+      const transcript = path.join(dir, name);
+      fs.writeFileSync(transcript, metadata);
+      assert.equal(makeWatcher().sessionIdFromTranscript(transcript), sessionId);
+    }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('Codex watcher retains legacy filename fallback and retries incomplete metadata', () => {
+  const file = writeJsonl([]);
+  const watcher = makeWatcher();
+  const sessionId = '019ec9e6-3233-7e30-9dfb-b3916f23aad1';
+  try {
+    assert.equal(watcher.sessionIdFromTranscript(file), sessionId);
+    fs.writeFileSync(file, JSON.stringify({ type: 'session_meta', payload: { id: 'canonical-id' } }) + '\n');
+    assert.equal(watcher.sessionIdFromTranscript(file), 'canonical-id');
+    assert.equal(watcher.sessionIdFromTranscript(path.join(path.dirname(file), 'unknown.jsonl')), 'unknown');
+  } finally {
+    fs.rmSync(path.dirname(file), { recursive: true, force: true });
+  }
+});
+
 test('CodexTranscriptWatcher swallows an expected EPIPE from hook stdin', () => {
   const stdin = new EventEmitter() as EventEmitter & { end(payload: string): void };
   stdin.end = () => {

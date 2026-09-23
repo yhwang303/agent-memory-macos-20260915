@@ -1,6 +1,6 @@
 {
   "name": "agent-memory",
-  "version": "2.0.34",
+  "version": "2.0.36",
   "description": "Headless memory client for CodeBuddy / OpenClaw — record, store locally, sync to your AgentMem backend",
   "keywords": [
     "codebuddy",

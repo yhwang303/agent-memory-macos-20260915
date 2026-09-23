@@ -51,6 +51,7 @@ export class CodexTranscriptWatcher {
   private readonly sessionsDir = path.join(this.codexHome, 'sessions');
   private readonly statePath = path.join(os.homedir(), '.agent-memory', 'codex-live-watcher-state.json');
   private readonly transcriptProjectCache = new Map<string, string | null>();
+  private readonly transcriptSessionIdCache = new Map<string, string>();
 
   constructor(private readonly paths: HooksConfigPaths) {}
 
@@ -466,6 +467,32 @@ export class CodexTranscriptWatcher {
   }
 
   private sessionIdFromTranscript(transcriptPath: string): string {
+    const cached = this.transcriptSessionIdCache.get(transcriptPath);
+    if (cached) return cached;
+
+    // Codex can append a second thread id to the rollout filename. Native
+    // hooks and history import use session_meta.id; use that same identity so
+    // the live watcher cannot create a parallel session for the same events.
+    try {
+      const fd = fs.openSync(transcriptPath, 'r');
+      try {
+        const buffer = Buffer.alloc(Math.min(fs.fstatSync(fd).size, 2 * 1024 * 1024));
+        const bytesRead = fs.readSync(fd, buffer, 0, buffer.length, 0);
+        for (const line of buffer.subarray(0, bytesRead).toString('utf8').split(/\r?\n/)) {
+          const row = this.parseJson(line);
+          const id = row?.type === 'session_meta' ? row.payload?.id : undefined;
+          if (typeof id === 'string' && id.trim()) {
+            this.transcriptSessionIdCache.set(transcriptPath, id.trim());
+            return id.trim();
+          }
+        }
+      } finally {
+        fs.closeSync(fd);
+      }
+    } catch {
+      // Retain compatibility with older or temporarily unavailable transcripts.
+    }
+
     const stem = path.basename(transcriptPath, '.jsonl');
     const match = stem.match(/rollout-.+-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
     return match?.[1] ?? stem;
